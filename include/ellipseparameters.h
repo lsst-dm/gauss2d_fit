@@ -12,7 +12,7 @@
 #endif
 
 #ifndef GAUSS2D_FIT_PARAMETERS_H
-#include "gauss2d/fit/parameters.h"
+#include "parameters.h"
 #endif
 
 namespace gauss2d
