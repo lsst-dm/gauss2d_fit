@@ -21,7 +21,8 @@ namespace gauss2d
 {
 namespace fit
 {
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 typedef parameters::Transform<double> Transform;
 
 struct InverseTransform : public Transform
@@ -107,6 +108,7 @@ public:
         _set_range();
     }
 };
+#pragma GCC diagnostic pop
 }
 }
 
