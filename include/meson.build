@@ -1,4 +1,6 @@
 headers = [
+    'centroidparameters.h',
+    'component.h',
     'ellipseparameters.h',
     'parameters.h',
     'transforms.h',

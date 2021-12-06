@@ -21,44 +21,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <memory>
 #include <pybind11/attr.h>
-#ifndef GAUSS2D_CENTROID_H
-#include "gauss2d/centroid.h"
-#endif
-
-#ifndef GAUSS2D_ELLIPSE_H
-#include "gauss2d/ellipse.h"
-#endif
-
-#ifndef PARAMETERS_TRANSFORM_H
-#include "parameters/transform.h"
-#endif
-
-#ifndef GAUSS2D_FIT_ELLIPSEPARAMETERS_H
-#include "gauss2d/fit/ellipseparameters.h"
-#endif
-
-#ifndef GAUSS2D_FIT_PARAMETERS_H
-#include "gauss2d/fit/parameters.h"
-#endif
-
-#ifndef GAUSS2DFIT_TRANSFORMS_H
-#include "gauss2d/fit/transforms.h"
-#endif
-
-#include <limits>
-//#include <iostream>
-#include <string>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-//#include <pybind11/stl_bind.h>
+
+#include <limits>
+#include <memory>
+#include <string>
+
+#include "gauss2d/centroid.h"
+#include "gauss2d/ellipse.h"
+#include "gauss2d/fit/centroidparameters.h"
+#include "gauss2d/fit/ellipseparameters.h"
+#include "gauss2d/fit/parameters.h"
+#include "gauss2d/fit/transforms.h"
+#include "parameters/transform.h"
+#include "parameters/unit.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-// This is so annoying that I'm considering borrowing a solution for static string 
+// This is so annoying that I'm considering borrowing a solution for static string
 template<typename T>
 constexpr std::string_view suffix_type();
 
@@ -117,46 +100,33 @@ void declare_limits(py::module &m) {
     .def("__repr__", &Class::str);
 }
 
-/*
-template<typename T>
-class Parameter : public parameters::Parameter<T, Parameter<T>> {};
-
-static const auto base = Parameter<double>{};
-
-template<typename T>
-void declare_parameter_base(py::module &m) {
-    using Base = Parameter<T>;
-    std::string pyclass_name_base = "Parameter" + suffix_type_str<T>();
-    py::class_<Base, std::shared_ptr<Base>>(m, pyclass_name_base.c_str());
-}
-*/
-
 template<typename T, class C>
 auto declare_parameter(py::module &m, std::string name, std::string suffix=suffix_type_str<T>()) {
-    using Base = parameters::ParameterBase<T, gauss2d::fit::Unit>;
-    using Class = parameters::Parameter<T, C, gauss2d::fit::Unit>;
+    using Base = parameters::ParameterBase<T>;
+    using Class = parameters::Parameter<T, C>;
     using SetC = typename C::SetC;
     std::string pyclass_name = name + "Parameter" + suffix_type_str<T>();
     return py::class_<C, std::shared_ptr<C>, Base>(m, pyclass_name.c_str())
     .def(py::init<
             T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
-            std::shared_ptr<const gauss2d::fit::Unit>, bool, std::string,
+            std::shared_ptr<const parameters::Unit>, bool, std::string,
             const SetC, const SetC
         >(),
-        "value"_a=Class::get_default(), "limits"_a=nullptr, "transform"_a=nullptr, "unit"_a=gauss2d::fit::unit_none, "fixed"_a=false, "label"_a="",
+        "value"_a=Class::_get_default(), "limits"_a=nullptr, "transform"_a=nullptr, "unit"_a=gauss2d::fit::unit_none, "fixed"_a=false, "label"_a="",
         // TODO: Can't seem to get nullptr (static_cast or otherwise)/None or equivalent to work here
         "inheritors"_a=SetC(), "modifiers"_a=SetC()
     )
-    .def_property_readonly_static("desc", [](py::object) { return Class::get_desc(); })
+    .def_property_readonly_static("default", [](py::object) { return Class::_get_default(); })
+    .def_property_readonly_static("desc", [](py::object) { return Class::_get_desc(); })
     .def_property("fixed", &Class::get_fixed, &Class::set_fixed)
     .def_property("free", &Class::get_free, &Class::set_free)
     .def_property("inheritors", &Class::get_inheritors, &Class::set_inheritors)
     .def_property("label", &Class::get_label, &Class::set_label)
     .def_property("limits", &Class::get_limits, &Class::set_limits, py::keep_alive<1, 2>())
     .def_property("modifiers", &Class::get_modifiers, &Class::set_modifiers)
-    .def_property_readonly_static("min", [](py::object) { return Class::get_min(); })
-    .def_property_readonly_static("max", [](py::object) { return Class::get_max(); })
-    .def_property_readonly_static("name", [](py::object) { return Class::get_name(); } )
+    .def_property_readonly_static("min", [](py::object) { return Class::_get_min(); })
+    .def_property_readonly_static("max", [](py::object) { return Class::_get_max(); })
+    .def_property_readonly_static("name", [](py::object) { return Class::_get_name(); } )
     .def_property_readonly("ptr", &Class::ptr)
     // TODO: Figure out if it's possible to bind these
     //.def_property_readonly_static("limits_maximal", &Class::limits_maximal)
@@ -171,14 +141,6 @@ auto declare_parameter(py::module &m, std::string name, std::string suffix=suffi
 
     inline std::shared_ptr<Limits<T>> & _get_limits() { return _limits_ptr; }
     inline std::shared_ptr<Transform<T>> & _get_transform() { return _transform_ptr; }
-
-    static constexpr T get_min() { return _min_t<C>(0); }
-    static constexpr T get_max() { return _max_t<C>(0); }
-    static inline const std::string get_name() { return _name_t<C>(0); }
-    static inline const std::string get_type_name() { return std::string(type_name<C>()); }
-
-    static constexpr const Limits<T> limits_maximal = Limits<T>(get_min(), get_max(), type_name<C>(), ".limits_maximal");
-    static constexpr const UnitTransform<T> transform_none = UnitTransform<T>();
 */
     .def("__repr__", &Class::str);
 }
@@ -265,15 +227,15 @@ PYBIND11_MODULE(_gauss2dfit, m)
         .def("set", &gauss2d::fit::EllipseParameters::set)
         .def("__repr__", &gauss2d::fit::EllipseParameters::str)
     ;
-    py::class_<gauss2d::fit::Unit,
-        std::shared_ptr<gauss2d::fit::Unit>
+    py::class_<parameters::Unit,
+        std::shared_ptr<parameters::Unit>
     >(m, "Unit");
     py::class_<gauss2d::fit::UnitNone,
         std::shared_ptr<gauss2d::fit::UnitNone>,
-        gauss2d::fit::Unit
+        parameters::Unit
     >(m, "UnitNone")
         .def(py::init<>())
-        .def_property_readonly("name", &gauss2d::fit::UnitNone::name)
+        .def_property_readonly("name", &gauss2d::fit::UnitNone::get_name)
     ;
     declare_limits<double>(m);
     declare_transform_base<double>(m);
@@ -285,7 +247,7 @@ PYBIND11_MODULE(_gauss2dfit, m)
     // TODO: Determine why this won't work with std::shared_ptr<parameters::Limits<double>>
     declare_transform_full<double, gauss2d::fit::LogitLimitedTransform, true, true,
         std::shared_ptr<Limits<double>>, double >(m, "LogitLimited");
-    using Parameter = parameters::ParameterBase<double, gauss2d::fit::Unit>;
+    using Parameter = parameters::ParameterBase<double>;
     py::class_<Parameter, std::shared_ptr<Parameter>>(m, "Parameter");
     auto integral = declare_parameter<double, gauss2d::fit::IntegralParameter>(m, "Integral");
     integral.def_property("band", &gauss2d::fit::IntegralParameter::get_label,
@@ -296,6 +258,7 @@ PYBIND11_MODULE(_gauss2dfit, m)
     declare_parameter<double, gauss2d::fit::CentroidYParameter>(m, "CentroidY");
     declare_parameter<double, gauss2d::fit::MoffatConcentrationParameter>(m, "MoffatConcentration");    declare_parameter<double, gauss2d::fit::RadiusScaleParameter>(m, "RadiusScale");
     declare_parameter<double, gauss2d::fit::RhoParameter>(m, "Rho");
-    declare_parameter<double, gauss2d::fit::SersicIndexParameter>(m, "SersicIndex");    declare_parameter<double, gauss2d::fit::SigmaXParameter>(m, "SigmaX");
+    declare_parameter<double, gauss2d::fit::SersicIndexParameter>(m, "SersicIndex");
+    declare_parameter<double, gauss2d::fit::SigmaXParameter>(m, "SigmaX");  
     declare_parameter<double, gauss2d::fit::SigmaYParameter>(m, "SigmaY");
 }

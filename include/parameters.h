@@ -8,30 +8,27 @@
 #include <cfloat>
 #include <iostream>
 
-#ifndef PARAMETERS_PARAMETER_H
 #include "parameters/parameter.h"
-#endif
+#include "parameters/unit.h"
 
 namespace gauss2d
 {
 namespace fit
 {
-class Unit {
+;
+class UnitNone : public parameters::Unit {
 public:
-    virtual std::string name() const = 0;
-    virtual ~Unit() = default;
-};
-
-static const std::string name_unit_none = "None";
-class UnitNone : public Unit {
-public:
-    std::string name() const { return name_unit_none; }
+    std::string get_name() const {
+        static const std::string name_none = "None";
+        return name_none; 
+    }
 };
 
 static const UnitNone unit_none {};
 
 template<typename T>
-using Param = parameters::Parameter<double, T, Unit>;
+using Param = parameters::Parameter<double, T>;
+
 
 struct CentroidXParameter : public Param<CentroidXParameter> {
     static inline const std::string _desc = "Centroid (x)";
