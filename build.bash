@@ -1,0 +1,1 @@
+./build-cc.bash && ./build-py.bash
