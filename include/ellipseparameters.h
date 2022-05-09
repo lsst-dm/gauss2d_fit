@@ -4,13 +4,15 @@
 #include <memory>
 
 #include "gauss2d/ellipse.h"
+
 #include "parameters.h"
+#include "parametric.h"
 
 namespace gauss2d
 {
 namespace fit
 {
-class EllipseParameters : public gauss2d::EllipseData
+class EllipseParameters : public gauss2d::EllipseData, public Parametric
 {
 private:
     std::shared_ptr<SigmaXParameter> _sigma_x;
@@ -18,43 +20,36 @@ private:
     std::shared_ptr<RhoParameter> _rho;
 
 public:
-    double get_rho() const { return _rho->get_value(); }
-    double get_sigma_x() const { return _sigma_x->get_value(); }
-    double get_sigma_y() const { return _sigma_y->get_value(); }
+    ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
+    ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
+
+    double get_rho() const;
+    double get_sigma_x() const;
+    double get_sigma_y() const;
     std::array<double, 3> get_xyr() const;
 
-    RhoParameter & get_rho_param() const { return *_rho;}
-    SigmaXParameter & get_sigma_x_param() const { return *_sigma_x; }
-    SigmaYParameter & get_sigma_y_param() const { return *_sigma_y; }
+    RhoParameter & get_rho_param() const;
+    SigmaXParameter & get_sigma_x_param() const;
+    SigmaYParameter & get_sigma_y_param() const;
 
-    std::shared_ptr<RhoParameter> get_rho_param_ptr() { return _rho;}
-    std::shared_ptr<SigmaXParameter> get_sigma_x_param_ptr() { return _sigma_x; }
-    std::shared_ptr<SigmaYParameter> get_sigma_y_param_ptr() { return _sigma_y; }
+    std::shared_ptr<RhoParameter> get_rho_param_ptr();
+    std::shared_ptr<SigmaXParameter> get_sigma_x_param_ptr();
+    std::shared_ptr<SigmaYParameter> get_sigma_y_param_ptr();
 
     void set(double sigma_x, double sigma_y, double rho);
-    inline void set_rho(double rho) { _rho->set_value(rho);}
-    inline void set_sigma_x(double sigma_x) { _sigma_x->set_value(sigma_x); }
-    inline void set_sigma_y(double sigma_y) { _sigma_y->set_value(sigma_y); }
-    void set_xyr(const std::array<double, 3> & xyr) { this->set(xyr[0], xyr[1], xyr[2]); }
+    void set_rho(double rho);
+    void set_sigma_x(double sigma_x);
+    void set_sigma_y(double sigma_y);
+    void set_xyr(const std::array<double, 3> & xyr);
 
-    std::string str() const {
-        return "EllipseParameters(sigma_x=" + _rho->str() + ", sigma_y=" + _sigma_x->str() + ", rho=" + _rho->str() + ")";
-    };
+    std::string str() const override;
 
     EllipseParameters(
         std::shared_ptr<SigmaXParameter> sigma_x,
         std::shared_ptr<SigmaYParameter> sigma_y,
         std::shared_ptr<RhoParameter> rho=nullptr
-    ) :
-        _sigma_x(sigma_x == nullptr ? std::make_shared<SigmaXParameter>(0) : std::move(sigma_x)),
-        _sigma_y(sigma_y == nullptr ? std::make_shared<SigmaYParameter>(0) : std::move(sigma_y)),
-        _rho(rho == nullptr ? std::make_shared<RhoParameter>(0) : std::move(rho))
-    {};
-    EllipseParameters(double sigma_x=0, double sigma_y=0, double rho=0) :
-        _sigma_x(std::make_shared<SigmaXParameter>(sigma_x)),
-        _sigma_y(std::make_shared<SigmaYParameter>(sigma_y)),
-        _rho(std::make_shared<RhoParameter>(rho))
-    {};
+    );
+    EllipseParameters(double sigma_x=0, double sigma_y=0, double rho=0);
 };
 } // namespace fit
 } // namespace gauss2d

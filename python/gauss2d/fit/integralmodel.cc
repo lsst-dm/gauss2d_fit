@@ -22,32 +22,19 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
+#include <memory>
+
+#include "gauss2d/fit/integralmodel.h"
 #include "pybind11.h"
 
-PYBIND11_MODULE(_gauss2d_fit, m)
+namespace py = pybind11;
+using namespace pybind11::literals;
+
+namespace g2f = gauss2d::fit;
+
+void bind_integralmodel(py::module &m)
 {
-    m.doc() = "Gauss2DFit Python bindings";
-    py::module::import("gauss2d");
-
-    // Abstract types MUST go first
-    bind_parametric(m);
-    bind_parametricmodel(m);
-    bind_component(m);
-    bind_integralmodel(m);
-
-    bind_centroidparameters(m);
-    bind_channel(m);
-    bind_data(m);
-    bind_ellipseparameters(m);
-    bind_ellipticalcomponent(m);
-    bind_fractionalintegralmodel(m);
-    bind_gaussiancomponent(m);
-    bind_linearintegralmodel(m);
-    bind_model(m);
-    bind_observation(m);
-    bind_param_filter(m);
-    bind_parameters(m);
-    bind_psfmodel(m);
-    bind_source(m);
+    auto _p = py::class_<g2f::IntegralModel, std::shared_ptr<g2f::IntegralModel>>(m, "IntegralModel");
 }

@@ -21,33 +21,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
+#include <memory>
+#include <string>
+
+#include "gauss2d/fit/channel.h"
 #include "pybind11.h"
 
-PYBIND11_MODULE(_gauss2d_fit, m)
+namespace py = pybind11;
+using namespace pybind11::literals;
+
+namespace g2f = gauss2d::fit;
+
+void bind_channel(py::module &m)
 {
-    m.doc() = "Gauss2DFit Python bindings";
-    py::module::import("gauss2d");
-
-    // Abstract types MUST go first
-    bind_parametric(m);
-    bind_parametricmodel(m);
-    bind_component(m);
-    bind_integralmodel(m);
-
-    bind_centroidparameters(m);
-    bind_channel(m);
-    bind_data(m);
-    bind_ellipseparameters(m);
-    bind_ellipticalcomponent(m);
-    bind_fractionalintegralmodel(m);
-    bind_gaussiancomponent(m);
-    bind_linearintegralmodel(m);
-    bind_model(m);
-    bind_observation(m);
-    bind_param_filter(m);
-    bind_parameters(m);
-    bind_psfmodel(m);
-    bind_source(m);
+    auto _c = py::class_<g2f::Channel, std::shared_ptr<g2f::Channel>
+    >(m, "Channel")
+        .def(py::init(&g2f::Channel::make))
+        .def_static("erase", &g2f::Channel::erase)
+        .def_property_readonly_static("all", [](py::object) {
+            return g2f::Channel::get_channels(); })
+        .def_static("get", &g2f::Channel::get_channel)
+        .def_readonly("name", &g2f::Channel::name)
+        .def_property_readonly_static("NONE", [](py::object) {
+            return g2f::Channel::NONE_PTR(); })
+        .def("__repr__", &g2f::Channel::str)
+    ;
+/*
+    const bool operator < ( const Channel &c ) const;
+    const bool operator == ( const Channel &c ) const;
+    const bool operator != ( const Channel &c ) const;
+*/
 }

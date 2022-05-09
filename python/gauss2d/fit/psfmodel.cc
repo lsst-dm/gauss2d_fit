@@ -21,33 +21,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
+#include <memory>
+#include <string>
+
+#include "gauss2d/fit/psfmodel.h"
+#include "gauss2d/fit/parametricmodel.h"
 #include "pybind11.h"
 
-PYBIND11_MODULE(_gauss2d_fit, m)
+namespace py = pybind11;
+using namespace pybind11::literals;
+
+namespace g2f = gauss2d::fit;
+
+void bind_psfmodel(py::module &m)
 {
-    m.doc() = "Gauss2DFit Python bindings";
-    py::module::import("gauss2d");
-
-    // Abstract types MUST go first
-    bind_parametric(m);
-    bind_parametricmodel(m);
-    bind_component(m);
-    bind_integralmodel(m);
-
-    bind_centroidparameters(m);
-    bind_channel(m);
-    bind_data(m);
-    bind_ellipseparameters(m);
-    bind_ellipticalcomponent(m);
-    bind_fractionalintegralmodel(m);
-    bind_gaussiancomponent(m);
-    bind_linearintegralmodel(m);
-    bind_model(m);
-    bind_observation(m);
-    bind_param_filter(m);
-    bind_parameters(m);
-    bind_psfmodel(m);
-    bind_source(m);
+   auto _o = py::class_<g2f::PsfModel, std::shared_ptr<g2f::PsfModel>, g2f::ParametricModel
+    >(m, "PsfModel")
+        .def(py::init<g2f::PsfModel::Components &>(), "components"_a)
+        .def("gaussians", [](const g2f::PsfModel & p, const g2f::Channel & c)
+           { return std::shared_ptr<gauss2d::Gaussians>(p.get_gaussians(c)); })
+        .def("parameters", &g2f::PsfModel::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
+        .def("__repr__", &g2f::PsfModel::str)
+    ;
 }

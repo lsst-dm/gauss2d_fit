@@ -21,33 +21,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef GAUSS2D_FIT_PYBIND11
+#define GAUSS2D_FIT_PYBIND11
+
 #include <pybind11/pybind11.h>
 
-#include "pybind11.h"
+namespace py = pybind11;
 
-PYBIND11_MODULE(_gauss2d_fit, m)
-{
-    m.doc() = "Gauss2DFit Python bindings";
-    py::module::import("gauss2d");
+void bind_centroidparameters(py::module &m);
+void bind_channel(py::module &m);
+void bind_component(py::module &m);
+void bind_data(py::module &m);
+void bind_ellipseparameters(py::module &m);
+void bind_ellipticalcomponent(py::module &m);
+void bind_fractionalintegralmodel(py::module &m);
+void bind_gaussiancomponent(py::module &m);
+void bind_integralmodel(py::module &m);
+void bind_linearintegralmodel(py::module &m);
+void bind_model(py::module &m);
+void bind_observation(py::module &m);
+void bind_param_filter(py::module &m);
+void bind_parameters(py::module &m);
+void bind_parametric(py::module &m);
+void bind_parametricmodel(py::module &m);
+void bind_psfmodel(py::module &m);
+void bind_source(py::module &m);
 
-    // Abstract types MUST go first
-    bind_parametric(m);
-    bind_parametricmodel(m);
-    bind_component(m);
-    bind_integralmodel(m);
-
-    bind_centroidparameters(m);
-    bind_channel(m);
-    bind_data(m);
-    bind_ellipseparameters(m);
-    bind_ellipticalcomponent(m);
-    bind_fractionalintegralmodel(m);
-    bind_gaussiancomponent(m);
-    bind_linearintegralmodel(m);
-    bind_model(m);
-    bind_observation(m);
-    bind_param_filter(m);
-    bind_parameters(m);
-    bind_psfmodel(m);
-    bind_source(m);
-}
+#endif

@@ -40,3 +40,7 @@ compile_commands.json
 *.exe
 *.out
 *.app
+
+# Tests
+python/tests/__pycache__/
+

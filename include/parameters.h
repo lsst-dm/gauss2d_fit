@@ -15,7 +15,7 @@ namespace gauss2d
 {
 namespace fit
 {
-;
+
 class UnitNone : public parameters::Unit {
 public:
     std::string get_name() const {
@@ -43,13 +43,8 @@ struct CentroidYParameter : public Param<CentroidYParameter> {
 };
 
 struct IntegralParameter : public Param<IntegralParameter> {
-private:
-    bool _is_ratio = false;
-
 public:
-    bool get_is_ratio() const { return _is_ratio; }
-    void set_is_ratio(bool is_ratio) { _is_ratio = is_ratio; }
-
+    static inline const bool _linear = true;
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Gaussian integral (total integrated weight/flux)";
     static inline const std::string _name = "integral";
@@ -62,6 +57,15 @@ struct MoffatConcentrationParameter : public Param<MoffatConcentrationParameter>
     static inline const std::string _desc = "Moffat concentration (beta)";
     static inline const std::string _name = "con_moffat";
     using Param<MoffatConcentrationParameter>::Parameter;
+};
+
+struct ProperFractionParameter : public Param<ProperFractionParameter> {
+public:
+    static inline constexpr double _min = 0.;
+    static inline constexpr double _max = 1.;
+    static inline const std::string _desc = "Proper fraction (0 <= x <= 1)";
+    static inline const std::string _name = "proper_fraction";
+    using Param<ProperFractionParameter>::Parameter;
 };
 
 struct RadiusScaleParameter : public Param<RadiusScaleParameter> {
