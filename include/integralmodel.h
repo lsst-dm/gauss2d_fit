@@ -12,6 +12,14 @@ namespace gauss2d
 namespace fit
 {
 
+/*
+    An IntegralModel described the total integrated surface density of a
+    2D distribution. It is intended to defined a Component but can
+    be used otherwise.
+
+    It is generally not intended for IntegralModels to be shared amonst
+    Components or otherwise, but this is not guaranteed to be enforced.
+*/
 class IntegralModel : public Parametric
 {
 public:

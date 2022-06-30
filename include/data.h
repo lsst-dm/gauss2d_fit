@@ -14,6 +14,10 @@ namespace gauss2d
 namespace fit
 {
 
+/*
+    A Data is a collection of Observations that a consistent Model can be
+    generated for.
+*/
 template <typename T, typename I, typename M>
 class Data : public Parametric
 {

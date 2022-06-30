@@ -16,6 +16,15 @@ namespace gauss2d
 namespace fit
 {
 
+/*
+    Observations are images with uncertainties and an optional boolean mask.
+    They can represent physical exposures from a camera or more generic
+    images, although they must have a Channel defined.
+
+    Masks are defined as "inverse" masks, such that a value of 1 means the
+    pixel is to be used e.g. in fitting. Masks are currently *not* used
+    in gauss2d, although that should change in the near future.
+*/
 template <typename T, typename I, typename M>
 class Observation : public Parametric
 {

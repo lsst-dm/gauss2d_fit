@@ -18,12 +18,26 @@ namespace gauss2d
 namespace fit
 {
 
-class Channel : public Object//, public std::enable_shared_from_this<Channel>
+/*
+    A Channel is a distinguishing property of an Observation, allowing
+    IntegralModels to define integrals in distinct regions of some parameter
+    space. Channels can represent a physical object such as a filter or more
+    abstract definitions like wavelength/frequency ranges, generic labels
+    like ABC, something inbetween like RGB, or anything else users prefer.
+*/
+class Channel : public Object
 {
 public:
     typedef std::map<std::string, std::shared_ptr<const Channel>> Registry;
 
 private:
+/*
+    The registry serves several purposes:
+        - ensures that Channels are unique and do not share names
+        - allows Channels to be easily found by name.
+        - prevents Channels from being implicitly deleted when no objects reference them
+          (though they can be explicitly deleted in that case)
+*/
     static inline Registry _registry = {};
     Channel(std::string name);
 

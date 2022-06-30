@@ -19,6 +19,19 @@ namespace fit
 
 //enum class Renderer { gauss2d };
 
+/*
+    A Model is a collection of Sources used to represent a model of the 
+    provided Data. The main purpose of Models is to evaluate themselves to
+    generate output Images and/or gradients thereof to compare to the Data
+    for fitting.
+
+    Because Models are designed for repeated evaluations for fitting, one
+    must explicitly set up the Evaluators to perform the exact type of
+    evaluation required. In the future, a convenience "evaluate" function
+    with arguments could be added, but it would in any case require
+    storing and checking arguments against the previous call and therefore
+    be less efficient.
+*/
 template <typename T, typename Image, typename Indices, typename Mask>
 class Model : public ParametricModel
 {

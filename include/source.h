@@ -12,9 +12,23 @@ namespace gauss2d
 namespace fit
 {
 
+/*
+    A Source is a loose association of Components. The general intent is to
+    group Components with the same (or slightly offset) centroids, but users
+    can choose other systems if needed.
+
+    Sources are also not meant to share Component pointers. Unfortunately,
+    this can't be enforced in pybind11 bindings, so the constructor allows
+    shared pointers, and there is no registry or other mechanism to 
+    enforce a 1:1 Source:Component relationship. Caveat emptor.
+*/
 class Source : public ParametricModel
 {
 public:
+    // Would like this to be unique_ptr but can't due to various pybind issues
+    // e.g. https://github.com/pybind/pybind11/issues/1132
+    // and https://github.com/pybind/pybind11/issues/1161
+
     typedef std::vector<std::shared_ptr<Component>> Components;
 
 private:

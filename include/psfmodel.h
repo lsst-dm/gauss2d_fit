@@ -12,6 +12,20 @@ namespace gauss2d
 namespace fit
 {
 
+/*
+    Like a Source, a PsfModel is a collection of Components. However, a
+    PsfModel is meant to represent the smoothing kernel for a single
+    Observation (whether from the optical system, environmental conditions,
+    or any other source of blurring). As such, it should have IntegralModels
+    that sum to unity. This is most easily enforced with the use of
+    FractionalIntegralModels.
+
+    PsfModels are also generally required to not have a specific Channel.
+    Logically, it should have the same Channel as the Observation it applies
+    to, but generally, it cannot be defined to apply to multiple
+    Observations, so not allowing non-NONE Channels is a compromise to reflect
+    this fact.
+*/
 class PsfModel : public ParametricModel
 {
 public:

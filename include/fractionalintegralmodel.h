@@ -19,6 +19,23 @@ namespace fit
 
 class FractionalGaussianIntegral;
 
+/*
+    FractionalIntegralModel is a model that returns a parameterized fraction
+    of the flux of another model.
+
+    FractionalIntegralModels can be chained, but each IntegralModel can only
+    have one dependent FractionalIntegralModel. The registry enforces this.
+
+    FractionalIntegralModel chains should end in a FractionalIntegralModel
+    with a ProperFractionParameter fixed at 1. This is not yet enforced.
+
+    One consideration for fitting is that for lengthy chains, a single
+    ProperFractionParameter valued at 1 midway through the chain will set
+    the integrals for the rest of the chain to zero, regardless of the
+    values of their ProperFractionParameters. One should consider setting
+    more restrictive upper limits on ProperFractionParameter values in 
+    such longer chains.
+*/
 class FractionalIntegralModel : public IntegralModel {
 public:
     typedef std::map<
@@ -91,6 +108,11 @@ public:
     ~FractionalIntegralModel();
 };
 
+/*
+    FractionalGaussianIntegral functions as a GaussianIntegral, returning the FractionalIntegralModel
+    integral for a single channel. set_value is currently disabled until
+    FractionalIntegralModel::set_integral is defined.
+*/
 class FractionalGaussianIntegral : public GaussianIntegral, public Parametric
 {
 private:
