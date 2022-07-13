@@ -1,6 +1,10 @@
-project('libgauss2dfit', 'cpp',
+project(
+  'libgauss2dfit',
+  'cpp',
   version : '0.1.0',
-  license : 'GPL-3.0-or-later')
+  license : 'GPL-3.0-or-later',
+  default_options : ['cpp_std=c++17',],
+)
 
 gauss2d_dep = dependency('gauss2d')
 gsl_dep = dependency('GSL')

@@ -1,12 +1,33 @@
+sources = [
+    'centroidparameters.cc',
+    'channel.cc',
+    'component.cc',
+    'data.cc',
+    'ellipseparameters.cc',
+    'ellipticalcomponent.cc',
+    'fractionalintegralmodel.cc',
+    'gaussiancomponent.cc',
+    'integralmodel.cc',
+    'linearintegralmodel.cc',
+    'model.cc',
+    'observation.cc',
+    'param_filter.cc',
+    'parameters.cc',
+    'parametric.cc',
+    'parametricmodel.cc',
+    'psfmodel.cc',
+    'source.cc',
+    'pybind11.cc',
+]
+
 module = python.extension_module(
-    '_gauss2dfit', # Name of the module
-    [  # List of sources
-        'pybind11.cc'
-    ],
+    '_gauss2d_fit', # Name of the module
+    sources,  # List of sources
     install: true,  # Install it
     dependencies: [ # List of dependencies
         python.dependency(), # Add Python.h as dependency
         gauss2d_dep,
+        gauss2d_python_dep,
         gauss2dfit_dep,
         pybind11_dep,
     ],
