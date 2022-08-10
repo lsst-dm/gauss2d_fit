@@ -1,50 +1,27 @@
 #include "gaussiancomponent.h"
 
-#include <iostream>
-#include <stdexcept>
-
-#include "component.h"
-#include "ellipticalcomponent.h"
 #include "gauss2d/gaussian.h"
 #include "integralmodel.h"
-#include "linearintegralmodel.h"
+#include "gaussianparametricellipse.h"
+#include "gaussianmodelintegral.h"
 #include "param_defs.h"
 #include "param_filter.h"
+#include <stdexcept>
 
 namespace gauss2d
 {
 namespace fit
 {
 
-double GaussianModelIntegral::get_value() const {
-    return _integralmodel->get_integral(_channel);
-}
-void GaussianModelIntegral::set_value(double value) {
-    throw std::runtime_error("Can't set_value on GaussianModelIntegral");
-}
-
-std::string GaussianModelIntegral::str() const {
-    return "GaussianModelIntegral(channel=" + _channel.str()
-        + ", integralmodel=" + _integralmodel->str() + ")";
-}
-
-GaussianModelIntegral::GaussianModelIntegral(
-    const Channel & channel, const std::shared_ptr<const IntegralModel> integralmodel
-) : _channel(channel), _integralmodel(std::move(integralmodel))
-{
-    if(_integralmodel == nullptr) throw std::invalid_argument("GaussianModelIntegral integralmodel can't be null");
-}
-GaussianModelIntegral::~GaussianModelIntegral() {};
-
-std::unique_ptr<gauss2d::Gaussians> GaussianComponent::get_gaussians(const Channel & channel) const {
+std::unique_ptr<const gauss2d::Gaussians> GaussianComponent::get_gaussians(const Channel & channel) const {
     gauss2d::Gaussians::Data gaussians = {
         std::make_shared<Gaussian>(
             std::make_shared<Centroid>(this->_centroid),
-            std::make_shared<Ellipse>(this->_ellipse),
+            std::make_shared<Ellipse>(this->_ellipsedata),
             std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel)
         )
     };
-    return std::make_unique<gauss2d::Gaussians>(gaussians);
+    return std::make_unique<const gauss2d::Gaussians>(gaussians);
 }
 
 ParamRefs & GaussianComponent::get_parameters(ParamRefs & params, ParamFilter * filter) const {
@@ -62,10 +39,10 @@ std::string GaussianComponent::str() const {
 }
 
 GaussianComponent::GaussianComponent(
+    std::shared_ptr<GaussianParametricEllipse> ellipse,
     std::shared_ptr<CentroidParameters> centroid,
-    std::shared_ptr<EllipseParameters> ellipse,
     std::shared_ptr<IntegralModel> integralmodel
-) : EllipticalComponent(centroid, ellipse, integralmodel)
+) : GaussianParametricEllipseHolder(std::move(ellipse)), EllipticalComponent(_ellipsedata, centroid, integralmodel)
 {
 }
 

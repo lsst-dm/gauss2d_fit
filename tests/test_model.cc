@@ -60,14 +60,14 @@ TEST_CASE("Model") {
         ));
     }
     auto data = std::make_shared<Data>(observations);
-
+    
     Model::PsfModels psfmodels{};
     for(size_t i = 0; i < observations.size(); ++i) {
         auto integrals = make_integrals(CHANNELS_NONE, 1.0, true);
         g2f::PsfModel::Components components;
         components.emplace_back(std::make_unique<g2f::GaussianComponent>(
+            std::make_shared<g2f::GaussianParametricEllipse>(1., 1., 0),
             nullptr,
-            std::make_shared<g2f::EllipseParameters>(1., 1., 0),
             std::make_shared<g2f::LinearIntegralModel>(&integrals)
         ));
         psfmodels.push_back(std::make_shared<g2f::PsfModel>(components));
@@ -104,8 +104,8 @@ TEST_CASE("Model") {
             }
 
             auto comp = std::make_unique<g2f::GaussianComponent>(
+                std::make_shared<g2f::GaussianParametricEllipse>(c + 1., c + 1., 0),
                 nullptr,
-                std::make_shared<g2f::EllipseParameters>(c + 1., c + 1., 0),
                 last
             );
             comps.push_back(std::move(comp));

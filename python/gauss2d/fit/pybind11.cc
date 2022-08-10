@@ -32,22 +32,27 @@ PYBIND11_MODULE(_gauss2d_fit, m)
 
     // Abstract types MUST go first
     bind_parametric(m);
+    bind_parametricellipse(m);
     bind_parametricmodel(m);
     bind_component(m);
     bind_integralmodel(m);
+    bind_sersicmix(m);
 
     bind_centroidparameters(m);
     bind_channel(m);
     bind_data(m);
-    bind_ellipseparameters(m);
     bind_ellipticalcomponent(m);
     bind_fractionalintegralmodel(m);
     bind_gaussiancomponent(m);
+    bind_gaussianmodelintegral(m);
+    bind_gaussianparametricellipse(m);
     bind_linearintegralmodel(m);
     bind_model(m);
     bind_observation(m);
     bind_param_filter(m);
     bind_parameters(m);
     bind_psfmodel(m);
+    bind_sersicmixcomponent(m);
+    bind_sersicparametricellipse(m);
     bind_source(m);
 }

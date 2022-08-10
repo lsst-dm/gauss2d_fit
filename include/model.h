@@ -66,7 +66,7 @@ public:
 
     std::shared_ptr<const ModelData> get_data() const { return _data; }
 
-    std::unique_ptr<gauss2d::Gaussians> get_gaussians(const Channel & channel) const override {
+    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel & channel) const override {
         std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
         in.reserve(_sources.size());
 
@@ -94,6 +94,10 @@ public:
         return params;
     }
 
+    PsfModels get_psfmodels() const {
+        return _psfmodels;
+    }
+
     Sources get_sources() const {
         return _sources;
     }
@@ -105,7 +109,7 @@ public:
             // TODO: check if no-op instead of always re-setting up (i.e. store previous save_gradients)
             _evaluators.resize(0);
         }
-        std::map<std::reference_wrapper<const Channel>, std::unique_ptr<Gaussians>> gaussians_src = {};
+        std::map<std::reference_wrapper<const Channel>, std::unique_ptr<const Gaussians>> gaussians_src = {};
         for(const Channel & channel : _data->get_channels()) {
             gaussians_src[channel] = this->get_gaussians(channel);
         }
@@ -134,9 +138,9 @@ public:
                 std::make_shared<Image>(n_r, n_c, coordsys) : nullptr;
 
             ConvolvedGaussians::Data data {};
-            const std::unique_ptr<gauss2d::Gaussians> psfcomps = _psfmodels[i]->get_gaussians();
+            const std::unique_ptr<const gauss2d::Gaussians> psfcomps = _psfmodels[i]->get_gaussians();
             // bconst size_t n_psf_comps = psfcomps->size();
-            for(std::shared_ptr<Gaussian> source : *(gaussians_src[observation.get_channel()])) {
+            for(auto source : std::as_const(*gaussians_src[observation.get_channel()])) {
                 if(save_gradients)
                 {
                     // TODO: finish this
@@ -144,7 +148,7 @@ public:
                     throw std::logic_error("save_gradients not yet implemented");
                 }
                 for(auto psfit = psfcomps->cbegin(); psfit < psfcomps->cend(); psfit++) {
-                    const std::shared_ptr<Gaussian> psfgauss = *psfit;
+                    const std::shared_ptr<const Gaussian> psfgauss = *psfit;
                     data.emplace_back(std::make_shared<ConvolvedGaussian>(
                         source, *psfit
                     ));

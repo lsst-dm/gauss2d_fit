@@ -27,8 +27,7 @@
 
 #include <memory>
 
-#include "gauss2d/fit/parametricmodel.h"
-#include "gauss2d/fit/source.h"
+#include "gauss2d/fit/sersicmix.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -36,16 +35,30 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_source(py::module &m)
+void bind_sersicmix(py::module &m)
 {
-    auto _s = py::class_<g2f::Source,
-        std::shared_ptr<g2f::Source>,
-        g2f::ParametricModel
-    >(m, "Source")
-        .def(py::init<g2f::Source::Components &>(), "components"_a=nullptr)
-        .def("gaussians", [](const g2f::Source &g, const g2f::Channel & c)
-            { return std::shared_ptr<const gauss2d::Gaussians>(g.get_gaussians(c)); })
-        .def("parameters", &g2f::Source::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
-        .def("__repr__", &g2f::Source::str)
+    auto _is = py::class_<g2f::IntegralSize,
+        std::shared_ptr<g2f::IntegralSize>,
+        gauss2d::Object
+    >(m, "IntegralSize")
+        .def(py::init<const double, const double>(), "integral"_a=0, "sigma"_a=0)
+        .def_readonly("integral", &g2f::IntegralSize::integral)
+        .def_readonly("sigma", &g2f::IntegralSize::sigma)
+        .def("__repr__", &g2f::IntegralSize::str)
     ;
+
+    auto _smi = py::class_<g2f::SersicMixInterpolator, std::shared_ptr<g2f::SersicMixInterpolator>>(
+        m, "SersicMixInterpolator");
+
+    auto _smv = py::class_<g2f::SersicMixValues,
+        std::shared_ptr<g2f::SersicMixValues>,
+        gauss2d::Object
+    >(m, "SersicMixValues")
+        .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
+        .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
+        .def("__repr__", &g2f::SersicMixValues::str)
+    ;
+
+    // TODO: bind this function
+    // std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
 }

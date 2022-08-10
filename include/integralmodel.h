@@ -13,7 +13,7 @@ namespace fit
 {
 
 /*
-    An IntegralModel described the total integrated surface density of a
+    An IntegralModel describes the total integrated surface density of a
     2D distribution. It is intended to defined a Component but can
     be used otherwise.
 

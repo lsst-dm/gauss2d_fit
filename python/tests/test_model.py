@@ -27,8 +27,8 @@ def psfmodels(data):
     return tuple(
         g2f.PsfModel([
             g2f.GaussianComponent(
+                g2f.GaussianParametricEllipse(1., 1., 0.),
                 None,
-                g2f.EllipseParameters(1., 1., 0.),
                 g2f.LinearIntegralModel(
                     {g2f.Channel.NONE: g2f.IntegralParameterD(1.)}
                 ),
@@ -57,8 +57,8 @@ def sources(channels):
                 }) if (c == 0) else last
             )
             components[c] = g2f.GaussianComponent(
+                g2f.GaussianParametricEllipse(1., 1., 0.),
                 None,
-                g2f.EllipseParameters(1., 1., 0.),
                 last,
             )
         sources[i] = g2f.Source(components)

@@ -8,16 +8,22 @@ namespace gauss2d
 {
 namespace fit
 {
+template<typename t>
+t & _get_parameters(
+    t & params, ParamFilter * filter,
+    CentroidXParameter & x, CentroidYParameter & y
+) {
+    insert_param(x, params, filter);
+    insert_param(y, params, filter);
+    return params;     
+}
 
 ParamRefs & CentroidParameters::get_parameters(ParamRefs & params, ParamFilter * filter) const {
-    insert_param(this->get_x_param(), params, filter);
-    insert_param(this->get_y_param(), params, filter);
-    return params;
+    return _get_parameters<ParamRefs>(params, filter, this->get_x_param(), this->get_y_param());
 }
+
 ParamCRefs & CentroidParameters::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const {
-    insert_param_const(this->get_x_param(), params, filter);
-    insert_param_const(this->get_y_param(), params, filter);
-    return params;
+    return _get_parameters<ParamCRefs>(params, filter, this->get_x_param(), this->get_y_param());
 }
 
 double CentroidParameters::get_x() const { return _x->get_value(); }

@@ -26,9 +26,23 @@ public:
 
 static const UnitNone unit_none {};
 
+struct SizeParameter {
+    virtual double get_size() const = 0;
+    virtual void set_size(double size) = 0;
+
+    virtual ~SizeParameter() {};
+};
+
+struct SizeXParameter : public SizeParameter {
+    virtual ~SizeXParameter() {};
+};
+
+struct SizeYParameter : public SizeParameter {
+    virtual ~SizeYParameter() {};
+};
+
 template<typename T>
 using Param = parameters::Parameter<double, T>;
-
 
 struct CentroidXParameter : public Param<CentroidXParameter> {
     static inline const std::string _desc = "Centroid (x)";
@@ -76,6 +90,26 @@ struct RadiusScaleParameter : public Param<RadiusScaleParameter> {
     using Param<RadiusScaleParameter>::Parameter;
 };
 
+struct ReffXParameter : public Param<ReffXParameter>, SizeXParameter {
+    double get_size() const override { return this->get_value(); }
+    void set_size(double size) override { this->set_value(size); }
+
+    static inline constexpr double _min = 0.;
+    static inline const std::string _desc = "Sersic effective radius (x)";
+    static inline const std::string _name = "reff_x";
+    using Param<ReffXParameter>::Parameter;
+};
+
+struct ReffYParameter : public Param<ReffYParameter>, SizeYParameter  {
+    double get_size() const override { return this->get_value(); }
+    void set_size(double size) override { this->set_value(size); }
+
+    static inline constexpr double _min = 0.;
+    static inline const std::string _desc = "Sersic effective radius (y)";
+    static inline const std::string _name = "reff_y";
+    using Param<ReffYParameter>::Parameter;
+};
+
 struct RhoParameter : public Param<RhoParameter> {
     static inline constexpr double _min = -1.;
     static inline constexpr double _default = 0.;
@@ -93,14 +127,20 @@ struct SersicIndexParameter : public Param<SersicIndexParameter> {
     using Param<SersicIndexParameter>::Parameter;
 };
 
-struct SigmaXParameter : public Param<SigmaXParameter> {
+struct SigmaXParameter : public Param<SigmaXParameter>, SizeXParameter {
+    double get_size() const override { return this->get_value(); }
+    void set_size(double size) override { this->set_value(size); }
+
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Gaussian sigma (x)";
     static inline const std::string _name = "sigma_x";
     using Param<SigmaXParameter>::Parameter;
 };
 
-struct SigmaYParameter : public Param<SigmaYParameter> {
+struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
+    double get_size() const override { return this->get_value(); }
+    void set_size(double size) override { this->set_value(size); }
+
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Gaussian sigma (y)";
     static inline const std::string _name = "sigma_y";

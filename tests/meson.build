@@ -2,12 +2,16 @@ test_names = [
     'centroidparameters',
     'channel',
     'data',
-    'ellipseparameters',
     'fractionalintegralmodel',
     'gaussiancomponent',
+    'gaussianparametricellipse',
+    'linearintegralmodel',
+    'linearsersicmixinterpolator',
     'model',
     'observation',
     'psfmodel',
+    'sersicmix',
+    'sersicmixcomponent',
     'source',
 ]
 foreach test_name : test_names

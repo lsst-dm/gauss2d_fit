@@ -1,6 +1,7 @@
 #include "linearintegralmodel.h"
 
 #include "channel.h"
+#include "param_filter.h"
 #include "parameters.h"
 #include "util.h"
 
@@ -41,11 +42,11 @@ typename LinearIntegralModel::Data::const_iterator LinearIntegralModel::cend() c
 }
 
 ParamRefs & LinearIntegralModel::get_parameters(ParamRefs & params, ParamFilter * filter) const {
-    for(auto & p: _data) params.push_back(*p.second);
+    for(auto & p: _data) insert_param(*p.second, params, filter);
     return params;
 }
 ParamCRefs & LinearIntegralModel::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const {
-    for(const auto & p: _data) params.push_back(*p.second);
+    for(const auto & p: _data) insert_param(*p.second, params, filter);
     return params;
 }
 
