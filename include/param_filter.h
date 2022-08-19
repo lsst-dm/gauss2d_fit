@@ -1,6 +1,10 @@
 #ifndef GAUSS2D_FIT_PARAM_FILTER_H
 #define GAUSS2D_FIT_PARAM_FILTER_H
 
+#include <cstddef>
+#include <optional>
+
+#include "channel.h"
 #include "param_defs.h"
 
 namespace g2f = gauss2d::fit;
@@ -16,6 +20,7 @@ struct ParamFilter
     bool free = true;
     bool linear = true;
     bool nonlinear = true;
+    std::optional<std::reference_wrapper<const Channel>> channel = std::nullopt;
 };
 
 template <typename t>

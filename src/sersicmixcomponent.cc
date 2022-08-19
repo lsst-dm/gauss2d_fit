@@ -161,6 +161,67 @@ void SersicMixComponentIndexParameter::set_value_transformed(double value) {
     _set_ratios(get_value());
 }
 
+// This is the gauss2d convention; see evaluator.h
+static const std::array<size_t, 6> IDX_ORDER = {0, 1, 5, 2, 3, 4};
+
+void SersicMixComponent::add_extra_param_map(const Channel & channel, extra_param_map & map, ParameterMap & offsets
+    ) const
+{
+    throw std::runtime_error("not implemented yet");
+    map.push_back({0, 0});
+}
+
+void SersicMixComponent::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
+{
+    throw std::runtime_error("not implemented yet");
+    factors.push_back({0, 0});
+}
+
+void SersicMixComponent::add_grad_param_map(const Channel & channel, grad_param_map & map, ParameterMap & offsets
+    ) const
+{
+    throw std::runtime_error("not implemented yet");
+    map.push_back({0, 0, 0, 0, 0, 0});
+    ParamCRefs params;
+    this->get_parameters_const(params);
+
+    auto & values = map.back();
+
+    size_t size_map = offsets.size();
+    size_t index_param;
+    for(const size_t & order_param : IDX_ORDER) {
+        const auto & param = params.at(order_param).get();
+        if(!param.get_fixed()) {
+            if(offsets.find(param) == offsets.end()) {
+                index_param = ++size_map;
+                offsets[param] = index_param;
+            } else {
+                index_param = offsets[param];
+            }
+            values[order_param] = index_param;
+        }
+    }
+}
+
+void SersicMixComponent::add_grad_param_factors(const Channel & channel, grad_param_factors & factors) const
+{
+    throw std::runtime_error("not implemented yet");
+    factors.push_back({1, 1, 1, 1, 1, 1});
+    ParamCRefs params;
+    this->get_parameters_const(params);
+
+    auto & values = factors.back();
+
+    for(const size_t & idx : IDX_ORDER) {
+        const auto & param = params.at(idx).get();
+        if(param.get_fixed()) {
+            values[idx] = 0;
+        } else {
+            values[idx] *= param.get_transform_derivative();
+        }
+    }
+}
+
 std::unique_ptr<const gauss2d::Gaussians> SersicMixComponent::get_gaussians(const Channel & channel) const {
     return std::make_unique<const gauss2d::Gaussians>(_gaussians.at(channel));
 }

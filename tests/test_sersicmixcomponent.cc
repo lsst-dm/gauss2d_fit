@@ -58,7 +58,6 @@ TEST_CASE("SersicMixComponent")
         CHECK(sigma < sigma_old);
         CHECK(ell.get_sigma_y() == sigma);
         CHECK(ell.get_rho() == 0);
-        std::cerr << "int, sig " << integral << "," << sigma << std::endl;
         sigma_old = sigma;
     }
     CHECK(integral == total);
