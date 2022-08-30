@@ -41,25 +41,12 @@ typename LinearIntegralModel::Data::const_iterator LinearIntegralModel::cend() c
     return _data.cend();
 }
 
-template<typename t>
-void insert_param_channel(
-    const std::pair<const std::reference_wrapper<const gauss2d::fit::Channel>,
-        std::shared_ptr<gauss2d::fit::IntegralParameter>> & in,
-    t & params,
-    ParamFilter * filter
-)
-{
-    if((filter == nullptr) || (filter->channel == std::nullopt) || (filter->channel == in.first)) {
-        insert_param(*in.second, params, filter);
-    }
-}
-
 ParamRefs & LinearIntegralModel::get_parameters(ParamRefs & params, ParamFilter * filter) const {
-    for(const auto & p: _data) insert_param_channel(p, params, filter);
+    for(const auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
     return params;
 }
 ParamCRefs & LinearIntegralModel::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const {
-    for(const auto & p: _data) insert_param_channel(p, params, filter);
+    for(const auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
     return params;
 }
 

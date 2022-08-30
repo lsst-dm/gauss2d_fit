@@ -25,8 +25,8 @@ TEST_CASE("SersicMixComponentIndexParameter")
 
 TEST_CASE("SersicMixComponent")
 {
-    auto param = std::make_shared<g2f::SersicMixComponentIndexParameter>(1.0);
-    CHECK(param->order == 4);
+    auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(1.0);
+    CHECK(sersic_n->order == 4);
     
     const auto & C = g2f::Channel::NONE();
     
@@ -41,12 +41,12 @@ TEST_CASE("SersicMixComponent")
         std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y),
         std::make_shared<g2f::CentroidParameters>(),
         std::make_shared<g2f::LinearIntegralModel>(&data),
-        param
+        sersic_n
     );
     CHECK(comp->str().size() > 0);
 
     const auto gaussians = comp->get_gaussians(C);
-    CHECK(gaussians->size() == param->order);
+    CHECK(gaussians->size() == sersic_n->order);
     
     double integral = 0;
     double sigma_old = 1e31;
@@ -62,10 +62,10 @@ TEST_CASE("SersicMixComponent")
     }
     CHECK(integral == total);
 
-    param->set_value(0.5);
+    sersic_n->set_value(0.5);
     const auto gauss = comp->get_gaussians(C);
     CHECK(gauss->at(0).get_integral_value() == total);
-    for(size_t i = 1; i < param->order; ++i) CHECK(gauss->at(i).get_integral_value() == 0);
+    for(size_t i = 1; i < sersic_n->order; ++i) CHECK(gauss->at(i).get_integral_value() == 0);
 
     // 3 ellipse, 2 centroid, one integral, one Sersic index 
     const size_t n_params = 7;

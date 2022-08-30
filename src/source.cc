@@ -7,10 +7,13 @@ namespace gauss2d
 {
 namespace fit
 {
-void Source::add_extra_param_map(const Channel & channel, extra_param_map & map, ParameterMap & offsets
-    ) const
+void Source::add_extra_param_map(
+    const Channel & channel, extra_param_map & map_extra,
+    const grad_param_map & map_grad, ParameterMap & offsets
+) const
 {
-    for(auto & component : _components) component->add_extra_param_map(channel, map, offsets);
+    for(auto & component : _components) component->add_extra_param_map(
+        channel, map_extra, map_grad, offsets);
 }
 
 void Source::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
@@ -32,6 +35,7 @@ void Source::add_grad_param_factors(const Channel & channel, grad_param_factors 
 std::unique_ptr<const gauss2d::Gaussians> Source::get_gaussians(const Channel & channel) const 
 {
     std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
+    // TODO: This isn't sufficient; need to implement get_n_components
     in.reserve(_components.size());
     for(auto & component : _components) {
         in.push_back(component->get_gaussians(channel)->get_data());

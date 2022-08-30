@@ -35,7 +35,7 @@ private:
     Components _components = {};
 
 public:
-    void add_extra_param_map(const Channel & channel, extra_param_map & map, ParameterMap & offsets
+    void add_extra_param_map(const Channel & channel, extra_param_map & map_extra, const grad_param_map & map_grad, ParameterMap & offsets
         ) const override;
     void add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const override;
     void add_grad_param_map(const Channel & channel, grad_param_map & map, ParameterMap & offsets

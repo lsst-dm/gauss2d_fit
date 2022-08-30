@@ -108,34 +108,6 @@ public:
     ~FractionalIntegralModel();
 };
 
-/*
-    FractionalGaussianIntegral functions as a GaussianIntegral, returning the FractionalIntegralModel
-    integral for a single channel. set_value is currently disabled until
-    FractionalIntegralModel::set_integral is defined.
-*/
-class FractionalGaussianIntegral : public GaussianIntegral, public Parametric
-{
-private:
-    const std::shared_ptr<Channel> _channel;
-    std::shared_ptr<FractionalIntegralModel> _model;
-
-public:
-    ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
-    ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
-
-    double get_value() const override;
-    void set_value(double value) override;
-
-    std::string str() const override;
-
-    FractionalGaussianIntegral(
-        const std::shared_ptr<Channel> _channel,
-        std::shared_ptr<FractionalIntegralModel> param_frac
-    );
-    ~FractionalGaussianIntegral() {};
-};
-
-
 } // namespace fit
 } // namespace gauss2d
 

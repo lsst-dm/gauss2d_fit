@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -11,6 +12,31 @@ namespace gauss2d
 namespace fit
 {
 
+// following numpy.isclose
+template <typename T>
+struct IsCloseResult
+{
+    const bool isclose;
+    const double diff_abs;
+    const T margin;
+
+    std::string str() const {
+        std::stringstream ss;
+        ss.precision(5);
+        ss << "isclose=" << isclose << " from diff=" << diff_abs << " <= margin=" << margin;
+        return ss.str();
+    }
+};
+
+template <typename T>
+IsCloseResult<T> isclose(T a, T b, T rtol=1e-5, T atol=1e-8)
+{
+    const T diff_abs = std::abs(a - b);
+    const T margin = atol + rtol*std::abs(b);
+    return IsCloseResult<T>{diff_abs <= margin, diff_abs, margin};
+}
+
+// The rest of these functions are mainly intended to make printing container members easier
 template<template <typename...> class Map, class Key, class Value>
 std::set<Key>
 map_keys(const Map<Key, Value> & map)

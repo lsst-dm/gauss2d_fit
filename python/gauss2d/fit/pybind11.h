@@ -39,6 +39,7 @@ void bind_gaussianmodelintegral(py::module &m);
 void bind_gaussianparametricellipse(py::module &m);
 void bind_integralmodel(py::module &m);
 void bind_linearintegralmodel(py::module &m);
+void bind_linearsersicmixinterpolator(py::module &m);
 void bind_model(py::module &m);
 void bind_observation(py::module &m);
 void bind_param_filter(py::module &m);

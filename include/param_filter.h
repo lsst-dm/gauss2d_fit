@@ -41,6 +41,19 @@ inline void insert_param(g2f::ParamBase & param, t & params, ParamFilter * filte
 }
 
 template <typename t>
+void insert_param_channel(
+    const gauss2d::fit::Channel & channel,
+    g2f::ParamBase & param,
+    t & params,
+    ParamFilter * filter
+)
+{
+    if((filter == nullptr) || (filter->channel == std::nullopt) || (filter->channel == channel)) {
+        insert_param(param, params, filter);
+    }
+}
+
+template <typename t>
 inline void insert_params_ref(const t & params_in, t & params_out, ParamFilter * filter = nullptr)
 {
     if(filter != nullptr) for(auto & p : params_in) insert_param<t>(p.get(), params_out, filter);

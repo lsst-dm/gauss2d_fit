@@ -47,6 +47,7 @@ PYBIND11_MODULE(_gauss2d_fit, m)
     bind_gaussianmodelintegral(m);
     bind_gaussianparametricellipse(m);
     bind_linearintegralmodel(m);
+    bind_linearsersicmixinterpolator(m);
     bind_model(m);
     bind_observation(m);
     bind_param_filter(m);

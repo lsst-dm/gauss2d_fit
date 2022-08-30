@@ -18,42 +18,6 @@ namespace gauss2d
 namespace fit
 {
 
-ParamRefs & FractionalGaussianIntegral::get_parameters(ParamRefs & params, ParamFilter * filter) const
-{
-    return _model.get()->get_parameters(params, filter);
-}
-
-ParamCRefs & FractionalGaussianIntegral::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const
-{
-    return _model.get()->get_parameters_const(params, filter);
-}
-
-double FractionalGaussianIntegral::get_value() const {
-    return _model->get_integral(*_channel);
-}
-
-void FractionalGaussianIntegral::set_value(double value) {
-    throw std::runtime_error("FractionalGaussianIntegral can't set_value");
-}
-
-std::string FractionalGaussianIntegral::str() const {
-    return "FractionalGaussianIntegral(channel=" + _channel->str() + ", model="
-        + _model->str() + ")";
-}
-
-FractionalGaussianIntegral::FractionalGaussianIntegral(
-    const std::shared_ptr<Channel> channel,
-    std::shared_ptr<FractionalIntegralModel> model
-) : _channel(std::move(channel)), _model(std::move(model)) {
-    if(_channel == nullptr) throw std::invalid_argument("FractionalGaussianIntegral channel can't be null");
-    if(_model == nullptr) throw std::invalid_argument("FractionalGaussianIntegral model can't be null");
-    auto channels = _model.get()->get_channels();
-    if(channels.find(*channel) == channels.end()) throw std::invalid_argument(
-        "FractionalGaussianIntegral channel=" + channel->str() + " not in model.get_channels()="
-        + str_iter_refw(channels)
-    );
-}
-
 std::shared_ptr<ProperFractionParameter> FractionalIntegralModel::at(const Channel & channel) {
     return _data.at(channel);
 }
@@ -108,13 +72,13 @@ double FractionalIntegralModel::get_integral_remainder(const Channel & channel) 
 
 ParamRefs & FractionalIntegralModel::get_parameters(ParamRefs & params, ParamFilter * filter) const {
     _model->get_parameters(params, filter);
-    for(auto & p: _data) params.push_back(*p.second);
+    for(auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
     return params;
 }
 
 ParamCRefs & FractionalIntegralModel::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const {
     _model->get_parameters_const(params, filter);
-    for(const auto & p: _data) params.push_back(*p.second);
+    for(const auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
     return params;
 }
 

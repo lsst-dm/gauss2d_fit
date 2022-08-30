@@ -10,10 +10,13 @@ namespace gauss2d
 {
 namespace fit
 {
-void PsfModel::add_extra_param_map(const Channel & channel, extra_param_map & map, ParameterMap & offsets
-    ) const
+void PsfModel::add_extra_param_map(
+    const Channel & channel, extra_param_map & map_extra,
+    const grad_param_map & map_grad, ParameterMap & offsets
+) const
 {
-    for(auto & component : _components) component->add_extra_param_map(channel, map, offsets);
+    for(auto & component : _components) component->add_extra_param_map(
+        channel, map_extra, map_grad, offsets);
 }
 
 void PsfModel::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const

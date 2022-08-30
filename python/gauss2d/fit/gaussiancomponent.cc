@@ -48,7 +48,8 @@ void bind_gaussiancomponent(py::module &m)
             std::shared_ptr<g2f::CentroidParameters>,
             std::shared_ptr<g2f::IntegralModel>>(),
             "ellipse"_a=nullptr, "centroid"_a=nullptr, "integral"_a=nullptr)
-        .def("parameters", &g2f::GaussianComponent::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
+        .def("parameters", &g2f::GaussianComponent::get_parameters, "parameters"_a=g2f::ParamRefs(),
+            "paramfilter"_a=nullptr)
         .def("gaussians", [](const g2f::GaussianComponent &g, const g2f::Channel & c)
             { return std::shared_ptr<const gauss2d::Gaussians>(g.get_gaussians(c)); })
         .def("__repr__", &g2f::GaussianComponent::str)

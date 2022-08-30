@@ -39,18 +39,26 @@ using namespace pybind11::literals;
 namespace g2f = gauss2d::fit;
 namespace g2p = gauss2d::python;
 
-typedef g2f::Model<double, g2p::PyImage<double>, g2p::PyImage<size_t>, g2p::PyImage<bool>> Model;
+typedef g2p::PyImage<double> Image;
+typedef g2f::Model<double, Image, g2p::PyImage<size_t>, g2p::PyImage<bool>> Model;
 
 void bind_model(py::module &m)
 {
-   auto _o = py::class_<Model, std::shared_ptr<Model>, g2f::ParametricModel
-    >(m, "Model")
+    auto model = py::class_<Model, std::shared_ptr<Model>, g2f::ParametricModel>(m, "Model");
+    auto _e = py::enum_<Model::EvaluatorMode>(model, "EvaluatorMode")
+        .value("image", Model::EvaluatorMode::image)
+        .value("loglike", Model::EvaluatorMode::loglike)
+        .value("loglike_image", Model::EvaluatorMode::loglike_image)
+        .value("loglike_grad", Model::EvaluatorMode::loglike_grad)
+        .value("jacobian", Model::EvaluatorMode::jacobian)
+        .export_values();
+    model
         .def(py::init<
             std::shared_ptr<const Model::ModelData>,
             Model::PsfModels &,
             Model::Sources &
         >(), "data"_a, "psfmodels"_a, "sources"_a)
-        .def("evaluate", &Model::evaluate)
+        .def("evaluate", py::overload_cast<>(&Model::evaluate))
         .def_property_readonly("data", &Model::get_data)
         .def("gaussians", [](const Model & m, const g2f::Channel & c)
             { return std::shared_ptr<const gauss2d::Gaussians>(m.get_gaussians(c)); })
@@ -58,7 +66,12 @@ void bind_model(py::module &m)
         .def("parameters", &Model::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
         .def_property_readonly("psfmodels", &Model::get_psfmodels)
         .def_property_readonly("sources", &Model::get_sources)
-        .def("setup_evaluators", &Model::setup_evaluators, "save_gradients"_a=false, "print"_a=false)
+        .def("setup_evaluators", &Model::setup_evaluators, "evaluatormode"_a=Model::EvaluatorMode::image,
+            "outputs"_a=std::vector<std::vector<std::shared_ptr<Image>>>{},
+            "residuals"_a=std::vector<std::shared_ptr<Image>>{},
+            "print"_a=false)
+        .def("verify_jacobian", &Model::verify_jacobian, "findiff_frac"_a=1e-4,
+            "findiff_add"_a=1e-4, "rtol"_a=1e-3, "atol"_a=1e-3)
         .def("__repr__", &Model::str)
     ;
 }
