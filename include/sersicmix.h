@@ -12,6 +12,8 @@ namespace gauss2d
 namespace fit
 {
 
+static const short SERSICMIX_ORDER_DEFAULT = 4;
+
 class IntegralSize : public Object {
 public:
     const double integral;
@@ -24,6 +26,7 @@ public:
 class SersicMixInterpolator : public Object {
 public:
     virtual std::vector<IntegralSize> get_integralsizes(double sersicindex) const = 0;
+    virtual std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const = 0;
     virtual unsigned short get_order() const = 0;
 
     virtual ~SersicMixInterpolator() {};
@@ -38,8 +41,11 @@ public:
     SersicMixValues(double sersicindex_, std::vector<IntegralSize> values_);
 };
 
-inline bool operator < ( const SersicMixValues &lhs, const SersicMixValues &rhs) { return lhs.sersicindex < rhs.sersicindex; }
+inline bool operator < ( const SersicMixValues &lhs, const SersicMixValues &rhs) {
+    return lhs.sersicindex < rhs.sersicindex;
+}
 inline bool operator < ( const SersicMixValues &lhs, double x) { return lhs.sersicindex < x; }
+inline bool operator < ( double x, const SersicMixValues &rhs) { return x < rhs.sersicindex; }
 
 std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
 

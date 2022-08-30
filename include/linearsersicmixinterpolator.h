@@ -16,6 +16,7 @@ public:
     const std::vector<SersicMixValues> & knots;
 
     std::vector<IntegralSize> get_integralsizes(double sersicindex) const override;
+    std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const override;
     unsigned short get_order() const override;
 
     const double sersicindex_min;
@@ -23,7 +24,7 @@ public:
 
     std::string str() const override;
 
-    LinearSersicMixInterpolator(unsigned short order);
+    LinearSersicMixInterpolator(unsigned short order=SERSICMIX_ORDER_DEFAULT);
     ~LinearSersicMixInterpolator();
 };
 

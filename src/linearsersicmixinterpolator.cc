@@ -50,14 +50,47 @@ std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes(double 
     return result;
 }
 
+std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes_derivs(double sersicindex) const {
+    if(!((sersicindex >= sersicindex_min) && (sersicindex <= sersicindex_max))) {
+        throw std::invalid_argument(
+            "sersicindex=" + std::to_string(sersicindex) + " !(>=" + std::to_string(sersicindex_min)
+                + "&& <=" + std::to_string(sersicindex_max)
+        );
+    }
+    
+    auto found = sersicindex == sersicindex_min ? ++knots.begin() : (
+        (sersicindex == sersicindex_max) ? --knots.end() :
+        std::upper_bound(knots.begin(), knots.end(), sersicindex)
+    );
+    auto high = *found;
+    auto low = *(--found);
+
+    double dn_inv = 1./(high.sersicindex - low.sersicindex);
+
+    std::vector<IntegralSize> result;
+    result.reserve(_order);
+    for(size_t i = 0; i < _order; ++i) {
+        result.push_back({
+            (high.values[i].integral - low.values[i].integral)*dn_inv,
+            (high.values[i].sigma - low.values[i].sigma)*dn_inv
+        });
+    }
+
+    return result;
+}
+
 unsigned short LinearSersicMixInterpolator::get_order() const { return _order; }
 
 std::string LinearSersicMixInterpolator::str() const {
     return "LinearSersicMixInterpolator(order=" + std::to_string(_order) + ")";
 }
 
-LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order) : _order(order), knots(get_sersic_mix_knots(order)),
-    sersicindex_min(knots[0].sersicindex), sersicindex_max(knots.back().sersicindex)
+LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order)
+  : _order(order),
+    knots(get_sersic_mix_knots(order)),
+    sersicindex_min(knots[0].sersicindex),
+    sersicindex_max(knots.back().sersicindex
+)
 {}
 
 LinearSersicMixInterpolator::~LinearSersicMixInterpolator() {};
