@@ -1,11 +1,13 @@
 #ifndef GAUSS2D_FIT_UTIL_H
 #define GAUSS2D_FIT_UTIL_H
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace gauss2d
 {
@@ -77,6 +79,23 @@ map_values_ref_const(
     std::set<std::reference_wrapper<const Value>> result;
     for(const auto& it : map) result.insert(it.second);
     return result;
+}
+
+// Builds a new vector with only unique elements, preserving order
+// Note: std::unique only removes consecutive identical elements
+// Also, this returns a new vector, potentially copying elements
+template <typename T>
+std::vector<T> nonconsecutive_unique(const std::vector<T> & vec)
+{
+    std::set<T> set {};
+    std::vector<T> rval {};
+    rval.reserve(vec.size());
+    for(const auto & elem: vec)
+    {
+        auto result = set.insert(elem);
+        if(result.second) rval.push_back(elem);
+    }
+    return rval;
 }
 
 template <typename T>
