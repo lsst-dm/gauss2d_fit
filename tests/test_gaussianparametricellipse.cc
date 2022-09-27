@@ -2,12 +2,12 @@
 
 #include "doctest.h"
 
-#include "ellipseparameters.h"
+#include "gaussianparametricellipse.h"
 //#include "parameters.h"
 
 namespace g2f = gauss2d::fit;
 
-TEST_CASE("EllipseParameters")
+TEST_CASE("GaussianParametricEllipse")
 {
     const double SIZE = 5.;
 
@@ -17,4 +17,6 @@ TEST_CASE("EllipseParameters")
     CHECK(sig_x->get_value() == SIZE);
     CHECK(sig_y->get_value() == SIZE);
     CHECK(rho->get_value() == 0.5);
+
+    auto ellipse = std::make_shared<gauss2d::fit::GaussianParametricEllipse>(sig_x, sig_y, rho);
 }

@@ -1,38 +1,31 @@
 #ifndef GAUSS2D_FIT_GAUSSIANCOMPONENT_H
 #define GAUSS2D_FIT_GAUSSIANCOMPONENT_H
 
-#include "component.h"
+#include "channel.h"
 #include "ellipticalcomponent.h"
+#include "gaussianparametricellipse.h"
 #include "integralmodel.h"
 #include "param_defs.h"
 #include "param_filter.h"
+#include <memory>
 
 namespace gauss2d
 {
 namespace fit
 {
-
-class GaussianModelIntegral : public GaussianIntegral
-{
-private:
-    const Channel & _channel;
-    const std::shared_ptr<const IntegralModel> _integralmodel;
-
+// TODO: Revisit the necessity of this class
+class GaussianParametricEllipseHolder {
 public:
-    double get_value() const;
-    void set_value(double value);
+    std::shared_ptr<GaussianParametricEllipse> _ellipsedata;
 
-    std::string str() const override;
-
-    GaussianModelIntegral(
-        const Channel & channel, const std::shared_ptr<const IntegralModel> integralmodel
-    );
-    ~GaussianModelIntegral();
+    GaussianParametricEllipseHolder(std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr) : _ellipsedata(std::move(ellipse)) {
+        if(_ellipsedata == nullptr) _ellipsedata = std::make_shared<GaussianParametricEllipse>();
+    }
 };
 
-class GaussianComponent : public EllipticalComponent {
+class GaussianComponent : private GaussianParametricEllipseHolder, public EllipticalComponent {
 public:
-    std::unique_ptr<gauss2d::Gaussians> get_gaussians(const Channel & channel) const;
+    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel & channel) const override;
 
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
@@ -40,8 +33,8 @@ public:
     std::string str() const override;
     
     GaussianComponent(
+        std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr,
         std::shared_ptr<CentroidParameters> centroid = nullptr,
-        std::shared_ptr<EllipseParameters> ellipse = nullptr,
         std::shared_ptr<IntegralModel> integralmodel = nullptr
     );
 };

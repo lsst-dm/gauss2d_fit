@@ -10,7 +10,7 @@ namespace gauss2d
 {
 namespace fit
 {
-std::unique_ptr<gauss2d::Gaussians> PsfModel::get_gaussians(const Channel & channel) const 
+std::unique_ptr<const gauss2d::Gaussians> PsfModel::get_gaussians(const Channel & channel) const 
 {
     std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
     in.reserve(_components.size());

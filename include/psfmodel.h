@@ -37,7 +37,7 @@ private:
     Components _components = {};
 
 public:
-    std::unique_ptr<gauss2d::Gaussians> get_gaussians(const Channel & channel = Channel::NONE()) const;
+    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel & channel = Channel::NONE()) const;
 
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;

@@ -14,7 +14,7 @@ namespace fit
 class ParametricModel : public Parametric
 {
 public:
-    virtual std::unique_ptr<gauss2d::Gaussians> get_gaussians(const Channel & channel) const = 0;
+    virtual std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel & channel) const = 0;
 };
 
 } // namespace fit

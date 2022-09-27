@@ -32,10 +32,11 @@ void bind_centroidparameters(py::module &m);
 void bind_channel(py::module &m);
 void bind_component(py::module &m);
 void bind_data(py::module &m);
-void bind_ellipseparameters(py::module &m);
 void bind_ellipticalcomponent(py::module &m);
 void bind_fractionalintegralmodel(py::module &m);
 void bind_gaussiancomponent(py::module &m);
+void bind_gaussianmodelintegral(py::module &m);
+void bind_gaussianparametricellipse(py::module &m);
 void bind_integralmodel(py::module &m);
 void bind_linearintegralmodel(py::module &m);
 void bind_model(py::module &m);
@@ -43,8 +44,12 @@ void bind_observation(py::module &m);
 void bind_param_filter(py::module &m);
 void bind_parameters(py::module &m);
 void bind_parametric(py::module &m);
+void bind_parametricellipse(py::module &m);
 void bind_parametricmodel(py::module &m);
 void bind_psfmodel(py::module &m);
+void bind_sersicmix(py::module &m);
+void bind_sersicmixcomponent(py::module &m);
+void bind_sersicparametricellipse(py::module &m);
 void bind_source(py::module &m);
 
 #endif

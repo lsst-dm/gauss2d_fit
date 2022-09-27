@@ -11,6 +11,7 @@ namespace g2f = gauss2d::fit;
 TEST_CASE("GaussianComponent") {
     const auto & C = g2f::Channel::NONE();
     auto comp = std::make_shared<g2f::GaussianComponent>();
+    CHECK(comp->str().size() > 0);
 
     g2f::ParamCRefs params{};
     // 2 centroid, 3 ellipse, 1 integral
