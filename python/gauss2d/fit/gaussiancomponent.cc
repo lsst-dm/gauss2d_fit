@@ -52,6 +52,8 @@ void bind_gaussiancomponent(py::module &m)
             "paramfilter"_a=nullptr)
         .def("gaussians", [](const g2f::GaussianComponent &g, const g2f::Channel & c)
             { return std::shared_ptr<const gauss2d::Gaussians>(g.get_gaussians(c)); })
+        .def_static("make_uniq_default_gaussians", &g2f::GaussianComponent::make_uniq_default_gaussians,
+            "sizes"_a, "fixed"_a)
         .def("__repr__", &g2f::GaussianComponent::str)
     ;
 }

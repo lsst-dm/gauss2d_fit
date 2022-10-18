@@ -26,4 +26,7 @@ TEST_CASE("GaussianComponent") {
     CHECK(g0.get_integral_const() == g1.get_integral_const());
 
     CHECK(gaussians->at_const(0) == g1);
+
+    auto gaussians_default = g2f::GaussianComponent::make_uniq_default_gaussians({1., 3.});
+    CHECK(gaussians_default.size() == 2);
 }
