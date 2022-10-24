@@ -117,6 +117,11 @@ public:
         }
         return get_value();
     }
+    std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>> get_integral_derivative_factors(
+        const Channel & channel) const override {
+            // TODO: Refactor this?
+        return {};
+    }
 
     double get_integralratio() const  { return _sersicindex->get_integralratio(_index); }
 
@@ -302,27 +307,9 @@ void SersicMixComponent::add_extra_param_map(
 
 void SersicMixComponent::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
 {
-    if(_sersicindex->get_free())
+    for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
     {
-        const auto & integralmodel = this->get_integralmodel();
-        double dx = _sersicindex->get_transform_derivative();
-        const double dintegral = dx*integralmodel.get_integral(channel);
-        const double dreff_x = dx*_ellipse->get_size_x_param().get_size();
-        const double dreff_y = dx*_ellipse->get_size_y_param().get_size();
-        for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
-        {
-            const double dsizeratio = _sersicindex->get_sizeratio_deriv(idx_g);
-            factors.push_back({
-                dintegral*_sersicindex->get_integralratio_deriv(idx_g),
-                dreff_x*dsizeratio,
-                dreff_y*dsizeratio
-            });
-        }
-    } else {
-        for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
-        {
-            factors.push_back({0, 0, 0});
-        }
+        factors.push_back({0, 0, 0});
     }
 }
 
@@ -381,38 +368,11 @@ void SersicMixComponent::add_grad_param_factors(const Channel & channel, grad_pa
                 + std::to_string(params.size()) + "!=N_PARAMS=" + std::to_string(N_PARAMS)
         );
     }
-    std::array<double, N_PARAMS_GAUSS2D> values{1., 1., 1., 1., 1., 1.};
-
-    for(size_t idx_param = 0; idx_param < N_PARAMS_GAUSS2D; ++idx_param) {
-        const size_t & order_param = IDX_ORDER[idx_param];
-        // The parameters must be in the same order as returned by get_parameters(_const)
-        const auto & param = params.at(idx_param).get();
-        if(param.get_fixed()) {
-            values[order_param] = 0;
-        } else {
-            const auto deriv = param.get_transform_derivative();
-            if(deriv == 0) throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "="
-                + param.str() + " get_transform_derivative=0 (will result in divide by 0)");
-            values[order_param] /= deriv;
-        }
-    }
-
-    double value_int_old = values[2];
-    double value_reffx_old = values[3];
-    double value_reffy_old = values[4];
-
-    const auto & subcomps = _gaussians.at(channel);
+    
     for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
     {
-        const auto & subcomp = subcomps[idx_g];
-        values[2] *= subcomp->get_integralmodel().get_integralratio();
-        const double sizeratio = subcomp->get_ellipse().get_sizeratio();
-        values[3] *= sizeratio;
-        values[4] *= sizeratio;
+        std::array<double, N_PARAMS_GAUSS2D> values{1., 1., 1., 1., 1., 1.};
         factors.push_back(values);
-        values[2] = value_int_old;
-        values[3] = value_reffx_old;
-        values[4] = value_reffy_old;
     }
 }
 
@@ -427,6 +387,10 @@ std::unique_ptr<const gauss2d::Gaussians> SersicMixComponent::get_gaussians(cons
     return std::make_unique<gauss2d::Gaussians>(in);
 }
 
+size_t SersicMixComponent::get_n_gaussians(const Channel & channel) const {
+    return _gaussians.at(channel).size();
+};
+
 ParamRefs & SersicMixComponent::get_parameters(ParamRefs & params, ParamFilter * filter) const {
     EllipticalComponent::get_parameters(params, filter);
     insert_param(*_sersicindex, params, filter);
@@ -437,6 +401,74 @@ ParamCRefs & SersicMixComponent::get_parameters_const(ParamCRefs & params, Param
     EllipticalComponent::get_parameters_const(params, filter);
     insert_param(*_sersicindex, params, filter);
     return params;
+}
+
+void SersicMixComponent::set_extra_param_factors(
+    const Channel & channel, extra_param_factors & factors, size_t index
+) const {
+    if(_sersicindex->get_free())
+    {
+        const auto & integralmodel = this->get_integralmodel();
+        double dx = _sersicindex->get_transform_derivative();
+        const double dintegral = dx*integralmodel.get_integral(channel);
+        const double dreff_x = dx*_ellipse->get_size_x_param().get_size();
+        const double dreff_y = dx*_ellipse->get_size_y_param().get_size();
+        for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
+        {
+            const double dsizeratio = _sersicindex->get_sizeratio_deriv(idx_g);
+            auto & values = factors.at(index + idx_g);
+            values[0] = dintegral*_sersicindex->get_integralratio_deriv(idx_g);
+            values[1] = dreff_x*dsizeratio;
+            values[2] = dreff_y*dsizeratio;
+        }
+    } else {
+        for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
+        {
+            auto & values = factors[index + idx_g];
+            values[0] = 0;
+            values[1] = 0;
+            values[2] = 0;
+        }
+    }
+}
+
+void SersicMixComponent::set_grad_param_factors(
+    const Channel & channel, grad_param_factors & factors, size_t index
+) const {
+    ParamCRefs params;
+    ParamFilter filter{};
+    filter.channel = channel;
+    this->get_parameters_const(params, &filter);
+
+    std::array<double, N_PARAMS_GAUSS2D> values_base{1., 1., 1., 1., 1., 1.};
+
+    for(size_t idx_param = 0; idx_param < N_PARAMS_GAUSS2D; ++idx_param) {
+        const size_t & order_param = IDX_ORDER[idx_param];
+        // The parameters must be in the same order as returned by get_parameters(_const)
+        const auto & param = params.at(idx_param).get();
+        if(param.get_fixed()) {
+            values_base[order_param] = 0;
+        } else {
+            const auto deriv = param.get_transform_derivative();
+            if(deriv == 0) throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "="
+                + param.str() + " get_transform_derivative=0 (will result in divide by 0)");
+            values_base[order_param] /= deriv;
+        }
+    }
+
+    const auto & subcomps = _gaussians.at(channel);
+    for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
+    {
+        const auto & subcomp = subcomps[idx_g];
+        auto & values = factors[index + idx_g];
+        values[0] = values_base[0];
+        values[1] = values_base[1];
+        values[2] = values_base[2]*subcomp->get_integralmodel().get_integralratio();
+        const double sizeratio = subcomp->get_ellipse().get_sizeratio();
+        values[3] = values_base[3]*sizeratio;
+        values[4] = values_base[4]*sizeratio;
+        values[5] = values_base[5];
+    }
 }
 
 std::string SersicMixComponent::str() const {

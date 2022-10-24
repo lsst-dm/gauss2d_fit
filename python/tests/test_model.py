@@ -43,18 +43,21 @@ def sources(channels):
     last = None
     n_sources, n_components = 2, 2
     sources = [None]*n_sources
+    n_src_max = n_sources - 1
     for i in range(n_sources):
         components = [None]*n_components
         for c in range(n_components):
+            is_last = i == n_src_max
             last = g2f.FractionalIntegralModel(
                 {
-                    channel: g2f.ProperFractionParameterD(0.5 + 0.5*(c > 0))
+                    channel: g2f.ProperFractionParameterD((is_last == 1) or (0.5 + 0.5*(c > 0)), fixed=is_last)
                     for channel in channels
                 },
                 g2f.LinearIntegralModel({
                     channel: g2f.IntegralParameterD(0.5 + 0.5*(i + 1))
                     for channel in channels
-                }) if (c == 0) else last
+                }) if (c == 0) else last,
+                is_last,
             )
             components[c] = g2f.GaussianComponent(
                 g2f.GaussianParametricEllipse(1., 1., 0.),

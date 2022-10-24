@@ -45,6 +45,7 @@ TEST_CASE("SersicMixComponent")
     );
     CHECK(comp->str().size() > 0);
 
+    CHECK(comp->get_n_gaussians(C) == sersic_n->order);
     const auto gaussians = comp->get_gaussians(C);
     CHECK(gaussians->size() == sersic_n->order);
     

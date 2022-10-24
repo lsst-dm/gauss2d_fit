@@ -45,6 +45,12 @@ std::unique_ptr<const gauss2d::Gaussians> PsfModel::get_gaussians(const Channel 
     return std::make_unique<gauss2d::Gaussians>(in);
 }
 
+size_t PsfModel::get_n_gaussians(const Channel & channel) const {
+    size_t n_g = 0;
+    for(auto & component : _components) n_g += component->get_n_gaussians(channel);
+    return n_g;
+}
+
 ParamRefs & PsfModel::get_parameters(ParamRefs & params, ParamFilter * filter) const
 {
     for(auto & component : _components) component->get_parameters(params, filter);
@@ -55,6 +61,17 @@ ParamCRefs & PsfModel::get_parameters_const(ParamCRefs & params, ParamFilter * f
     for(auto & component : _components) component->get_parameters_const(params, filter);
     return params;
 }
+
+void PsfModel::set_extra_param_factors(const Channel & channel, extra_param_factors & factors, size_t index) const
+{
+    for(auto & component : _components) component->set_extra_param_factors(channel, factors, index);
+}
+
+void PsfModel::set_grad_param_factors(const Channel & channel, grad_param_factors & factors, size_t index) const
+{
+    for(auto & component : _components) component->set_grad_param_factors(channel, factors, index);
+}
+
 
 std::string PsfModel::str() const {
     std::string str = "PsfModel(components=[";

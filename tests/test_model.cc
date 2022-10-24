@@ -86,17 +86,19 @@ TEST_CASE("Model") {
         for(const auto & param : params_integralmodel) param.get().set_fixed(true);
         std::shared_ptr<g2f::IntegralModel> last = model_total;
 
-        size_t idx_comp = 0;
         double integral = 0;
-        for(const auto & sizefrac : {std::pair{0., 1./(i + 2.)}, {2., 1.}})
+        std::vector<std::pair<double, double>> sizefracs = {{0., 1./(i + 2.)}, {2., 1.}};
+        const size_t idx_sizefrac_last = sizefracs.size() - 1;
+        for(size_t idx_comp = 0; idx_comp <= idx_sizefrac_last; ++idx_comp)
         {
+            const auto & sizefrac = sizefracs[idx_comp];
             auto frac = std::make_shared<g2f::ProperFractionParameter>(sizefrac.second);
             CHECK(frac->get_value() == sizefrac.second);
             // Would set this condition if we wanted the other fractions free
             // if(sizefrac.second == 1)
             frac->set_fixed(true);
             g2f::FractionalIntegralModel::Data data {{g2f::Channel::NONE(), frac}};
-            auto model_frac = g2f::FractionalIntegralModel::make(data, last);
+            auto model_frac = g2f::FractionalIntegralModel::make(data, last, idx_comp == idx_sizefrac_last);
 
             double integral_comp = model_frac->get_integral(g2f::Channel::NONE());
             if(idx_comp == 0) {
@@ -119,7 +121,6 @@ TEST_CASE("Model") {
             for(const auto & param : params_comp) param.get().set_fixed(true);
             comps.emplace_back(std::move(comp));
             last = model_frac;
-            idx_comp++;
         }
         CHECK(std::abs(integral - 1) < 1e-12);
 
@@ -201,6 +202,7 @@ TEST_CASE("Model") {
 
     const auto & channel = *channels[0];
 
+    CHECK(model->get_n_gaussians(channel) == 10);
     auto gaussians = model->get_gaussians(channel);
     const size_t n_gauss_src = gaussians->size();
     // 2 comps x 1 (gauss) + 2 comps x 4 (sersic)
@@ -224,12 +226,14 @@ TEST_CASE("Model") {
     factors_extra->reserve(n_gauss);
     factors_grad->reserve(n_gauss);
 
-    g2f::ParamCRefs params_src_free;
+    g2f::ParamCRefs params_src_free_const;
+    g2f::ParamRefs params_src_free;
     g2f::ParamFilter filter{false, true, true, true, channel};
     g2f::ParameterMap offsets{};
 
     for(const auto & source : model->get_sources()) {
-        source->get_parameters_const(params_src_free, &filter);
+        source->get_parameters_const(params_src_free_const, &filter);
+        source->get_parameters(params_src_free, &filter);
         for(size_t i_psf = 0; i_psf < n_gauss_psf; ++i_psf)
         {
             source->add_grad_param_map(channel, *map_grad, offsets);
@@ -251,7 +255,7 @@ TEST_CASE("Model") {
     CHECK(factors_extra->size() == n_gauss);
     CHECK(factors_grad->size() == n_gauss);
 
-    for(size_t i = 0; i < 1; ++i)
+    for(size_t i = 0; i < 2; ++i)
     {
         for(unsigned short do_jacobian=false; do_jacobian <= true; do_jacobian++)
         {            
@@ -286,5 +290,7 @@ TEST_CASE("Model") {
                 CHECK(outputs[0]->get_value(0, 0) != outputs[2]->get_value(0, 0));
             }
         }
+        for(auto & param : params_src_free) param.get().set_value_transformed(
+            param.get().get_value_transformed() + 0.01);
     }
 }

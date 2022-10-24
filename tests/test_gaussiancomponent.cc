@@ -17,6 +17,7 @@ TEST_CASE("GaussianComponent") {
     // 2 centroid, 3 ellipse, 1 integral
     CHECK(comp->get_parameters_const(params).size() == 6);
 
+    CHECK(comp->get_n_gaussians(C) == 1);
     auto gaussians = comp->get_gaussians(C);
     CHECK(gaussians->size() == 1);
     const auto & g0 = gaussians->at(0);
