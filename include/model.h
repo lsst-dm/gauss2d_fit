@@ -166,6 +166,7 @@ private:
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;
         if(has_outputs) {
+            // TODO: Enable for image and loglike_image
             if(mode != EvaluatorMode::jacobian) {
                 throw std::invalid_argument("outputs not implemented for non-jacobian modes");
             }

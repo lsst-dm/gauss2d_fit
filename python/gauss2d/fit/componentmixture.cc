@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "gauss2d/fit/component.h"
+#include "gauss2d/fit/componentmixture.h"
 #include "gauss2d/fit/parametricmodel.h"
 #include "pybind11.h"
 
@@ -35,8 +35,8 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_component(py::module &m)
+void bind_componentmixture(py::module &m)
 {
-    auto _c = py::class_<g2f::Component, std::shared_ptr<g2f::Component>, g2f::ParametricModel>(
-        m, "Component");
+    auto _c = py::class_<
+        g2f::ComponentMixture, std::shared_ptr<g2f::ComponentMixture>, g2f::ParametricModel>(m, "ComponentMixture");
 }

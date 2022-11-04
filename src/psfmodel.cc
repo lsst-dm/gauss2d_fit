@@ -35,6 +35,10 @@ void PsfModel::add_grad_param_factors(const Channel & channel, grad_param_factor
     for(auto & component : _components) component->add_grad_param_factors(channel, factors);
 }
 
+Components PsfModel::get_components() const {
+    return _components;
+}
+
 std::unique_ptr<const gauss2d::Gaussians> PsfModel::get_gaussians(const Channel & channel) const 
 {
     std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
@@ -72,13 +76,11 @@ void PsfModel::set_grad_param_factors(const Channel & channel, grad_param_factor
     for(auto & component : _components) component->set_grad_param_factors(channel, factors, index);
 }
 
-
 std::string PsfModel::str() const {
     std::string str = "PsfModel(components=[";
     for(const auto & s : _components) str += s->str() + ",";
     return str + "])";
 }
-
 
 PsfModel::PsfModel(Components & components) {
     size_t i = 0;

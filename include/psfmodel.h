@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "component.h"
+#include "componentmixture.h"
 #include "param_filter.h"
-#include "parametricmodel.h"
 
 namespace gauss2d
 {
@@ -26,13 +26,8 @@ namespace fit
     Observations, so not allowing non-NONE Channels is a compromise to reflect
     this fact.
 */
-class PsfModel : public ParametricModel
+class PsfModel : public ComponentMixture
 {
-public:
-    // Would like this to be unique_ptr but can't due to various pybind issues
-    // e.g. https://github.com/pybind/pybind11/issues/1132
-    // and https://github.com/pybind/pybind11/issues/1161
-    typedef std::vector<std::shared_ptr<Component>> Components;
 private:
     Components _components = {};
 
@@ -45,6 +40,7 @@ public:
         ) const override;
     void add_grad_param_factors(const Channel & channel, grad_param_factors & factor) const override;
     
+    Components get_components() const override;
     std::unique_ptr<const gauss2d::Gaussians> get_gaussians(
         const Channel & channel = Channel::NONE()) const override;
     size_t get_n_gaussians(const Channel & channel = Channel::NONE()) const override;

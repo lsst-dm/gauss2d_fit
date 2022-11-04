@@ -21,6 +21,7 @@ TEST_CASE("Source") {
     auto source = std::make_shared<g2f::Source>(comps);
 
     g2f::ParamCRefs params{};
+    CHECK(source->get_components().size() == 2);
     // 2 comps x (2 centroid, 3 ellipse, 1 integral)
     CHECK(source->get_parameters_const(params).size() == 12);
 

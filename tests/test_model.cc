@@ -78,7 +78,7 @@ TEST_CASE("Model") {
 
     Model::PsfModels psfmodels{};
     for(size_t i = 0; i < observations.size(); ++i) {
-        g2f::PsfModel::Components comps;
+        g2f::Components comps;
         auto integrals = make_integrals(CHANNELS_NONE, 1.0, true);
         auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
         g2f::ParamRefs params_integralmodel;
