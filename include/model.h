@@ -698,7 +698,10 @@ public:
         double rtol=1e-3,
         double atol=1e-3
     ) {
-        if(_mode != EvaluatorMode::jacobian) this->setup_evaluators(EvaluatorMode::jacobian);
+        if(_mode != EvaluatorMode::jacobian) {
+            this->setup_evaluators(EvaluatorMode::jacobian);
+            this->evaluate();
+        }
 
         const size_t n_exp = _size;
         ParamFilter filter{false, true};
