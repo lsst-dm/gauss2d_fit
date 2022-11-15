@@ -71,14 +71,12 @@ FractionalIntegralModel::get_integral_derivative_factors(const Channel & channel
     const auto & frac = *(this->_data.at(channel));
     /*
         For a model with no parent:
-        weight_comp = weight_total*frac
-        dweight_comp/dweight_total = frac
-
         gauss2d will compute dmodel/dweight_comp
-        Fitters will want dmodel/d_frac
+        Fitters will want dmodel/dfrac
 
         frac = weight_comp/weight_total
         dfrac/dweight_comp = 1/weight_total
+        dweight_comp = dfrac*weight_total
 
         dmodel/d_frac = weight_total*dmodel/dweight_comp
 
@@ -90,7 +88,7 @@ FractionalIntegralModel::get_integral_derivative_factors(const Channel & channel
         childN: weight_comp_childN = weight_total*(1 - frac_parent)...*(1-frac_childNminus1)
 
         dmodel/dfrac_parent = weight_total*(1 - frac_parent)*dmodel/dweight_comp
-                            = weight_remainder_parent*dmodel/dweight_comp
+                            = -weight_total*dmodel/dweight_comp
 
         i.e. there are N fraction parameters dependent on dmodel/dweight_comp for children.
         (excluding the fixed fraction for an is_final child)
@@ -99,9 +97,12 @@ FractionalIntegralModel::get_integral_derivative_factors(const Channel & channel
         return {{frac, {_model->get_integral(channel), 0., 0.}}};
     }
     auto factors = _parent->get_integral_derivative_factors(channel);
-    const double frac_parent = _parent->get_parameter_frac(channel).get_value();
-    for(auto & factor : factors) factor.second[0] *= frac_parent;
-    if(!is_final()) factors.push_back({frac, {_parent->get_integral_remainder(channel), 0.,}});
+    if(is_final()) {
+        factors.back().second[0] *= -1.;
+    } else {
+        // TODO: Check this if/when it's ever enabled
+        factors.push_back({frac, {factors.back().second[0], 0., 0.}});
+    }
     return factors;
 }
 
@@ -115,13 +116,23 @@ ProperFractionParameter & FractionalIntegralModel::get_parameter_frac(const Chan
 
 ParamRefs & FractionalIntegralModel::get_parameters(ParamRefs & params, ParamFilter * filter) const {
     _model->get_parameters(params, filter);
-    for(auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
+    const size_t n_p_max = _data.size() - this->is_final();
+    size_t i = 0;
+    for(auto & p: _data) {
+        if(i++ == n_p_max) break;
+        insert_param_channel(p.first, *p.second, params, filter);
+    }
     return params;
 }
 
 ParamCRefs & FractionalIntegralModel::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const {
     _model->get_parameters_const(params, filter);
-    for(const auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
+    const size_t n_p_max = _data.size() - this->is_final();
+    size_t i = 0;
+    for(const auto & p: _data) {
+        if(i++ == n_p_max) break;
+        insert_param_channel(p.first, *p.second, params, filter);
+    }
     return params;
 }
 

@@ -176,7 +176,7 @@ private:
         const bool is_mode_jacobian = mode == EvaluatorMode::jacobian;
         const bool do_output = is_mode_image || (mode == EvaluatorMode::loglike_image);
 
-        const auto coordsys = observation.get_image().get_coordsys_ptr_const();
+        std::shared_ptr<const CoordinateSystem> coordsys = observation.get_image().get_coordsys_ptr_const();
         std::shared_ptr<Image> output = !do_output ? nullptr : 
             std::make_shared<Image>(n_r, n_c, coordsys);
 
@@ -225,144 +225,24 @@ private:
         std::shared_ptr<const Image> factors_extra_in, factors_grad_in;
 
         if(is_mode_jacobian) {
-            auto factors_extra_weak = _factors_extra_in[idx_obs];
-            auto factors_grad_weak = _factors_grad_in[idx_obs];
-            auto map_extra_weak = _map_extra_in[idx_obs];
-            auto map_grad_weak = _map_grad_in[idx_obs];
+            std::weak_ptr<Image> factors_extra_weak = _factors_extra_in[idx_obs];
+            std::weak_ptr<Image> factors_grad_weak = _factors_grad_in[idx_obs];
+            std::weak_ptr<Indices> map_extra_weak = _map_extra_in[idx_obs];
+            std::weak_ptr<Indices> map_grad_weak = _map_grad_in[idx_obs];
 
-            unsigned int n_expired = map_extra_weak.expired() + map_grad_weak.expired() + 
-                factors_grad_weak.expired() + factors_extra_weak.expired();
-            const bool expired = n_expired == 4;
-            if(!((n_expired == 0) || expired)) {
-                throw std::logic_error("jacobian n_expired=" + std::to_string(n_expired) + " not in (0,4)");
-            }
-            auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, coordsys)
-                : map_extra_weak.lock();
-            auto map_grad_mut = expired ? std::make_shared<Indices>(
-                n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys) : map_grad_weak.lock();
-            auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, coordsys)
-                : factors_extra_weak.lock();
-            auto factors_grad_mut = expired ? std::make_shared<Image>(
-                n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys) : factors_grad_weak.lock();;
-
-            extra_param_map map_extra = {};
-            grad_param_map map_grad = {};
-            extra_param_factors & factors_extra = _factors_extra;
-            grad_param_factors & factors_grad = _factors_grad;
-            factors_extra.resize(0);
-            factors_grad.resize(0);
-
-            map_extra.reserve(n_gaussians_conv);
-            map_grad.reserve(n_gaussians_conv);
-            factors_extra.reserve(n_gaussians_conv);
-            factors_grad.reserve(n_gaussians_conv);
-
-            ParameterMap offsets {};
-            /*
-                Make (and set) the param map; only make the factors (re-evaluated each time) 
-                The maps depend on the order of free parameters.
-                the factors depend on their values, and can change every evaluation.
-            */
-            for(size_t i_psf = 0; i_psf < n_gaussians_psf; ++i_psf)
-            {
-                for(const auto & src : this->get_sources())
-                {
-                    src->add_grad_param_map(channel, map_grad, offsets);
-                    src->add_extra_param_map(channel, map_extra, map_grad, offsets);
-
-                    src->add_grad_param_factors(channel, factors_grad);
-                    src->add_extra_param_factors(channel, factors_extra);
-                }
-            }
-            if(map_grad.size() != n_gaussians_conv) {
-                throw std::logic_error(
-                    "map_grad.size()=" + std::to_string(map_grad.size()) + "!= n_gaussians_conv="
-                    + std::to_string(n_gaussians_conv)
+            if(print) {
+                this->_make_param_maps<true>(
+                    factors_extra_weak, factors_grad_weak, map_extra_weak, map_grad_weak,
+                    n_gaussians_conv, n_gaussians_psf, channel, coordsys, idx_obs,
+                    map_extra_in, map_grad_in, factors_extra_in, factors_grad_in
+                );
+            } else {
+                this->_make_param_maps<false>(
+                    factors_extra_weak, factors_grad_weak, map_extra_weak, map_grad_weak,
+                    n_gaussians_conv, n_gaussians_psf, channel, coordsys, idx_obs,
+                    map_extra_in, map_grad_in, factors_extra_in, factors_grad_in
                 );
             }
-            /*
-                Validate the map if there is already another Jacobian evaluator.
-
-                Do not support multiple evaluators set up with different maps (yet).
-            */
-            if(!expired) {
-                std::string sizes_mut = std::to_string(map_extra_mut->size()) + ","
-                    + std::to_string(map_grad_mut->size()) + ","
-                    + std::to_string(factors_extra_mut->size()) + ","
-                    + std::to_string(factors_grad_mut->size());
-
-                std::string sizes = std::to_string(map_extra.size()) + ","
-                    + std::to_string(map_grad.size()) + ","
-                    + std::to_string(factors_extra.size()) + ","
-                    + std::to_string(factors_grad.size());
-                
-                if(sizes != sizes_mut) throw std::runtime_error(
-                    "make_evaluator Jacobian map_extra,map_grad,factors_extra,factors_grad sizes_new="
-                    + sizes + "!=sizes_mut=" + sizes_mut + "; did you make a new evaluator with different"
-                    "free parameters from an old one?");
-                
-                std::array<std::string, 4> errmsgs = {"", "", "", ""};
-                size_t idx_err = 0;
-                for(size_t idx_row = 0; idx_row < map_extra.size(); idx_row++) {
-                    const auto & row = map_extra[idx_row];
-                    for(size_t col=0; col < gauss2d::N_EXTRA_MAP; col++) {
-                        const auto value_mut = map_extra_mut->get_value_unchecked(idx_row, col);
-                        if((idx_err < 2) && (row[col] != value_mut)) errmsgs[idx_err++] = 
-                            "map_extra[" + std::to_string(idx_row) + "][" + std::to_string(col)
-                            + "]=" + std::to_string(row[col]) + " != old="
-                            + std::to_string(value_mut) + "\n";
-                    }
-                }
-                for(size_t idx_row = 0; idx_row < map_grad.size(); idx_row++) {
-                    const auto & row = map_grad[idx_row];
-                    for(size_t col=0; col < gauss2d::N_EXTRA_MAP; col++) {
-                        const auto value_mut = map_grad_mut->get_value_unchecked(idx_row, col);
-                        if((idx_err < 4) && (row[col] != value_mut)) errmsgs[idx_err++] = 
-                            "map_grad[" + std::to_string(idx_row) + "][" + std::to_string(col)
-                            + "]=" + std::to_string(row[col]) + " != old="
-                            + std::to_string(value_mut) + "\n";
-                    }
-                }
-                std::string errmsg_extra = errmsgs[0] + errmsgs[1];
-                std::string errmsg_grad = errmsgs[0] + errmsgs[1];
-                if((errmsg_extra != "") || (errmsg_grad != "")) {
-                    std::string errmsg = "make_evaluator Jacobian map_extra/map_grad have different values"
-                        " from old; did you make a new evaluator with different free parameters from an "
-                        " old one? Errors:\n" + errmsg_extra;
-                    if((errmsg_extra != "") && (errmsg_grad != "")) errmsg += "...\n";
-                    errmsg += errmsg_grad;
-                    throw std::runtime_error(errmsg);
-                }                
-            } else {
-                /*
-                    Maps are stored as vectors in gauss2dfit (to avoid unnecessary templating)
-                    The inputs to gauss2d's Evaluator are templated Images, so copy the values
-                */
-                for(size_t row = 0; row < n_gaussians_conv; ++row)
-                {
-                    for(size_t col = 0; col < gauss2d::N_EXTRA_MAP; ++col) {
-                        map_extra_mut->set_value_unchecked(row, col, (map_extra)[row][col]);
-                        // std::cerr << map_extra_mut->get_value_unchecked(row, col) << ",";
-                    }
-                    // std::cerr << std::endl;
-                    for(size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
-                        factors_extra_mut->set_value_unchecked(row, col, (factors_extra)[row][col]);
-                    }
-                    for(size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
-                        map_grad_mut->set_value_unchecked(row, col, (map_grad)[row][col]);
-                        factors_grad_mut->set_value_unchecked(row, col, (factors_grad)[row][col]);
-                        // std::cerr << map_grad_mut->get_value_unchecked(row, col) << ",";
-                    }
-                    // std::cerr << std::endl;
-                }
-            }
-            _factors_extra_in[idx_obs] = factors_extra_mut;
-            _factors_grad_in[idx_obs] = factors_grad_mut;
-
-            map_extra_in = std::move(map_extra_mut);
-            map_grad_in = std::move(map_grad_mut); 
-            factors_extra_in = std::move(factors_extra_mut);
-            factors_grad_in = std::move(factors_grad_mut);
         }
         
         std::shared_ptr<ImageArray<double, Image>> grads;
@@ -438,6 +318,179 @@ private:
         };
     }
 
+    template <bool print>
+    void _make_param_maps(
+        std::weak_ptr<Image> factors_extra_weak,
+        std::weak_ptr<Image> factors_grad_weak,
+        std::weak_ptr<Indices> map_extra_weak,
+        std::weak_ptr<Indices> map_grad_weak,
+        size_t n_gaussians_conv,
+        size_t n_gaussians_psf,
+        const Channel & channel,
+        std::shared_ptr<const CoordinateSystem> coordsys,
+        size_t idx_obs,
+        std::shared_ptr<const Indices> & map_extra_in,
+        std::shared_ptr<const Indices> & map_grad_in,
+        std::shared_ptr<const Image> & factors_extra_in,
+        std::shared_ptr<const Image> & factors_grad_in
+    ) {
+        unsigned int n_expired = map_extra_weak.expired() + map_grad_weak.expired() + 
+        factors_grad_weak.expired() + factors_extra_weak.expired();
+        const bool expired = n_expired == 4;
+        if(!((n_expired == 0) || expired)) {
+            throw std::logic_error("jacobian n_expired=" + std::to_string(n_expired) + " not in (0,4)");
+        }
+        auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, coordsys)
+            : map_extra_weak.lock();
+        auto map_grad_mut = expired ? std::make_shared<Indices>(
+            n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys) : map_grad_weak.lock();
+        auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, coordsys)
+            : factors_extra_weak.lock();
+        auto factors_grad_mut = expired ? std::make_shared<Image>(
+            n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys) : factors_grad_weak.lock();;
+
+        extra_param_map map_extra = {};
+        grad_param_map map_grad = {};
+        extra_param_factors & factors_extra = _factors_extra;
+        grad_param_factors & factors_grad = _factors_grad;
+        factors_extra.resize(0);
+        factors_grad.resize(0);
+
+        map_extra.reserve(n_gaussians_conv);
+        map_grad.reserve(n_gaussians_conv);
+        factors_extra.reserve(n_gaussians_conv);
+        factors_grad.reserve(n_gaussians_conv);
+
+        ParameterMap offsets {};
+        /*
+            Make (and set) the param map; only make the factors (re-evaluated each time) 
+            The maps depend on the order of free parameters.
+            the factors depend on their values, and can change every evaluation.
+        */
+        for(size_t i_psf = 0; i_psf < n_gaussians_psf; ++i_psf)
+        {
+            for(const auto & src : this->get_sources())
+            {
+                src->add_grad_param_map(channel, map_grad, offsets);
+                src->add_extra_param_map(channel, map_extra, map_grad, offsets);
+
+                src->add_grad_param_factors(channel, factors_grad);
+                src->add_extra_param_factors(channel, factors_extra);
+            }
+        }
+        if(map_grad.size() != n_gaussians_conv) {
+            throw std::logic_error(
+                "map_grad.size()=" + std::to_string(map_grad.size()) + "!= n_gaussians_conv="
+                + std::to_string(n_gaussians_conv)
+            );
+        }
+        /*
+            Validate the map if there is already another Jacobian evaluator.
+
+            Do not support multiple evaluators set up with different maps (yet).
+        */
+        if(!expired) {
+            std::string sizes_mut = std::to_string(map_extra_mut->size()) + ","
+                + std::to_string(map_grad_mut->size()) + ","
+                + std::to_string(factors_extra_mut->size()) + ","
+                + std::to_string(factors_grad_mut->size());
+
+            std::string sizes = std::to_string(map_extra.size()) + ","
+                + std::to_string(map_grad.size()) + ","
+                + std::to_string(factors_extra.size()) + ","
+                + std::to_string(factors_grad.size());
+            
+            if(sizes != sizes_mut) throw std::runtime_error(
+                "make_evaluator Jacobian map_extra,map_grad,factors_extra,factors_grad sizes_new="
+                + sizes + "!=sizes_mut=" + sizes_mut + "; did you make a new evaluator with different"
+                "free parameters from an old one?");
+            
+            std::array<std::string, 4> errmsgs = {"", "", "", ""};
+
+            size_t idx_err = 0;
+            if constexpr (print) std::cout << "map_extra=[" << std::endl;
+            for(size_t idx_row = 0; idx_row < map_extra.size(); idx_row++) {
+                const auto & row = map_extra[idx_row];
+                for(size_t col=0; col < gauss2d::N_EXTRA_MAP; col++) {
+                    const auto value_mut = map_extra_mut->get_value_unchecked(idx_row, col);
+                    if((idx_err < 2) && (row[col] != value_mut)) errmsgs[idx_err++] = 
+                        "map_extra[" + std::to_string(idx_row) + "][" + std::to_string(col)
+                        + "]=" + std::to_string(row[col]) + " != old="
+                        + std::to_string(value_mut) + "\n";
+                }
+                if constexpr (print) {
+                    std::cout << "    ";
+                    stream_iter_ref(row, std::cout);
+                    std::cout << std::endl;
+                }
+            }
+            if constexpr (print) std::cout << "]" << std::endl << "map_grad=[" << std::endl;
+            for(size_t idx_row = 0; idx_row < map_grad.size(); idx_row++) {
+                const auto & row = map_grad[idx_row];
+                for(size_t col=0; col < gauss2d::N_EXTRA_MAP; col++) {
+                    const auto value_mut = map_grad_mut->get_value_unchecked(idx_row, col);
+                    if((idx_err < 4) && (row[col] != value_mut)) errmsgs[idx_err++] = 
+                        "map_grad[" + std::to_string(idx_row) + "][" + std::to_string(col)
+                        + "]=" + std::to_string(row[col]) + " != old="
+                        + std::to_string(value_mut) + "\n";
+                }
+                if constexpr (print) {
+                    std::cout << "    ";
+                    stream_iter_ref(row, std::cout);
+                    std::cout << std::endl;
+                }
+            }
+            if constexpr (print) std::cout << "]" << std::endl;
+            std::string errmsg_extra = errmsgs[0] + errmsgs[1];
+            std::string errmsg_grad = errmsgs[0] + errmsgs[1];
+            if((errmsg_extra != "") || (errmsg_grad != "")) {
+                std::string errmsg = "make_evaluator Jacobian map_extra/map_grad have different values"
+                    " from old; did you make a new evaluator with different free parameters from an "
+                    " old one? Errors:\n" + errmsg_extra;
+                if((errmsg_extra != "") && (errmsg_grad != "")) errmsg += "...\n";
+                errmsg += errmsg_grad;
+                throw std::runtime_error(errmsg);
+            }
+        } else {
+            /*
+                Maps are stored as vectors in gauss2dfit (to avoid unnecessary templating)
+                The inputs to gauss2d's Evaluator are templated Images, so copy the values
+            */
+            if constexpr (print) std::cout << "factors/maps: {" << std::endl;
+            for(size_t row = 0; row < n_gaussians_conv; ++row)
+            {
+                for(size_t col = 0; col < gauss2d::N_EXTRA_MAP; ++col) {
+                    map_extra_mut->set_value_unchecked(row, col, (map_extra)[row][col]);
+                }
+                for(size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
+                    factors_extra_mut->set_value_unchecked(row, col, (factors_extra)[row][col]);
+                }
+                for(size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
+                    map_grad_mut->set_value_unchecked(row, col, (map_grad)[row][col]);
+                    factors_grad_mut->set_value_unchecked(row, col, (factors_grad)[row][col]);
+                }
+                if constexpr (print) {
+                    std::cout << "    row[" << row << "]: map_extra=[";
+                    stream_iter_ref(map_extra[row], std::cout);
+                    std::cout << ", factors_extra=";
+                    stream_iter_ref(factors_extra[row], std::cout);
+                    std::cout << ", map_grad=";
+                    stream_iter_ref(map_grad[row], std::cout);
+                    std::cout << ", factors_grad=";
+                    stream_iter_ref(factors_grad[row], std::cout);
+                    std::cout << std::endl;
+                }
+            }
+            if constexpr (print) std::cout << "}" << std::endl;
+        }
+        _factors_extra_in[idx_obs] = factors_extra_mut;
+        _factors_grad_in[idx_obs] = factors_grad_mut;
+
+        map_extra_in = std::move(map_extra_mut);
+        map_grad_in = std::move(map_grad_mut); 
+        factors_extra_in = std::move(factors_extra_mut);
+        factors_grad_in = std::move(factors_grad_mut);
+    }
 
 public:
     void add_extra_param_map(
@@ -711,17 +764,30 @@ public:
 
                 auto result_diff = _make_evaluator(idx, EvaluatorMode::image);
 
-                param.set_value_transformed(value_new);
-                // If the param is near an upper limit, this might fail: try -diff then
-                if(param.get_value_transformed() != value_new) {
+                try {
+                    param.set_value_transformed(value_new);
+                    // If the param is near an upper limit, this might fail: try -diff then
+                    if(param.get_value_transformed() != value_new) {
+                        diff = -diff;
+                        value_new = value + diff;
+                        param.set_value_transformed(value_new);
+                    }
+                } catch(const std::runtime_error & err) {
                     diff = -diff;
                     value_new = value + diff;
                     param.set_value_transformed(value_new);
+                    if(param.get_value_transformed() != value_new) {
+                        throw std::runtime_error("Couldn't set param=" + param.str()
+                            + " to new value_transformed=" + std::to_string(value) + " +/- " 
+                            + std::to_string(diff) + "; are limits too restrictive?"
+                        );
+                    }
                 }
 
                 result_diff.first->loglike_pixel();
 
                 size_t n_failed = 0;
+                std::vector<double> ratios = {};
                 for(unsigned int i = 0; i < n_cols; ++i)
                 {
                     for(unsigned int j = 0; j < n_rows; ++j)
@@ -731,7 +797,10 @@ public:
                         double jac = grad.get_value(j, i);
 
                         auto close = isclose(jac, delta, rtol, atol);
-                        n_failed += !close.isclose;
+                        if(!close.isclose) {
+                            n_failed++;
+                            ratios.push_back(jac/delta);
+                        }
                     }
                 }
 
@@ -741,9 +810,12 @@ public:
                         + std::to_string(value));
                 }
                 if(n_failed > 0) {
+                    std::sort(ratios.begin(), ratios.end());
+                    double median = ratios[ratios.size()/2];
                     errors.push_back(
                         "Param[" + std::to_string(idx_param) + "]=" + param.str() + " failed for exp["
                         + std::to_string(idx) + "]: n_failed=" + std::to_string(n_failed)
+                        + "; median computed/expected=" + std::to_string(median)
                     );
                 }
             }

@@ -1,3 +1,6 @@
+#include <stdexcept>
+#include "componentmixture.h"
+#include "psfmodel.h"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
@@ -30,10 +33,33 @@ typedef gauss2d::VectorImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 typedef g2f::Data<double, Image, Mask> Data;
 typedef g2f::Model<double, Image, Indices, Mask> Model;
+typedef std::vector<std::shared_ptr<const g2f::Channel>> Channels;
 
 namespace g2f = gauss2d::fit;
 
-const std::vector<std::shared_ptr<const g2f::Channel>> CHANNELS_NONE = {g2f::Channel::NONE_PTR()};
+Channels CHANNELS_NONE = {g2f::Channel::NONE_PTR()};
+
+std::shared_ptr<Data> make_data(
+    Channels channels,
+    const size_t n_x,
+    const size_t n_y,
+    const double sigma_inv_value=1.
+) {
+    std::vector<std::shared_ptr<const Observation>> observations;
+    for(const auto & channel_ptr : channels)
+    {
+        auto err = std::make_unique<Image>(n_y, n_x);
+        *err  += sigma_inv_value;
+        auto observation = std::make_shared<Observation>(
+            std::make_unique<Image>(n_y, n_x),
+            std::move(err),
+            std::make_unique<Mask>(n_y, n_x),
+            *channel_ptr
+        );
+        observations.emplace_back(observation);
+    }
+    return std::make_shared<Data>(observations);
+}
 
 g2f::LinearIntegralModel::Data make_integrals(
     const std::vector<std::shared_ptr<const g2f::Channel>> & channels,
@@ -49,6 +75,62 @@ g2f::LinearIntegralModel::Data make_integrals(
     return integrals;
 }
 
+void verify_model(
+    Model & model,
+    const std::vector<std::shared_ptr<const g2f::Channel>> & channels,
+    g2f::ParamRefs params_free,
+    bool check_outputs_differ=true,
+    bool print=false
+) {
+    const size_t n_channels = channels.size();
+    for(size_t i = 0; i < 2; ++i)
+    {
+        for(unsigned short do_jacobian=false; do_jacobian <= true; do_jacobian++)
+        {            
+            model.setup_evaluators(
+                do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image, {}, {}, print
+            );
+
+            std::vector<double> result = model.evaluate();
+
+            auto outputs = model.get_outputs();
+            if(do_jacobian) {
+                auto errors = model.verify_jacobian();
+                std::string errormsg = "";
+                if(errors.size() != 0) {
+                    std::stringstream ss;
+                    ss << "";
+                    std::copy(
+                        std::begin(errors),
+                        std::end(errors),
+                        std::experimental::make_ostream_joiner(ss, "\n")
+                    );
+                    errormsg = ss.str();
+                }
+                CHECK(errormsg == "");
+            } else {
+                CHECK(outputs.size() == n_channels);
+                CHECK(result[0] == 0);
+                for(size_t idx_channel = 1; idx_channel < n_channels; ++idx_channel) {
+                    CHECK(result[idx_channel] == 0);
+                    bool values_equal = outputs[0]->get_value(0, 0) == outputs[1]->get_value(0, 0);
+                    CHECK(values_equal != check_outputs_differ);
+                }
+            }
+        }
+
+        for(auto & param : params_free) {
+            double value = param.get().get_value_transformed();
+            try {
+                param.get().set_value_transformed(value + 0.01);
+            } catch(const std::runtime_error & err) {
+                param.get().set_value_transformed(value - 0.01);
+            }
+        }
+    }
+
+}
+
 TEST_CASE("Model") {
     const std::vector<std::shared_ptr<const g2f::Channel>> channels = {
         // TODO: Figure out how this works - auto const conversion?
@@ -56,28 +138,14 @@ TEST_CASE("Model") {
         g2f::Channel::make("g"),
         g2f::Channel::make("b")
     };
-    const size_t N_X = 5, N_Y = 5;
-    std::vector<std::shared_ptr<const Observation>> observations;
-    for(const auto & channel_ptr : channels)
-    {
-        auto err = std::make_unique<Image>(N_Y, N_X);
-        *err  += 1;
-        auto observation = std::make_shared<Observation>(
-            std::make_unique<Image>(N_Y, N_X),
-            std::move(err),
-            std::make_unique<Mask>(N_Y, N_X),
-            *channel_ptr
-        );
-        observations.emplace_back(observation);
-    }
-    auto data = std::make_shared<Data>(observations);
-    
+
+    auto data = make_data(channels, 11, 13);
     g2f::ParamCRefs params_data{};
     data->get_parameters_const(params_data);
     CHECK(params_data.size() == 0);
 
     Model::PsfModels psfmodels{};
-    for(size_t i = 0; i < observations.size(); ++i) {
+    for(size_t i = 0; i < data->size(); ++i) {
         g2f::Components comps;
         auto integrals = make_integrals(CHANNELS_NONE, 1.0, true);
         auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
@@ -128,7 +196,8 @@ TEST_CASE("Model") {
 
         g2f::ParamCRefs params_psf{};
         psfmodel->get_parameters_const(params_psf);
-        CHECK(params_psf.size() == 15);
+        // 2 comps x (6 gauss + 1 frac) (last constant unity frac omitted)
+        CHECK(params_psf.size() == 14);
         for(const auto & param : params_psf) CHECK(param.get().get_fixed() == true);
 
         const auto gaussians = psfmodel->get_gaussians();
@@ -191,13 +260,13 @@ TEST_CASE("Model") {
     // + 1 source x (2 comps x 1 sersic_n) = 34
     const size_t n_params_src = 34;
     // PSF: 3 observations x (2 comp x (1 integral, n frac, 2 centroid, 3 ellipse)) = 45
-    // (each comp after first has an extra frac per channel)
-    const size_t n_params_psf = 45;
+    // (each comp after second has an extra frac per channel)
+    const size_t n_params_psf = 42;
     CHECK(params.size() == (n_params_src + n_params_psf));
 
-    // PSF: 3 observations x (1 integral + 2 comp x (1 frac, 2 centroid, 3 ellipse)) = 39
+    // PSF: 3 observations x (1 integral + 1 frac + 2 comp x (2 centroid, 3 ellipse)) = 36
     std::set<g2f::ParamBaseCRef> paramset(params.cbegin(), params.cend());
-    const size_t n_params_psf_uniq = 39;
+    const size_t n_params_psf_uniq = 36;
     CHECK(paramset.size() == n_params_src + n_params_psf_uniq);
 
     const auto & channel = *channels[0];
@@ -255,42 +324,57 @@ TEST_CASE("Model") {
     CHECK(factors_extra->size() == n_gauss);
     CHECK(factors_grad->size() == n_gauss);
 
-    for(size_t i = 0; i < 2; ++i)
+    verify_model(*model, channels, params_src_free);
+}
+
+TEST_CASE("Model PSF") {
+    const Channels channels = CHANNELS_NONE;
+    auto data = make_data(channels, 11, 13);
+    std::vector<std::shared_ptr<g2f::Component>> comps = {};
+    auto integrals = make_integrals(CHANNELS_NONE, 7.0, true);
+    auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
+    std::shared_ptr<g2f::IntegralModel> last = model_total;
+
+    const bool fixed = false;
+    auto cens = std::make_shared<g2f::CentroidParameters>(
+        std::make_shared<g2f::CentroidXParameter>(0, nullptr, nullptr, nullptr, fixed),
+        std::make_shared<g2f::CentroidYParameter>(0, nullptr, nullptr, nullptr, fixed)
+    );
+
+    for(const auto & sizefrac : {std::pair{1.5, 1.0-1e-15}, {2.5, 1.0}})
     {
-        for(unsigned short do_jacobian=false; do_jacobian <= true; do_jacobian++)
-        {            
-            model->setup_evaluators(
-                do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image
-            );
+        const auto is_last = sizefrac.second == 1;
+        auto frac = std::make_shared<g2f::ProperFractionParameter>(sizefrac.second);
+        // Would set this condition if we wanted the other fractions free
+        if(is_last) frac->set_fixed(true);
+        g2f::FractionalIntegralModel::Data data {{g2f::Channel::NONE(), frac}};
+        const double & size = sizefrac.first;
 
-            std::vector<double> result = model->evaluate();
+        last = g2f::FractionalIntegralModel::make(data, last, is_last);
 
-            auto outputs = model->get_outputs();
-            if(do_jacobian) {
-                auto errors = model->verify_jacobian();
-                std::string errormsg = "";
-                if(errors.size() != 0) {
-                    std::stringstream ss;
-                    ss << "";
-                    std::copy(
-                        std::begin(errors),
-                        std::end(errors),
-                        std::experimental::make_ostream_joiner(ss, "\n")
-                    );
-                    errormsg = ss.str();
-                }
-                CHECK(errormsg == "");
-            } else {
-                CHECK(result[0] == 0);
-                CHECK(result[1] == 0);
-                CHECK(result[2] == 0);
-                CHECK(outputs.size() == channels.size());
-                // There are different PSF params per observation
-                CHECK(outputs[0]->get_value(0, 0) != outputs[1]->get_value(0, 0));
-                CHECK(outputs[0]->get_value(0, 0) != outputs[2]->get_value(0, 0));
-            }
-        }
-        for(auto & param : params_src_free) param.get().set_value_transformed(
-            param.get().get_value_transformed() + 0.01);
+        comps.emplace_back(std::make_shared<g2f::GaussianComponent>(
+            std::make_shared<g2f::GaussianParametricEllipse>(
+                std::make_shared<g2f::SigmaXParameter>(size, nullptr, nullptr, nullptr, fixed),
+                std::make_shared<g2f::SigmaYParameter>(size, nullptr, nullptr, nullptr, fixed),
+                std::make_shared<g2f::RhoParameter>(0, nullptr, nullptr, nullptr, fixed)
+            ),
+            cens,
+            last
+        ));
     }
+    g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
+    Model::PsfModels psfmodels({std::make_shared<g2f::PsfModel>(psfcomps)});
+    Model::Sources sources({std::make_shared<g2f::Source>(comps)});
+    auto model = std::make_shared<Model>(data, psfmodels, sources);
+
+    g2f::ParamRefs params_free;
+    g2f::ParamFilter filter{false, true, true, true, g2f::Channel::NONE()};
+    g2f::ParameterMap offsets{};
+
+    model->get_parameters(params_free, &filter);
+    params_free = g2f::nonconsecutive_unique(params_free);
+    // 2 cens + 1 fluxfrac + 2*(2sigmas + rho) = 9
+    CHECK(params_free.size() == 9);
+
+    verify_model(*model, channels, params_free, true, true);
 }

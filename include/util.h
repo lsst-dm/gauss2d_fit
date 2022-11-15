@@ -128,6 +128,14 @@ std::string str_iter_refw(const T & container)
     return str.substr(0, str.size() - 1) + "]";
 }
 
+template <typename T>
+void stream_iter_ref(const T & container, std::ostream & stream)
+{
+    stream << "[";
+    for(const auto & obj: container) stream << obj << ",";
+    stream << "]";
+}
+
 } // namespace fit
 } // namespace gauss2d
 

@@ -83,8 +83,8 @@ def test_model(channels, model):
     gaussians = model.gaussians(channels[0])
     assert len(gaussians) == 4
     params = model.parameters()
-    assert len(params) == 68
-    assert len(set(params)) == 56
+    assert len(params) == 65
+    assert len(set(params)) == 54
 
 
 def test_model_evaluation(model):

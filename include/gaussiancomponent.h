@@ -28,6 +28,9 @@ public:
 };
 
 class GaussianComponent : private GaussianParametricEllipseHolder, public EllipticalComponent {
+private:
+    ParamCRefs _get_parameters_grad(const Channel & channel) const;
+
 public:
     void add_extra_param_map(const Channel & channel, extra_param_map & map_extra,
         const grad_param_map & map_grad, ParameterMap & offsets
