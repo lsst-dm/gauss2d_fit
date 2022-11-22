@@ -62,8 +62,11 @@ private:
 
     struct Shared_enabler;
 
+    bool _is_final;
+
     // not giving a nullptr default data_in because the map needs to match the model's channels
-    FractionalIntegralModel(std::optional<const Data> data, std::shared_ptr<const IntegralModel> model);
+    FractionalIntegralModel(std::optional<const Data> data, std::shared_ptr<const IntegralModel> model,
+        bool is_final);
 
 public:
     std::shared_ptr<ProperFractionParameter> at(const Channel & channel);
@@ -84,18 +87,25 @@ public:
     std::set<std::reference_wrapper<const Channel>> get_channels() const override;
     const IntegralModel & get_parent_model() const;
     double get_integral(const Channel & channel) const override;
+        std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>> get_integral_derivative_factors(
+        const Channel & channel) const override;
     double get_integral_remainder(const Channel & channel) const;
 
+    ProperFractionParameter & get_parameter_frac(const Channel & channel) const;
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
     
+    bool is_final() const;
+
     static std::shared_ptr<FractionalIntegralModel> make(
         std::optional<const Data> data,
-        std::shared_ptr<const IntegralModel> model
+        std::shared_ptr<const IntegralModel> model,
+        bool is_final=false
     );
     static const std::shared_ptr<const FractionalIntegralModel> make_const(
         std::optional<const Data> data,
-        std::shared_ptr<const IntegralModel> model
+        std::shared_ptr<const IntegralModel> model,
+        bool is_final=false
     );
 
     size_t size() const;
@@ -107,34 +117,6 @@ public:
 
     ~FractionalIntegralModel();
 };
-
-/*
-    FractionalGaussianIntegral functions as a GaussianIntegral, returning the FractionalIntegralModel
-    integral for a single channel. set_value is currently disabled until
-    FractionalIntegralModel::set_integral is defined.
-*/
-class FractionalGaussianIntegral : public GaussianIntegral, public Parametric
-{
-private:
-    const std::shared_ptr<Channel> _channel;
-    std::shared_ptr<FractionalIntegralModel> _model;
-
-public:
-    ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
-    ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
-
-    double get_value() const override;
-    void set_value(double value) override;
-
-    std::string str() const override;
-
-    FractionalGaussianIntegral(
-        const std::shared_ptr<Channel> _channel,
-        std::shared_ptr<FractionalIntegralModel> param_frac
-    );
-    ~FractionalGaussianIntegral() {};
-};
-
 
 } // namespace fit
 } // namespace gauss2d

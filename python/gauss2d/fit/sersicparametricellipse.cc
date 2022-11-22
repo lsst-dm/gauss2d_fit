@@ -1,7 +1,7 @@
 /*
  * This file is part of gauss2dfit.
  *
- * Developed for the LSST SersicComponent Management System.
+ * Developed for the LSST Data Management System.
  * This product includes software developed by the LSST Project
  * (https://www.lsst.org).
  * See the COPYRIGHT file at the top-level directory of this distribution
@@ -63,7 +63,6 @@ void bind_sersicparametricellipse(py::module &m)
         .def_property_readonly("rho_param_ptr", &g2f::SersicParametricEllipse::get_rho_param_ptr)
         .def_property_readonly("size_x_param_ptr", &g2f::SersicParametricEllipse::get_size_x_param_ptr)
         .def_property_readonly("size_y_param_ptr", &g2f::SersicParametricEllipse::get_size_y_param_ptr)
-        .def("set", &g2f::SersicParametricEllipse::set)
         .def("__repr__", &g2f::SersicParametricEllipse::str)
     ;
 }

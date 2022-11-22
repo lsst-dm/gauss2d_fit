@@ -27,6 +27,7 @@ class SersicMixInterpolator : public Object {
 public:
     virtual std::vector<IntegralSize> get_integralsizes(double sersicindex) const = 0;
     virtual std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const = 0;
+
     virtual unsigned short get_order() const = 0;
 
     virtual ~SersicMixInterpolator() {};

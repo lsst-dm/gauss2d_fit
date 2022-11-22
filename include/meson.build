@@ -2,6 +2,7 @@ headers = [
     'centroidparameters.h',
     'channel.h',
     'component.h',
+    'componentmixture.h',
     'data.h',
     'ellipticalcomponent.h',
     'fractionalintegralmodel.h',

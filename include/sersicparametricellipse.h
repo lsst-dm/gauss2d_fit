@@ -38,11 +38,9 @@ public:
     std::shared_ptr<SizeXParameter> get_size_x_param_ptr() override;
     std::shared_ptr<SizeYParameter> get_size_y_param_ptr() override;
 
-    void set(double size_x, double size_y, double rho) override;
     void set_rho(double rho) override;
     void set_size_x(double size_x) override;
     void set_size_y(double size_y) override;
-    void set_xyr(const std::array<double, 3> & xyr) override;
 
     std::string str() const override;
 

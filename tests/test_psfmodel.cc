@@ -22,9 +22,10 @@ TEST_CASE("PsfModel") {
     auto psfmodel = std::make_shared<g2f::PsfModel>(comps);
 
     g2f::ParamCRefs params{};
+    CHECK(psfmodel->get_components().size() == 2);
     // 2 comps x (2 centroid, 3 ellipse, 1 integral)
     CHECK(psfmodel->get_parameters_const(params).size() == 12);
-
+    CHECK(psfmodel->get_n_gaussians(C) == 2);
     auto gaussians = psfmodel->get_gaussians(C);
     CHECK(gaussians->size() == 2);
     const auto & g0 = gaussians->at(0);

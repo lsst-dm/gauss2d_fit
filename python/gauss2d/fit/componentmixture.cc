@@ -21,30 +21,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <optional>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <memory>
 
-#include "gauss2d/fit/channel.h"
-#include "gauss2d/fit/param_filter.h"
+#include "gauss2d/fit/componentmixture.h"
+#include "gauss2d/fit/parametricmodel.h"
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_param_filter(py::module &m)
+void bind_componentmixture(py::module &m)
 {
-    auto _p = py::class_<g2f::ParamFilter, std::shared_ptr<g2f::ParamFilter>>(m, "ParamFilter")
-        .def(py::init<bool, bool, bool, bool,
-            std::optional<std::reference_wrapper<const g2f::Channel>>>(),
-            "fixed"_a=true, "free"_a=true, "linear"_a=true, "nonlinear"_a=true, "channel"_a=std::nullopt)
-        .def_readwrite("channel", &g2f::ParamFilter::channel)
-        .def_readwrite("fixed", &g2f::ParamFilter::fixed)
-        .def_readwrite("free", &g2f::ParamFilter::free)
-        .def_readwrite("linear", &g2f::ParamFilter::linear)
-        .def_readwrite("nonlinear", &g2f::ParamFilter::nonlinear)
-    ;
+    auto _c = py::class_<
+        g2f::ComponentMixture, std::shared_ptr<g2f::ComponentMixture>, g2f::ParametricModel>(m, "ComponentMixture");
 }

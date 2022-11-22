@@ -2,6 +2,7 @@ sources = [
     'centroidparameters.cc',
     'channel.cc',
     'component.cc',
+    'componentmixture.cc',
     'data.cc',
     'ellipticalcomponent.cc',
     'fractionalintegralmodel.cc',

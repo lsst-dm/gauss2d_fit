@@ -39,15 +39,9 @@ std::shared_ptr<RhoParameter> SersicParametricEllipse::get_rho_param_ptr() { ret
 std::shared_ptr<SizeXParameter> SersicParametricEllipse::get_size_x_param_ptr() { return _size_x; };
 std::shared_ptr<SizeYParameter> SersicParametricEllipse::get_size_y_param_ptr() { return _size_y; };
 
-void SersicParametricEllipse::set(double size_x, double size_y, double rho) {
-    set_size_x(size_x);
-    set_size_y(size_y);
-    set_rho(rho);
-}
 inline void SersicParametricEllipse::set_rho(double rho) { _rho->set_value(rho);}
 inline void SersicParametricEllipse::set_size_x(double size_x) { _size_x->set_value(size_x); }
 inline void SersicParametricEllipse::set_size_y(double size_y) { _size_y->set_value(size_y); }
-void SersicParametricEllipse::set_xyr(const std::array<double, 3> & xyr) { this->set(xyr[0], xyr[1], xyr[2]); }
 
 std::string SersicParametricEllipse::str() const {
     return "SersicParametricEllipse(size_x=" + _size_x->str() + ", size_y=" + _size_y->str()

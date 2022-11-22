@@ -27,9 +27,6 @@ private:
     struct Shared_enabler;
 
 public:
-    std::set<std::reference_wrapper<const Channel>> get_channels() const override;
-    double get_integral(const Channel & channel) const override;
-    
     std::shared_ptr<IntegralParameter> at(const Channel & channel);
     std::shared_ptr<const IntegralParameter> at(const Channel & channel) const;
 
@@ -38,6 +35,11 @@ public:
 
     typename Data::iterator end() noexcept;
     typename Data::const_iterator cend() const noexcept;
+
+    std::set<std::reference_wrapper<const Channel>> get_channels() const override;
+    double get_integral(const Channel & channel) const override;
+    std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>> get_integral_derivative_factors(
+        const Channel & channel) const override;
 
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;

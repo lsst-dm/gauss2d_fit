@@ -28,8 +28,8 @@
 #include <memory>
 #include <string>
 
+#include "gauss2d/fit/componentmixture.h"
 #include "gauss2d/fit/psfmodel.h"
-#include "gauss2d/fit/parametricmodel.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -39,9 +39,10 @@ namespace g2f = gauss2d::fit;
 
 void bind_psfmodel(py::module &m)
 {
-   auto _o = py::class_<g2f::PsfModel, std::shared_ptr<g2f::PsfModel>, g2f::ParametricModel
+   auto _o = py::class_<g2f::PsfModel, std::shared_ptr<g2f::PsfModel>, g2f::ComponentMixture
     >(m, "PsfModel")
-        .def(py::init<g2f::PsfModel::Components &>(), "components"_a)
+        .def(py::init<g2f::Components &>(), "components"_a=nullptr)
+        .def_property_readonly("components", &g2f::PsfModel::get_components)
         .def("gaussians", [](const g2f::PsfModel & p, const g2f::Channel & c)
            { return std::shared_ptr<const gauss2d::Gaussians>(p.get_gaussians(c)); })
         .def("parameters", &g2f::PsfModel::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)

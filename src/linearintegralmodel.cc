@@ -19,6 +19,11 @@ double LinearIntegralModel::get_integral(const Channel & channel) const {
     return _data.at(channel)->get_value();
 }
 
+std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>>
+LinearIntegralModel::get_integral_derivative_factors(const Channel & channel) const {
+    return {};       
+}
+
 std::shared_ptr<IntegralParameter> LinearIntegralModel::at(const Channel & channel) {
     return _data.at(channel);
 }
@@ -42,11 +47,11 @@ typename LinearIntegralModel::Data::const_iterator LinearIntegralModel::cend() c
 }
 
 ParamRefs & LinearIntegralModel::get_parameters(ParamRefs & params, ParamFilter * filter) const {
-    for(auto & p: _data) insert_param(*p.second, params, filter);
+    for(const auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
     return params;
 }
 ParamCRefs & LinearIntegralModel::get_parameters_const(ParamCRefs & params, ParamFilter * filter) const {
-    for(const auto & p: _data) insert_param(*p.second, params, filter);
+    for(const auto & p: _data) insert_param_channel(p.first, *p.second, params, filter);
     return params;
 }
 
