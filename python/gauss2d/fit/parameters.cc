@@ -65,13 +65,14 @@ void bind_parameters(py::module &m)
     auto propfrac = declare_parameter<double, gauss2d::fit::ProperFractionParameter>(m, "ProperFraction");
     propfrac.def_property("label", &gauss2d::fit::ProperFractionParameter::get_label,
         &gauss2d::fit::ProperFractionParameter::set_label);
+    declare_sizeparameter_base<double>(m);
     declare_parameter<double, gauss2d::fit::RadiusScaleParameter>(m, "RadiusScale");
-    declare_sizeparameter<double, gauss2d::fit::ReffXParameter>(m, "ReffX");
-    declare_sizeparameter<double, gauss2d::fit::ReffYParameter>(m, "ReffY");
+    declare_sizeparameter<double, gauss2d::fit::ReffXParameter, g2f::SizeXParameter>(m, "ReffX");
+    declare_sizeparameter<double, gauss2d::fit::ReffYParameter, g2f::SizeYParameter>(m, "ReffY");
     declare_parameter<double, gauss2d::fit::RhoParameter>(m, "Rho");
     declare_parameter<double, gauss2d::fit::SersicIndexParameter>(m, "SersicIndex");
-    declare_sizeparameter<double, gauss2d::fit::SigmaXParameter>(m, "SigmaX"); 
-    declare_sizeparameter<double, gauss2d::fit::SigmaYParameter>(m, "SigmaY");
+    declare_sizeparameter<double, gauss2d::fit::SigmaXParameter, g2f::SizeXParameter>(m, "SigmaX"); 
+    declare_sizeparameter<double, gauss2d::fit::SigmaYParameter, g2f::SizeYParameter>(m, "SigmaY");
     declare_transform_base<double>(m);
     declare_transform<double, parameters::UnitTransform<double>>(m, "Unit");
     declare_transform<double, gauss2d::fit::InverseTransform>(m, "Inverse");

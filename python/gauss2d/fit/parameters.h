@@ -96,11 +96,11 @@ void declare_limits(py::module &m) {
     .def("__repr__", &Class::str);
 }
 
-template<typename T, class C>
+template<typename T, class C, class... Bases>
 auto declare_parameter_class(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
     using Base = parameters::ParameterBase<T>;
     std::string pyclass_name = name + "Parameter" + g2f::suffix_type_str<T>();
-    return py::class_<C, std::shared_ptr<C>, Base>(m, pyclass_name.c_str());
+    return py::class_<C, std::shared_ptr<C>, Base, Bases...>(m, pyclass_name.c_str());
 }
 
 /*
@@ -145,13 +145,13 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
     .def("__repr__", &Class::str);
 }
 
-template<typename T, class C>
+template<typename T, class C, class... Bases>
 auto declare_parameter(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
     using Base = parameters::ParameterBase<T>;
     using Class = parameters::Parameter<T, C>;
     using SetC = typename C::SetC;
     return declare_parameter_methods<Class, C, std::shared_ptr<C>, Base>(
-        declare_parameter_class<T, C>(m, name, suffix)
+        declare_parameter_class<T, C, Bases...>(m, name, suffix)
         .def(py::init<
             T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
             std::shared_ptr<const parameters::Unit>, bool, std::string,
@@ -165,11 +165,19 @@ auto declare_parameter(py::module &m, std::string name, std::string suffix=g2f::
     );
 }
 
-template<typename T, class C>
+template<typename T, class C, class... Bases>
 auto declare_sizeparameter(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
-    return declare_parameter<T, C>(m, name, suffix)
+    return declare_parameter<T, C, Bases...>(m, name, suffix)
         .def_property("size", &C::get_size, &C::set_size)
     ;
+}
+
+template<typename T>
+auto declare_sizeparameter_base(py::module &m, std::string suffix=g2f::suffix_type_str<T>()) {
+    using ClassX = g2f::SizeXParameter;
+    py::class_<ClassX, std::shared_ptr<ClassX>>(m, ("SizeXParameter" + suffix).c_str());
+    using ClassY = g2f::SizeYParameter;
+    py::class_<ClassY, std::shared_ptr<ClassY>>(m, ("SizeYParameter" + suffix).c_str());
 }
 
 template<typename T>
