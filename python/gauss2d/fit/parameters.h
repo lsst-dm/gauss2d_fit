@@ -34,6 +34,7 @@
 
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
+#include "parameters/limits.h"
 #include "parameters/transform.h"
 
 #include "pybind11.h"
@@ -117,7 +118,11 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
     .def_property("free", &Class::get_free, &Class::set_free)
     .def_property("inheritors", &Class::get_inheritors, &Class::set_inheritors)
     .def_property("label", &Class::get_label, &Class::set_label)
-    .def_property("limits", &Class::get_limits, &Class::set_limits, py::keep_alive<1, 2>())
+    // Return a copy of the limits, because the C++ func returns a const Limits &
+    // and calling setters on it in Python could cause segfaults
+    .def_property("limits",
+        [](const C &self) { return parameters::Limits<double>{self.get_limits().get_min(), self.get_limits().get_max()}; },
+        &Class::set_limits)
     .def_property_readonly("linear", &Class::get_linear)
     .def_property("modifiers", &Class::get_modifiers, &Class::set_modifiers)
     .def_property_readonly("min", &Class::get_min)
@@ -126,6 +131,8 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
     .def_property_readonly("ptr", &Class::ptr)
     // TODO: Figure out if it's possible to bind these
     //.def_property_readonly_static("limits_maximal", &Class::limits_maximal)
+    // TODO: Determine if this will also segfault when mutating the transform, since
+    // the C++ returns a const ref (most but not all transforms are immutable)
     .def_property("transform", &Class::get_transform, &Class::set_transform)
     .def_property_readonly("transform_derivative", &Class::get_transform_derivative)
     //.def_property_readonly_static("transform_none", &Class::transform_none)
