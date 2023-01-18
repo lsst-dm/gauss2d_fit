@@ -116,7 +116,6 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
     .def_property_readonly("desc", &Class::get_desc)
     .def_property("fixed", &Class::get_fixed, &Class::set_fixed)
     .def_property("free", &Class::get_free, &Class::set_free)
-    .def_property("inheritors", &Class::get_inheritors, &Class::set_inheritors)
     .def_property("label", &Class::get_label, &Class::set_label)
     // Return a copy of the limits, because the C++ func returns a const Limits &
     // and calling setters on it in Python could cause segfaults
@@ -124,7 +123,6 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
         [](const C &self) { return parameters::Limits<double>{self.get_limits().get_min(), self.get_limits().get_max()}; },
         &Class::set_limits)
     .def_property_readonly("linear", &Class::get_linear)
-    .def_property("modifiers", &Class::get_modifiers, &Class::set_modifiers)
     .def_property_readonly("min", &Class::get_min)
     .def_property_readonly("max", &Class::get_max)
     .def_property_readonly("name", &Class::get_name)
@@ -161,13 +159,10 @@ auto declare_parameter(py::module &m, std::string name, std::string suffix=g2f::
         declare_parameter_class<T, C, Bases...>(m, name, suffix)
         .def(py::init<
             T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
-            std::shared_ptr<const parameters::Unit>, bool, std::string,
-            const SetC, const SetC
+            std::shared_ptr<const parameters::Unit>, bool, std::string
         >(),
             "value"_a=Class::_get_default(), "limits"_a=nullptr, "transform"_a=nullptr,
-            "unit"_a=gauss2d::fit::unit_none, "fixed"_a=false, "label"_a="",
-            // TODO: Can't seem to get nullptr (static_cast or otherwise)/None or equivalent to work here
-            "inheritors"_a=SetC(), "modifiers"_a=SetC()
+            "unit"_a=gauss2d::fit::unit_none, "fixed"_a=false, "label"_a=""
         )
     );
 }

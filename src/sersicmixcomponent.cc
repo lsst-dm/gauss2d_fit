@@ -251,10 +251,8 @@ SersicMixComponentIndexParameter::SersicMixComponentIndexParameter(
     std::shared_ptr<const parameters::Unit> unit,
     bool fixed,
     std::string label,
-    const SetC & inheritors,
-    const SetC & modifiers,
     const std::shared_ptr<const SersicMixInterpolator> interpolator
-) : SersicIndexParameter(value, nullptr, transform, unit, fixed, label, inheritors, modifiers),
+) : SersicIndexParameter(value, nullptr, transform, unit, fixed, label),
     _interpolator(std::move(interpolator == nullptr ? INTERPOLATOR_DEFAULT : interpolator)),
     order(_interpolator->get_order())
 {

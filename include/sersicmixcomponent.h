@@ -45,8 +45,6 @@ public:
         std::shared_ptr<const parameters::Unit> unit = nullptr,
         bool fixed = false,
         std::string label = "",
-        const SetC & inheritors = {},
-        const SetC & modifiers = {},
         const std::shared_ptr<const SersicMixInterpolator> interpolator = nullptr
     );
 };
