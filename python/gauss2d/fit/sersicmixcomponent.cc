@@ -46,7 +46,6 @@ void bind_sersicmixcomponent(py::module &m)
     using T = double;
     using C = g2f::SersicMixComponentIndexParameter;
     using Base = g2f::SersicIndexParameter;
-    using SetC = typename g2f::SersicMixComponentIndexParameter::SetC;
 
     std::string pyclass_name = "SersicMixComponentIndexParameter" + g2f::suffix_type_str<T>();
     declare_parameter_methods<C, C, std::shared_ptr<C>, Base>(

@@ -154,7 +154,6 @@ template<typename T, class C, class... Bases>
 auto declare_parameter(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
     using Base = parameters::ParameterBase<T>;
     using Class = parameters::Parameter<T, C>;
-    using SetC = typename C::SetC;
     return declare_parameter_methods<Class, C, std::shared_ptr<C>, Base>(
         declare_parameter_class<T, C, Bases...>(m, name, suffix)
         .def(py::init<

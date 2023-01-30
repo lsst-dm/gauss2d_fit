@@ -37,26 +37,28 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+namespace g2f = gauss2d::fit;
+
 void bind_centroidparameters(py::module &m)
 {
-    auto _c = py::class_<gauss2d::fit::CentroidParameters,
-        std::shared_ptr<gauss2d::fit::CentroidParameters>,
+    auto _c = py::class_<g2f::CentroidParameters,
+        std::shared_ptr<g2f::CentroidParameters>,
         gauss2d::CentroidData
     >(m, "CentroidParameters")
         .def(py::init<double, double>(), "x"_a=0, "y"_a=0)
         .def(py::init<
-            std::shared_ptr<gauss2d::fit::CentroidXParameter>,
-            std::shared_ptr<gauss2d::fit::CentroidYParameter>>(),
+            std::shared_ptr<g2f::CentroidXParameter>,
+            std::shared_ptr<g2f::CentroidYParameter>>(),
             "x"_a=nullptr, "y"_a=nullptr
         )
-        .def_property("x", &gauss2d::fit::CentroidParameters::get_x, &gauss2d::fit::CentroidParameters::set_x)
-        .def_property("y", &gauss2d::fit::CentroidParameters::get_y, &gauss2d::fit::CentroidParameters::set_y)
-        .def_property("xy", &gauss2d::fit::CentroidParameters::get_xy, 
-            &gauss2d::fit::CentroidParameters::set_xy)
-        .def_property_readonly("get_x_param", &gauss2d::fit::CentroidParameters::get_x_param)
-        .def_property_readonly("get_y_param", &gauss2d::fit::CentroidParameters::get_y_param)
-        .def_property_readonly("get_x_param_ptr", &gauss2d::fit::CentroidParameters::get_x_param_ptr)
-        .def_property_readonly("get_y_param_ptr", &gauss2d::fit::CentroidParameters::get_y_param_ptr)
-        .def("__repr__", &gauss2d::fit::CentroidParameters::str)
+        .def_property("x", &g2f::CentroidParameters::get_x, &g2f::CentroidParameters::set_x)
+        .def_property("y", &g2f::CentroidParameters::get_y, &g2f::CentroidParameters::set_y)
+        .def_property("xy", &g2f::CentroidParameters::get_xy, 
+            &g2f::CentroidParameters::set_xy)
+        .def_property_readonly("get_x_param", &g2f::CentroidParameters::get_x_param)
+        .def_property_readonly("get_y_param", &g2f::CentroidParameters::get_y_param)
+        .def_property_readonly("get_x_param_ptr", &g2f::CentroidParameters::get_x_param_ptr)
+        .def_property_readonly("get_y_param_ptr", &g2f::CentroidParameters::get_y_param_ptr)
+        .def("__repr__", &g2f::CentroidParameters::str)
     ;
 }
