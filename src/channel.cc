@@ -12,7 +12,7 @@ namespace gauss2d
 namespace fit
 {
 
-static const std::shared_ptr<const Channel> _NONE = Channel::make(Channel::NAME_NONE);
+static inline Channel::Registry _registry = {};
 
 // https://stackoverflow.com/questions/8147027/
 // how-do-i-call-stdmake-shared-on-a-class-with-only-protected-or-private-const/
@@ -52,6 +52,25 @@ void Channel::erase(std::string name) {
     }
 }
 
+const std::shared_ptr<const Channel> Channel::find_channel(std::string name) {
+    if(name == NAME_NONE) return NONE_PTR();
+    auto channel = _registry.find(name);
+    auto found = channel == _registry.end() ? nullptr : channel->second;
+    return found;
+}
+
+const std::shared_ptr<const Channel> Channel::get_channel(std::string name) {
+    auto channel = Channel::find_channel(name);
+    if(channel == nullptr) channel = Channel::make(name);
+    return channel;
+}
+
+std::set<std::shared_ptr<const Channel>> Channel::get_channels() {
+    auto set = map_values_shared_ptr_const(_registry);
+    set.insert(NONE_PTR());
+    return set;
+}
+
 std::shared_ptr<Channel> Channel::make(std::string name) {
     std::shared_ptr<Channel> c = std::make_shared<Shared_enabler>(name);
     if(name != NAME_NONE) {
@@ -67,6 +86,7 @@ const std::shared_ptr<const Channel> Channel::make_const(std::string name) {
 std::string Channel::str() const { return "Channel(name=" + name + ")"; }
 
 const std::shared_ptr<const Channel> Channel::NONE_PTR() {
+    static const std::shared_ptr<const Channel> _NONE = Channel::make(Channel::NAME_NONE);
     return _NONE;
 }
 

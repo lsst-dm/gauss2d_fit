@@ -40,45 +40,47 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+namespace g2f = gauss2d::fit;
 
 void bind_parameters(py::module &m)
 {
    auto _u = py::class_<parameters::Unit,
         std::shared_ptr<parameters::Unit>
     >(m, "Unit");
-    py::class_<gauss2d::fit::UnitNone,
-        std::shared_ptr<gauss2d::fit::UnitNone>,
+    py::class_<g2f::UnitNone,
+        std::shared_ptr<g2f::UnitNone>,
         parameters::Unit
     >(m, "UnitNone")
         .def(py::init<>())
-        .def_property_readonly("name", &gauss2d::fit::UnitNone::get_name)
+        .def_property_readonly("name", &g2f::UnitNone::get_name)
     ;
     declare_limits<double>(m);
     using Parameter = parameters::ParameterBase<double>;
     auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "Parameter");
-    auto integral = declare_parameter<double, gauss2d::fit::IntegralParameter>(m, "Integral");
-    integral.def_property("label", &gauss2d::fit::IntegralParameter::get_label,
-        &gauss2d::fit::IntegralParameter::set_label);
-    declare_parameter<double, gauss2d::fit::CentroidXParameter>(m, "CentroidX");
-    declare_parameter<double, gauss2d::fit::CentroidYParameter>(m, "CentroidY");
-    declare_parameter<double, gauss2d::fit::MoffatConcentrationParameter>(m, "MoffatConcentration");
-    auto propfrac = declare_parameter<double, gauss2d::fit::ProperFractionParameter>(m, "ProperFraction");
-    propfrac.def_property("label", &gauss2d::fit::ProperFractionParameter::get_label,
-        &gauss2d::fit::ProperFractionParameter::set_label);
-    declare_parameter<double, gauss2d::fit::RadiusScaleParameter>(m, "RadiusScale");
-    declare_sizeparameter<double, gauss2d::fit::ReffXParameter>(m, "ReffX");
-    declare_sizeparameter<double, gauss2d::fit::ReffYParameter>(m, "ReffY");
-    declare_parameter<double, gauss2d::fit::RhoParameter>(m, "Rho");
-    declare_parameter<double, gauss2d::fit::SersicIndexParameter>(m, "SersicIndex");
-    declare_sizeparameter<double, gauss2d::fit::SigmaXParameter>(m, "SigmaX"); 
-    declare_sizeparameter<double, gauss2d::fit::SigmaYParameter>(m, "SigmaY");
+    auto integral = declare_parameter<double, g2f::IntegralParameter>(m, "Integral");
+    integral.def_property("label", &g2f::IntegralParameter::get_label,
+        &g2f::IntegralParameter::set_label);
+    declare_parameter<double, g2f::CentroidXParameter>(m, "CentroidX");
+    declare_parameter<double, g2f::CentroidYParameter>(m, "CentroidY");
+    declare_parameter<double, g2f::MoffatConcentrationParameter>(m, "MoffatConcentration");
+    auto propfrac = declare_parameter<double, g2f::ProperFractionParameter>(m, "ProperFraction");
+    propfrac.def_property("label", &g2f::ProperFractionParameter::get_label,
+        &g2f::ProperFractionParameter::set_label);
+    declare_sizeparameter_base<double>(m);
+    declare_parameter<double, g2f::RadiusScaleParameter>(m, "RadiusScale");
+    declare_sizeparameter<double, g2f::ReffXParameter, g2f::SizeXParameter>(m, "ReffX");
+    declare_sizeparameter<double, g2f::ReffYParameter, g2f::SizeYParameter>(m, "ReffY");
+    declare_parameter<double, g2f::RhoParameter>(m, "Rho");
+    declare_parameter<double, g2f::SersicIndexParameter>(m, "SersicIndex");
+    declare_sizeparameter<double, g2f::SigmaXParameter, g2f::SizeXParameter>(m, "SigmaX");
+    declare_sizeparameter<double, g2f::SigmaYParameter, g2f::SizeYParameter>(m, "SigmaY");
     declare_transform_base<double>(m);
     declare_transform<double, parameters::UnitTransform<double>>(m, "Unit");
-    declare_transform<double, gauss2d::fit::InverseTransform>(m, "Inverse");
-    declare_transform<double, gauss2d::fit::LogTransform>(m, "Log");
-    declare_transform<double, gauss2d::fit::Log10Transform>(m, "Log10");
-    declare_transform<double, gauss2d::fit::LogitTransform>(m, "Logit");
+    declare_transform<double, g2f::InverseTransform>(m, "Inverse");
+    declare_transform<double, g2f::LogTransform>(m, "Log");
+    declare_transform<double, g2f::Log10Transform>(m, "Log10");
+    declare_transform<double, g2f::LogitTransform>(m, "Logit");
     // TODO: Determine why this won't work with std::shared_ptr<parameters::Limits<double>>
-    declare_transform_full<double, gauss2d::fit::LogitLimitedTransform, true, true,
+    declare_transform_full<double, g2f::LogitLimitedTransform, true, true,
         std::shared_ptr<Limits<double>>, double >(m, "LogitLimited");
 }

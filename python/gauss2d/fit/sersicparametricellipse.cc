@@ -48,7 +48,7 @@ void bind_sersicparametricellipse(py::module &m)
             std::shared_ptr<g2f::ReffYParameter>,
             std::shared_ptr<g2f::RhoParameter>
             >(),
-            "size_x"_a=nullptr, "centroid"_a=nullptr, "integral"_a=nullptr)
+            "size_x"_a=nullptr, "size_y"_a=nullptr, "rho"_a=nullptr)
         .def_property("rho", &g2f::SersicParametricEllipse::get_rho,
             &g2f::SersicParametricEllipse::set_rho)
         .def_property("size_x", &g2f::SersicParametricEllipse::get_size_x,

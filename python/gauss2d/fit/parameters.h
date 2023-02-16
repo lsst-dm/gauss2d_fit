@@ -34,6 +34,7 @@
 
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
+#include "parameters/limits.h"
 #include "parameters/transform.h"
 
 #include "pybind11.h"
@@ -96,11 +97,11 @@ void declare_limits(py::module &m) {
     .def("__repr__", &Class::str);
 }
 
-template<typename T, class C>
+template<typename T, class C, class... Bases>
 auto declare_parameter_class(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
     using Base = parameters::ParameterBase<T>;
     std::string pyclass_name = name + "Parameter" + g2f::suffix_type_str<T>();
-    return py::class_<C, std::shared_ptr<C>, Base>(m, pyclass_name.c_str());
+    return py::class_<C, std::shared_ptr<C>, Base, Bases...>(m, pyclass_name.c_str());
 }
 
 /*
@@ -115,17 +116,21 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
     .def_property_readonly("desc", &Class::get_desc)
     .def_property("fixed", &Class::get_fixed, &Class::set_fixed)
     .def_property("free", &Class::get_free, &Class::set_free)
-    .def_property("inheritors", &Class::get_inheritors, &Class::set_inheritors)
     .def_property("label", &Class::get_label, &Class::set_label)
-    .def_property("limits", &Class::get_limits, &Class::set_limits, py::keep_alive<1, 2>())
+    // Return a copy of the limits, because the C++ func returns a const Limits &
+    // and calling setters on it in Python could cause segfaults
+    .def_property("limits",
+        [](const C &self) { return parameters::Limits<double>{self.get_limits().get_min(), self.get_limits().get_max()}; },
+        &Class::set_limits)
     .def_property_readonly("linear", &Class::get_linear)
-    .def_property("modifiers", &Class::get_modifiers, &Class::set_modifiers)
     .def_property_readonly("min", &Class::get_min)
     .def_property_readonly("max", &Class::get_max)
     .def_property_readonly("name", &Class::get_name)
     .def_property_readonly("ptr", &Class::ptr)
     // TODO: Figure out if it's possible to bind these
     //.def_property_readonly_static("limits_maximal", &Class::limits_maximal)
+    // TODO: Determine if this will also segfault when mutating the transform, since
+    // the C++ returns a const ref (most but not all transforms are immutable)
     .def_property("transform", &Class::get_transform, &Class::set_transform)
     .def_property_readonly("transform_derivative", &Class::get_transform_derivative)
     //.def_property_readonly_static("transform_none", &Class::transform_none)
@@ -145,31 +150,35 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
     .def("__repr__", &Class::str);
 }
 
-template<typename T, class C>
+template<typename T, class C, class... Bases>
 auto declare_parameter(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
     using Base = parameters::ParameterBase<T>;
     using Class = parameters::Parameter<T, C>;
-    using SetC = typename C::SetC;
     return declare_parameter_methods<Class, C, std::shared_ptr<C>, Base>(
-        declare_parameter_class<T, C>(m, name, suffix)
+        declare_parameter_class<T, C, Bases...>(m, name, suffix)
         .def(py::init<
             T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
-            std::shared_ptr<const parameters::Unit>, bool, std::string,
-            const SetC, const SetC
+            std::shared_ptr<const parameters::Unit>, bool, std::string
         >(),
             "value"_a=Class::_get_default(), "limits"_a=nullptr, "transform"_a=nullptr,
-            "unit"_a=gauss2d::fit::unit_none, "fixed"_a=false, "label"_a="",
-            // TODO: Can't seem to get nullptr (static_cast or otherwise)/None or equivalent to work here
-            "inheritors"_a=SetC(), "modifiers"_a=SetC()
+            "unit"_a=gauss2d::fit::unit_none, "fixed"_a=false, "label"_a=""
         )
     );
 }
 
-template<typename T, class C>
+template<typename T, class C, class... Bases>
 auto declare_sizeparameter(py::module &m, std::string name, std::string suffix=g2f::suffix_type_str<T>()) {
-    return declare_parameter<T, C>(m, name, suffix)
+    return declare_parameter<T, C, Bases...>(m, name, suffix)
         .def_property("size", &C::get_size, &C::set_size)
     ;
+}
+
+template<typename T>
+auto declare_sizeparameter_base(py::module &m, std::string suffix=g2f::suffix_type_str<T>()) {
+    using ClassX = g2f::SizeXParameter;
+    py::class_<ClassX, std::shared_ptr<ClassX>>(m, ("SizeXParameter" + suffix).c_str());
+    using ClassY = g2f::SizeYParameter;
+    py::class_<ClassY, std::shared_ptr<ClassY>>(m, ("SizeYParameter" + suffix).c_str());
 }
 
 template<typename T>

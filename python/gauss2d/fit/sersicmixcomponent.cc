@@ -46,7 +46,6 @@ void bind_sersicmixcomponent(py::module &m)
     using T = double;
     using C = g2f::SersicMixComponentIndexParameter;
     using Base = g2f::SersicIndexParameter;
-    using SetC = typename g2f::SersicMixComponentIndexParameter::SetC;
 
     std::string pyclass_name = "SersicMixComponentIndexParameter" + g2f::suffix_type_str<T>();
     declare_parameter_methods<C, C, std::shared_ptr<C>, Base>(
@@ -62,13 +61,11 @@ void bind_sersicmixcomponent(py::module &m)
         .def(py::init<
             T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
             std::shared_ptr<const parameters::Unit>, bool, std::string,
-            const SetC, const SetC, const std::shared_ptr<const g2f::SersicMixInterpolator>
+            const std::shared_ptr<const g2f::SersicMixInterpolator>
         >(),
         "value"_a=g2f::SersicMixComponentIndexParameter::_get_default(),
         "limits"_a=nullptr, "transform"_a=nullptr, "unit"_a=gauss2d::fit::unit_none,
         "fixed"_a=false, "label"_a="",
-        // TODO: Can't seem to get nullptr (static_cast or otherwise)/None or equivalent to work here
-        "inheritors"_a=SetC(), "modifiers"_a=SetC(),
         "interpolator"_a=nullptr
     );
 

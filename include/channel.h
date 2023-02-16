@@ -38,7 +38,6 @@ private:
         - prevents Channels from being implicitly deleted when no objects reference them
           (though they can be explicitly deleted in that case)
 */
-    static inline Registry _registry = {};
     Channel(std::string name);
 
     struct Shared_enabler;
@@ -46,16 +45,11 @@ private:
 public:
     static void erase(std::string name);
 
-    static const std::shared_ptr<const Channel> get_channel(std::string name) {
-        if(name == NAME_NONE) return NONE_PTR();
-        auto channel = _registry.find(name);
-        return channel == _registry.end() ? nullptr : channel->second;
-    }
-    static std::set<std::shared_ptr<const Channel>> get_channels() {
-        auto set = map_values_shared_ptr_const(_registry);
-        set.insert(NONE_PTR());
-        return set;
-    }
+    static const std::shared_ptr<const Channel> find_channel(std::string name);
+
+    static const std::shared_ptr<const Channel> get_channel(std::string name);
+
+    static std::set<std::shared_ptr<const Channel>> get_channels();
 
     inline static const std::string NAME_NONE = "None";
 

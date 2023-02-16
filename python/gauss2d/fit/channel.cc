@@ -44,6 +44,7 @@ void bind_channel(py::module &m)
         .def_static("erase", &g2f::Channel::erase)
         .def_property_readonly_static("all", [](py::object) {
             return g2f::Channel::get_channels(); })
+        .def_static("find", &g2f::Channel::find_channel)
         .def_static("get", &g2f::Channel::get_channel)
         .def_readonly("name", &g2f::Channel::name)
         .def_property_readonly_static("NONE", [](py::object) {
