@@ -82,5 +82,5 @@ void bind_parameters(py::module &m)
     declare_transform<double, g2f::LogitTransform>(m, "Logit");
     // TODO: Determine why this won't work with std::shared_ptr<parameters::Limits<double>>
     declare_transform_full<double, g2f::LogitLimitedTransform, true, true,
-        std::shared_ptr<Limits<double>>, double >(m, "LogitLimited");
+        std::shared_ptr<parameters::Limits<double>>, double >(m, "LogitLimited");
 }

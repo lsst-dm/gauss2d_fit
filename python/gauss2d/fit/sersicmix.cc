@@ -44,7 +44,8 @@ void bind_sersicmix(py::module &m)
         .def(py::init<const double, const double>(), "integral"_a=0, "sigma"_a=0)
         .def_readonly("integral", &g2f::IntegralSize::integral)
         .def_readonly("sigma", &g2f::IntegralSize::sigma)
-        .def("__repr__", &g2f::IntegralSize::str)
+        .def("__repr__", [](const g2f::IntegralSize &self) { return self.repr(true); })
+        .def("__str__", &g2f::IntegralSize::str)
     ;
 
     auto _smi = py::class_<g2f::SersicMixInterpolator, std::shared_ptr<g2f::SersicMixInterpolator>>(
@@ -56,7 +57,8 @@ void bind_sersicmix(py::module &m)
     >(m, "SersicMixValues")
         .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
         .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
-        .def("__repr__", &g2f::SersicMixValues::str)
+        .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true); })
+        .def("__str__", &g2f::SersicMixValues::str)
     ;
 
     // TODO: bind this function

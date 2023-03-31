@@ -45,6 +45,7 @@ void bind_source(py::module &m)
             { return std::shared_ptr<const gauss2d::Gaussians>(g.get_gaussians(c)); })
         .def("parameters", &g2f::Source::get_parameters, "parameters"_a=g2f::ParamRefs(),
             "paramfilter"_a=nullptr)
-        .def("__repr__", &g2f::Source::str)
+        .def("__repr__", [](const g2f::Source &self) { return self.repr(true); })
+        .def("__str__", &g2f::Source::str)
     ;
 }

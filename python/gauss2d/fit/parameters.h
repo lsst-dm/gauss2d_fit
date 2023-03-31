@@ -59,7 +59,8 @@ void declare_limits(py::module &m) {
     .def("clip", &Class::clip)
     .def_property("min", &Class::get_min, &Class::set_min)
     .def_property("max", &Class::get_max, &Class::set_max)
-    .def("__repr__", &Class::str);
+    .def("__repr__", [](const Class &self) { return self.repr(true); })
+    .def("__str__", &Class::str);
 }
 
 template<typename T, class C, class... Bases>
@@ -112,7 +113,8 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
 //    .def(py::self == py::self)
 //    .def(py::self != py::self)
 //    .def(hash(py::self))
-    .def("__repr__", &Class::str);
+    .def("__repr__", [](const Class &self) { return self.repr(true); })
+    .def("__str__", &Class::str);
 }
 
 template<typename T, class C, class... Bases>
@@ -164,7 +166,8 @@ void declare_transform_full(
     .def("derivative", &Class::derivative)
     .def("forward", &Class::forward)
     .def("reverse", &Class::reverse)
-    .def("__repr__", &Class::str);
+    .def("__repr__", [](const Class &self) { return self.repr(true); })
+    .def("__str__", &Class::str);
     if constexpr(has_factor) x.def_property("factor", &Class::get_factor, &Class::set_factor);
     if constexpr(has_limits) x.def_property("limits", &Class::get_limits, &Class::set_limits);
     // TODO: Figure out a neater way to do this

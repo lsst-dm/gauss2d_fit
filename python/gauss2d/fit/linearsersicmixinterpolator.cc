@@ -47,6 +47,7 @@ void bind_linearsersicmixinterpolator(py::module &m)
         .def("integralsizes", &g2f::LinearSersicMixInterpolator::get_integralsizes)
         .def("integralsizes_derivs", &g2f::LinearSersicMixInterpolator::get_integralsizes_derivs)
         .def_property_readonly("order", &g2f::LinearSersicMixInterpolator::get_order)
-        .def("__repr__", &g2f::LinearSersicMixInterpolator::str)
+        .def("__repr__", [](const g2f::LinearSersicMixInterpolator &self) { return self.repr(true); })
+        .def("__str__", &g2f::LinearSersicMixInterpolator::str)
     ;
 }

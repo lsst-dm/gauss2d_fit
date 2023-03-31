@@ -65,6 +65,7 @@ void bind_gaussianparametricellipse(py::module &m)
         .def_property_readonly("sigma_x_param_ptr", &g2f::GaussianParametricEllipse::get_sigma_x_param_ptr)
         .def_property_readonly("sigma_y_param_ptr", &g2f::GaussianParametricEllipse::get_sigma_y_param_ptr)
         .def("set", &g2f::GaussianParametricEllipse::set)
-        .def("__repr__", &g2f::GaussianParametricEllipse::str)
+        .def("__repr__", [](const g2f::GaussianParametricEllipse &self) { return self.repr(true); })
+        .def("__str__", &g2f::GaussianParametricEllipse::str)
     ;
 }

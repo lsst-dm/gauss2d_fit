@@ -72,6 +72,7 @@ void bind_model(py::module &m)
             "print"_a=false)
         .def("verify_jacobian", &Model::verify_jacobian, "findiff_frac"_a=1e-4,
             "findiff_add"_a=1e-4, "rtol"_a=1e-3, "atol"_a=1e-3)
-        .def("__repr__", &Model::str)
+        .def("__repr__", [](const Model &self) { return self.repr(true); })
+        .def("__str__", &Model::str)
     ;
 }

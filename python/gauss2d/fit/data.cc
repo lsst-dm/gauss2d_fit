@@ -53,7 +53,8 @@ void bind_data(py::module &m)
         .def_property_readonly("size", &Data::size)
         .def("__getitem__", &Data::at)
         .def("__len__", &Data::size)
-        .def("__repr__", &Data::str)
+        .def("__repr__", [](const Data &self) { return self.repr(true); })
+        .def("__str__", &Data::str)
     ;
 /*
     inline auto begin() const { return _observations.begin(); }

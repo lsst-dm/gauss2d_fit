@@ -59,6 +59,7 @@ void bind_observation(py::module &m)
     .def_property_readonly("n_cols", &Observation::get_n_cols)
     .def_property_readonly("n_rows", &Observation::get_n_rows)
     .def("parameters", &Observation::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
-    .def("__repr__", &Observation::str)
+    .def("__repr__", [](const Observation &self) { return self.repr(true); })
+    .def("__str__", &Observation::str)
     ;
 }

@@ -59,7 +59,7 @@ void bind_sersicmixcomponent(py::module &m)
         .def_property_readonly("sizeratio", &g2f::SersicMixComponentIndexParameter::get_sizeratio)
     // constructor with added arg
         .def(py::init<
-            T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
+            T, std::shared_ptr<const parameters::Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
             std::shared_ptr<const parameters::Unit>, bool, std::string,
             const std::shared_ptr<const g2f::SersicMixInterpolator>
         >(),
@@ -84,6 +84,7 @@ void bind_sersicmixcomponent(py::module &m)
             "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
         .def("gaussians", [](const g2f::SersicMixComponent &g, const g2f::Channel & c)
             { return std::shared_ptr<const gauss2d::Gaussians>(g.get_gaussians(c)); })
-        .def("__repr__", &g2f::SersicMixComponent::str)
+        .def("__repr__", [](const g2f::SersicMixComponent &self) { return self.repr(true); })
+        .def("__str__", &g2f::SersicMixComponent::str)
     ;
 }
