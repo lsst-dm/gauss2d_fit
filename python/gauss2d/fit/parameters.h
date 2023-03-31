@@ -46,45 +46,10 @@ using namespace pybind11::literals;
 namespace g2f = gauss2d::fit;
 
 template<typename T>
-constexpr std::string_view limits_name();
-
-template<> constexpr std::string_view limits_name<double>() { return ", gauss2d.fit.LimitsD";}
-
-// This class exists solely to hold a string so that it can be
-// initialized first in an inheritance hierarchy.
-// TODO: Find a better solution. Consider private inheritance from std::string.
-class Name
-{
-public:
-    const std::string value;
-    
-    Name(const std::string name) : value(name) {};
-};
-
-template<typename T>
-class Limits : public Name, public parameters::Limits<T>
-{
-public:
-    Limits(T min = -std::numeric_limits<T>::infinity(), T max = -std::numeric_limits<T>::infinity(),
-        const std::string name="") : Name(name), 
-            parameters::Limits<T>(min, max, std::string_view(value), limits_name<T>()) {
-        };
-};
-
-template<typename T>
 void declare_limits(py::module &m) {
-    using Base = parameters::Limits<T>;
-    using Class = Limits<T>;
-    std::string pyclass_name = std::string(limits_name<T>().substr(14));
-    auto _n = py::class_<Name, std::shared_ptr<Name>>(m, "Name");
-    py::class_<Base, std::shared_ptr<Base>>(m, ("_" + pyclass_name).c_str())
-    .def("check", &Base::check)
-    .def("clip", &Base::clip)
-    .def_property("min", &Base::get_min, &Base::set_min)
-    .def_property("max", &Base::get_max, &Base::set_max)
-    .def("__repr__", &Base::str);
-
-    py::class_<Class, std::shared_ptr<Class>, Name, Base>(m, pyclass_name.c_str())
+    using Class = parameters::Limits<T>;
+    std::string pyclass_name = std::string("Limits") + g2f::suffix_type_str<T>();
+    py::class_<Class, std::shared_ptr<Class>>(m, pyclass_name.c_str())
     .def(py::init<T, T, const std::string>(),
          "min"_a=-std::numeric_limits<T>::infinity(),
          "max"_a=std::numeric_limits<T>::infinity(),
@@ -157,7 +122,7 @@ auto declare_parameter(py::module &m, std::string name, std::string suffix=g2f::
     return declare_parameter_methods<Class, C, std::shared_ptr<C>, Base>(
         declare_parameter_class<T, C, Bases...>(m, name, suffix)
         .def(py::init<
-            T, std::shared_ptr<const Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
+            T, std::shared_ptr<const parameters::Limits<T>>, std::shared_ptr<const parameters::Transform<T>>,
             std::shared_ptr<const parameters::Unit>, bool, std::string
         >(),
             "value"_a=Class::_get_default(), "limits"_a=nullptr, "transform"_a=nullptr,
