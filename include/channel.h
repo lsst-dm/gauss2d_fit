@@ -58,6 +58,7 @@ public:
     static const std::shared_ptr<const Channel> NONE_PTR();
     static const Channel & NONE();
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     static std::shared_ptr<Channel> make(std::string name);

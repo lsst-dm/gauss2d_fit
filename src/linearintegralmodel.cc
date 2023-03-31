@@ -57,8 +57,16 @@ ParamCRefs & LinearIntegralModel::get_parameters_const(ParamCRefs & params, Para
 
 size_t LinearIntegralModel::size() const { return _data.size(); }
 
+std::string LinearIntegralModel::repr(bool name_keywords) const {
+    std::string s = std::string("LinearIntegralModel(") + (name_keywords ? "data=" : "") + "{";
+    for(const auto & [channel, integral] : _data) {
+        s += channel.get().repr(name_keywords) + ": " + integral->repr(name_keywords) + ",";
+    }
+    return s + "})";
+}
+
 std::string LinearIntegralModel::str() const {
-    std::string s = "LinearIntegralModel({";
+    std::string s = "LinearIntegralModel(data={";
     for(const auto & [channel, integral] : _data) s += channel.get().str() + ": " + integral->str() + ",";
     return s + "})";
 }

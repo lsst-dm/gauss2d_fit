@@ -140,10 +140,19 @@ bool FractionalIntegralModel::is_final() const { return _is_final; }
 
 size_t FractionalIntegralModel::size() const { return _data.size(); }
 
-std::string FractionalIntegralModel::str() const {
-    std::string s = "FractionalIntegralModel({";
-    for(const auto & [channel, integral] : _data) s += channel.get().str() + ": " + integral->str() + ",";
+std::string FractionalIntegralModel::repr(bool name_keywords) const {
+    std::string s = std::string("FractionalIntegralModel(") + (name_keywords ? "data={" : "{");
+    for(const auto & [channel, integral] : _data) {
+        s += channel.get().repr(name_keywords) + ": " + integral->repr(name_keywords) + ",";
+    }
     return s + "})";
+}
+
+std::string FractionalIntegralModel::str() const {
+    std::string s = "FractionalIntegralModel(data={";
+    for(const auto & [channel, integral] : _data) s += channel.get().str() + ": " + integral->str() + ",";
+    s += "}, model=" + _model->str() + ", is_final=" + std::to_string(_is_final) + ")";
+    return s;
 }
 
 // Return a pointer to a registered FractionalIntegralModel, if it is one

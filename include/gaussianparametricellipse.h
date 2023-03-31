@@ -58,6 +58,7 @@ public:
     void set_hxyr(const std::array<double, 3> & hxyr) override;
     void set_xyr(const std::array<double, 3> & xyr) override;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     GaussianParametricEllipse(

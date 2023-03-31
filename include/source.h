@@ -48,6 +48,7 @@ public:
     void set_grad_param_factors(const Channel & channel, grad_param_factors & factors, size_t index
         ) const override;
     
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     Source(Components & components);

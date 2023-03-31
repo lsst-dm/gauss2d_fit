@@ -686,6 +686,12 @@ public:
 
     size_t size() const { return _size; }
 
+    std::string repr(bool name_keywords = false) const override {
+        std::string str = std::string("Model(") + (name_keywords ? "sources=[" : "[");
+        for(const auto & s : _sources) str += s->repr(name_keywords) + ",";
+        return str + "], " + (name_keywords ? "data=" : "") + _data->repr() + ")";
+    }
+
     std::string str() const override {
         std::string str = "Model(sources=[";
         for(const auto & s : _sources) str += s->str() + ",";

@@ -42,6 +42,7 @@ public:
     void set_size_x(double size_x) override;
     void set_size_y(double size_y) override;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     SersicParametricEllipse(

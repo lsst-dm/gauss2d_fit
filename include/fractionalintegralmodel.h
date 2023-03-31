@@ -110,6 +110,7 @@ public:
 
     size_t size() const;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     FractionalIntegralModel (const FractionalIntegralModel&) = delete;

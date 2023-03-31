@@ -27,6 +27,7 @@ public:
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     EllipticalComponent(

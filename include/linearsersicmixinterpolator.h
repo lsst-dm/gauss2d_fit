@@ -23,6 +23,7 @@ public:
     const double sersicindex_min;
     const double sersicindex_max;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     LinearSersicMixInterpolator(unsigned short order=SERSICMIX_ORDER_DEFAULT);

@@ -72,6 +72,13 @@ inline void GaussianParametricEllipse::set_size_y(double sigma_y) { _sigma_y->se
 void GaussianParametricEllipse::set_hxyr(const std::array<double, 3> & hxyr) { this->set_h(hxyr[0], hxyr[1], hxyr[2]); }
 void GaussianParametricEllipse::set_xyr(const std::array<double, 3> & xyr) { this->set(xyr[0], xyr[1], xyr[2]); }
 
+std::string GaussianParametricEllipse::repr(bool name_keywords) const {
+    return std::string("GaussianParametricEllipse(")
+        + (name_keywords ? "sigma_x=" : "") + _sigma_x->repr(name_keywords) + ", "
+        + (name_keywords ? "sigma_y=" : "") + _sigma_y->repr(name_keywords) + ", "
+        + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords) + ")";
+}
+
 std::string GaussianParametricEllipse::str() const {
     return "GaussianParametricEllipse(sigma_x=" + _sigma_x->str() + ", sigma_y=" + _sigma_y->str()
         + ", rho=" + _rho->str() + ")";

@@ -40,6 +40,11 @@ void CentroidParameters::set_x(double x) { _x->set_value(x); }
 void CentroidParameters::set_y(double y) { _y->set_value(y); }
 void CentroidParameters::set_xy(const std::array<double, 2> & xy) { this->set_x(xy[0]); this->set_y(xy[1]); }
 
+std::string CentroidParameters::repr(bool name_keywords) const {
+    return std::string("CentroidParameters(") + (name_keywords ? "x=" : "") + _x->repr(name_keywords) + ", "
+        + (name_keywords ? "y=" : "") + _y->repr(name_keywords) + ")";
+}
+
 std::string CentroidParameters::str() const {
     return "CentroidParameters(x=" + _x->str() + ", y=" + _y->str() + ")";
 }

@@ -51,6 +51,7 @@ public:
     void set_extra_param_factors(const Channel & channel, extra_param_factors & factors, size_t index) const override;
     void set_grad_param_factors(const Channel & channel, grad_param_factors & factor, size_t index) const override;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     PsfModel(Components & components);

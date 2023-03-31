@@ -27,7 +27,8 @@ public:
         return params;
     }
 
-    virtual std::string str() const override = 0;
+    //virtual std::string repr(bool name_keywords = false) const override = 0;
+    //virtual std::string str() const override = 0;
     virtual ~Parametric() {};
 };
 } // namespace fit

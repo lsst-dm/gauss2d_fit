@@ -83,6 +83,10 @@ const std::shared_ptr<const Channel> Channel::make_const(std::string name) {
     return make(name);
 }
 
+std::string Channel::repr(bool name_keywords) const {
+    return std::string("Channel(") + (name_keywords ? "name=" : "") + name + ")";
+}
+
 std::string Channel::str() const { return "Channel(name=" + name + ")"; }
 
 const std::shared_ptr<const Channel> Channel::NONE_PTR() {

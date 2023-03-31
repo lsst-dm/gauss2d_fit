@@ -43,6 +43,12 @@ inline void SersicParametricEllipse::set_rho(double rho) { _rho->set_value(rho);
 inline void SersicParametricEllipse::set_size_x(double size_x) { _size_x->set_value(size_x); }
 inline void SersicParametricEllipse::set_size_y(double size_y) { _size_y->set_value(size_y); }
 
+std::string SersicParametricEllipse::repr(bool name_keywords) const {
+    return std::string("SersicParametricEllipse(") + (name_keywords ? "size_x=" : "") + _size_x->repr(name_keywords)
+        + ", " + (name_keywords ? "size_y=" : "") + _size_y->repr(name_keywords)
+        + ", " + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords) + ")";
+}
+
 std::string SersicParametricEllipse::str() const {
     return "SersicParametricEllipse(size_x=" + _size_x->str() + ", size_y=" + _size_y->str()
         + ", rho=" + _rho->str() + ")";

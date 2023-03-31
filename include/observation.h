@@ -57,11 +57,18 @@ public:
         return params;
     }
 
+    std::string repr(bool name_keywords = false) const override {
+        return std::string("Observation(") + (name_keywords ? "image=" : "") + repr_ptr(_image.get(), name_keywords)
+            + ", " + (name_keywords ? "sigma_inv=" : "") + repr_ptr(_sigma_inv.get(), name_keywords)
+            + ", " + (name_keywords ? "mask_inv=" : "") + repr_ptr(_mask_inv.get(), name_keywords)
+            + ", " + (name_keywords ? "channel=" : "") + _channel.repr(name_keywords)
+            + ")";
+    }
     std::string str() const override {
         return "Observation(image=" + str_ptr(_image.get())
-            + "," + str_ptr(_sigma_inv.get())
-            + "," + str_ptr(_mask_inv.get())
-            + "," + _channel.str()
+            + ", sigma_inv=" + str_ptr(_sigma_inv.get())
+            + ", mask_inv=" + str_ptr(_mask_inv.get())
+            + ", channel=" + _channel.str()
             + ")";
     }
 

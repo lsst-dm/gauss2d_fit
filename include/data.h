@@ -55,6 +55,14 @@ public:
 
     size_t size() const { return _observations.size(); }
 
+    std::string repr(bool name_keywords = false) const override {
+        std::string str = std::string("Data(") + (name_keywords ? "observations=[" : "[");
+        for(auto exp_it = this->cbegin(); exp_it != this->cend(); ++exp_it) {
+            str += (*exp_it).get().repr(name_keywords) + ",";
+        }
+        str += "]);";
+        return str;
+    }
     std::string str() const override {
         std::string str = "Data(observations=[";
         for(auto exp_it = this->cbegin(); exp_it != this->cend(); ++exp_it) {

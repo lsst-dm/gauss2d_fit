@@ -74,6 +74,14 @@ public:
         throw std::runtime_error("Can't set on SersicEllipseData");
     }
 
+
+    std::string repr(bool name_keywords) const override {
+        return std::string("SersicEllipseData(")
+            + (name_keywords ? "size_x=" : "") + _size_x->repr(name_keywords) + ", "
+            + (name_keywords ? "size_y=" : "") + _size_y->repr(name_keywords) + ", "
+            + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords) + ")";
+    }
+
     std::string str() const override {
         return "SersicEllipseData(size_x=" + _size_x->str() + ", size_y=" + _size_y->str() + ", rho=" + _rho->str()
             +  + ")";
@@ -137,6 +145,14 @@ public:
         return get_integralratio()*_integralmodel->get_integral(_channel);
     }
     void set_value(double value) override { throw std::runtime_error("Can't set on SersicModelIntegral"); }
+
+    std::string repr(bool name_keywords) const override {
+        return std::string("SersicModelIntegral(")
+            + (name_keywords ? "channel=" : "") + _channel.repr(name_keywords) + ", "
+            + (name_keywords ? "integralmodel=" : "") + _integralmodel->repr(name_keywords) + ", "
+            + (name_keywords ? "sersicindex=" : "") + _sersicindex->repr(name_keywords) + ", "
+            + (name_keywords ? "index=" : "") + std::to_string(_index) + ")";
+    }
 
     std::string str() const override {
         return "SersicModelIntegral(channel=" + _channel.str() + ", integralmodel=" + _integralmodel->str()
@@ -237,7 +253,7 @@ static const std::string limits_sersic_name = std::string(parameters::type_name<
     SersicMixComponentIndexParameter>()) + ".limits_maximal";
 
 static const auto limits_sersic = std::make_shared<const parameters::Limits<double>>(
-    0.5, 8.0, parameters::type_name<SersicMixComponentIndexParameter>(), ".limits_maximal"
+    0.5, 8.0, std::string(parameters::type_name<SersicMixComponentIndexParameter>()) + ".limits_maximal"
 );
 
 const parameters::Limits<double> & SersicMixComponentIndexParameter::get_limits_maximal() const {
@@ -467,6 +483,11 @@ void SersicMixComponent::set_grad_param_factors(
         values[4] = values_base[4]*sizeratio;
         values[5] = values_base[5];
     }
+}
+
+std::string SersicMixComponent::repr(bool name_keywords) const {
+    return "SersicMixComponent(" + EllipticalComponent::repr(name_keywords) + ", "
+        + (name_keywords ? "photo=" : "") + _integralmodel->repr(name_keywords) + ")";
 }
 
 std::string SersicMixComponent::str() const {

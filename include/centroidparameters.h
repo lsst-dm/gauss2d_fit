@@ -37,6 +37,7 @@ public:
     void set_y(double y) override;
     void set_xy(const std::array<double, 2> & xy) override;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     CentroidParameters(

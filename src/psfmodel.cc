@@ -76,6 +76,13 @@ void PsfModel::set_grad_param_factors(const Channel & channel, grad_param_factor
     for(auto & component : _components) component->set_grad_param_factors(channel, factors, index);
 }
 
+std::string PsfModel::repr(bool name_keywords) const {
+    std::string str = std::string("PsfModel(") + (name_keywords ? "components=[" : "[");
+    for(const auto & s : _components) str += s->repr(name_keywords) + ",";
+    return str + "])";
+
+}    
+
 std::string PsfModel::str() const {
     std::string str = "PsfModel(components=[";
     for(const auto & s : _components) str += s->str() + ",";

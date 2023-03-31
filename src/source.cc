@@ -79,8 +79,14 @@ void Source::set_grad_param_factors(const Channel & channel, grad_param_factors 
     }
 }
 
+std::string Source::repr(bool name_keywords) const {
+    std::string s = std::string("Source(") + (name_keywords ? "components=[" : "[");
+    for(const auto & c : _components) s += c->repr(name_keywords) + ",";
+    return s + "])";
+}
+
 std::string Source::str() const {
-    std::string s = "Source([";
+    std::string s = "Source(components=[";
     for(const auto & c : _components) s += c->str() + ",";
     return s + "])";
 }

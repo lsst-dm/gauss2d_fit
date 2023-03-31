@@ -28,7 +28,8 @@ typedef parameters::Transform<double> Transform;
 struct InverseTransform : public Transform
 {
     std::string description() const override { return "Inverse transform"; }
-    std::string str() const override { return "InverseTransform"; }
+    std::string repr(bool name_keywords=false) const override { return "InverseTransform()"; }
+    std::string str() const override { return "InverseTransform()"; }
 
     inline double derivative(double x) const override{ return 1/(x*x); }
     inline double forward(double x) const override{ return 1/x; }
@@ -38,7 +39,8 @@ struct InverseTransform : public Transform
 struct LogTransform : public Transform
 {
     std::string description() const override { return "Natural (base e) logarithmic transform"; }
-    std::string str() const override { return "LogTransform"; }
+    std::string repr(bool name_keywords=false) const override { return "LogTransform()"; }
+    std::string str() const override { return "LogTransform()"; }
 
     inline double derivative(double x) const override{ return 1/x; }
     inline double forward(double x) const override{ return log(x); }
@@ -48,7 +50,8 @@ struct LogTransform : public Transform
 struct Log10Transform : public Transform
 {
     std::string description() const override { return "Base 10 logarithmic transform"; }
-    std::string str() const override { return "Log10Transform"; }
+    std::string repr(bool name_keywords=false) const override { return "Log10Transform()"; }
+    std::string str() const override { return "Log10Transform()"; }
 
     inline double derivative(double x) const override{ return 0.434294481903251827651128918916605082294397/x; }
     inline double forward(double x) const override{ return log10(x); }
@@ -58,7 +61,8 @@ struct Log10Transform : public Transform
 struct LogitTransform : public Transform
 {
     std::string description() const override { return "Logit transform"; }
-    std::string str() const override { return "LogitTransform"; }
+    std::string repr(bool name_keywords=false) const override { return "LogitTransform()"; }
+    std::string str() const override { return "LogitTransform()"; }
 
     inline double derivative(double x) const override{ return 1/x + 1/(1 - x); }
     inline double forward(double x) const override{ return log(x/(1 - x)); }
@@ -76,6 +80,11 @@ private:
 
 public:
     std::string description() const override { return "Logit limited (to finite range) transform"; }
+    std::string repr(bool name_keywords = false) const override {
+        return std::string(parameters::type_name<LogitLimitedTransform>()) + "("
+            + (name_keywords ? "limits=" : "") + _limits->repr(name_keywords) 
+            + ", " + (name_keywords ? "factor=" : "") + std::to_string(_factor) + ")";
+    }
     std::string str() const override {
         return std::string(parameters::type_name<LogitLimitedTransform>()) + "(limits=" + _limits->str() 
             + ", factor=" + std::to_string(_factor) + ")";

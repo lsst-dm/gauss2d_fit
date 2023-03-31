@@ -11,14 +11,27 @@ namespace gauss2d
 namespace fit
 {
 
+std::string IntegralSize::repr(bool name_keywords) const {
+    return std::string("IntegralSize(") + (name_keywords ? "integral=" : "") + std::to_string(integral) + ", "
+        + (name_keywords ? "sigma=" : "") + std::to_string(sigma) + ")";
+}
+
 std::string IntegralSize::str() const {
     return "IntegralSize(integral=" + std::to_string(integral) + ", sigma=" + std::to_string(sigma) + ")";
 }
+
 IntegralSize::IntegralSize(double integral_, double sigma_) : integral(integral_), sigma(sigma_)  {}
+
+std::string SersicMixValues::repr(bool name_keywords) const {
+    return std::string("SersicMixValues(")
+        + (name_keywords ? "sersicindex=" : "") + std::to_string(sersicindex) + ", "
+        + (name_keywords ? "values=" : "") + repr_iter_ref(values, name_keywords) + ")";
+}
 
 std::string SersicMixValues::str() const {
     return "SersicMixValues(sersicindex=" + std::to_string(sersicindex) + ", values=" + str_iter_ref(values) + ")";
 }
+
 SersicMixValues::SersicMixValues(double sersicindex_, std::vector<IntegralSize> values_)
     : sersicindex(sersicindex_), values(values_)  {}
 

@@ -99,6 +99,20 @@ std::vector<T> nonconsecutive_unique(const std::vector<T> & vec)
 }
 
 template <typename T>
+std::string repr_ptr(const T* obj, bool name_keywords=false)
+{
+    return (obj == nullptr) ? "None" : obj->repr(name_keywords);
+}
+
+template <typename T>
+std::string repr_iter_ref(const T & container, bool name_keywords=false)
+{
+    std::string str = "[";
+    for(const auto & obj: container) str += obj.repr(name_keywords) + ",";
+    return str.substr(0, str.size() - 1) + "]";
+}
+
+template <typename T>
 std::string str_ptr(const T* obj)
 {
     return (obj == nullptr) ? "None" : obj->str();

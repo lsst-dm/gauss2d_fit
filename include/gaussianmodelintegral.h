@@ -22,6 +22,7 @@ public:
     virtual double get_value() const override;
     virtual void set_value(double value) override;
 
+    virtual std::string repr(bool name_keywords = false) const override;
     virtual std::string str() const override;
 
     GaussianModelIntegral(

@@ -46,6 +46,7 @@ public:
 
     size_t size() const;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     const bool operator < ( const IntegralModel &m ) const { return &(*this) < &m; };

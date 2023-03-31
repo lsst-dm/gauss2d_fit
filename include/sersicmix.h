@@ -19,6 +19,7 @@ public:
     const double integral;
     const double sigma;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
     IntegralSize(double integral_, double sigma_);
 };
@@ -38,6 +39,7 @@ public:
     const double sersicindex;
     const std::vector<IntegralSize> values;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
     SersicMixValues(double sersicindex_, std::vector<IntegralSize> values_);
 };
