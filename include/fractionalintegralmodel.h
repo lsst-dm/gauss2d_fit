@@ -12,9 +12,7 @@
 #include "parameters.h"
 #include "integralmodel.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class FractionalGaussianIntegral;
@@ -119,7 +117,6 @@ public:
     ~FractionalIntegralModel();
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

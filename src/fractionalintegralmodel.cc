@@ -13,9 +13,7 @@
 #include "parameters.h"
 #include "util.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 std::shared_ptr<ProperFractionParameter> FractionalIntegralModel::at(const Channel & channel) {
@@ -239,5 +237,4 @@ FractionalIntegralModel::FractionalIntegralModel(
 }
 FractionalIntegralModel::~FractionalIntegralModel() {};
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

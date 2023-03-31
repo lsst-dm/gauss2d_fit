@@ -7,9 +7,7 @@
 
 #include <iostream>
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 static inline Channel::Registry _registry = {};
@@ -116,5 +114,4 @@ Channel::Channel(std::string name_) : name(name_) {
     }
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

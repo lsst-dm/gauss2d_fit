@@ -4,9 +4,7 @@
 
 #include "parameters.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 template<typename t>
 t & _get_parameters(
@@ -63,5 +61,4 @@ CentroidParameters::CentroidParameters(double x, double y) : CentroidData(),
     _y(std::make_shared<CentroidYParameter>(y))
 {}
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

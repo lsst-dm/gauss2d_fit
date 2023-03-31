@@ -8,14 +8,12 @@
 #include "parametric.h"
 #include "parametricmodel.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 /*
     An IntegralModel describes the total integrated surface density of a
-    2D distribution. It is intended to defined a Component but can
+    2D distribution. It is intended to define a Component but can
     be used otherwise.
 
     It is generally not intended for IntegralModels to be shared amongst
@@ -37,7 +35,6 @@ inline bool operator < ( const IntegralModel &lhs, const IntegralModel &rhs) { r
 //const bool operator != ( const IntegralModel &m ) const { return &(*this) != &m; };
 
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

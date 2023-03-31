@@ -8,9 +8,7 @@
 #include "parameters.h"
 #include "parametricellipse.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 class GaussianParametricEllipse : public gauss2d::EllipseData, public ParametricEllipse
 {
@@ -66,9 +64,8 @@ public:
         std::shared_ptr<SigmaYParameter> sigma_y,
         std::shared_ptr<RhoParameter> rho=nullptr
     );
-    GaussianParametricEllipse(double sigma_x=0, double sigma_y=0, double rho=0);
+    explicit GaussianParametricEllipse(double sigma_x=0, double sigma_y=0, double rho=0);
 };
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

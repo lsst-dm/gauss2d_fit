@@ -2,9 +2,7 @@
 #include "gauss2d/ellipse.h"
 #include "parameters.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 template<typename t>
 t & _get_parameters(
@@ -99,5 +97,4 @@ GaussianParametricEllipse::GaussianParametricEllipse(double sigma_x, double sigm
     _rho(std::make_shared<RhoParameter>(rho))
 {};
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

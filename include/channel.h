@@ -13,9 +13,7 @@
 
 #include "util.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 /*
@@ -38,7 +36,7 @@ private:
         - prevents Channels from being implicitly deleted when no objects reference them
           (though they can be explicitly deleted in that case)
 */
-    Channel(std::string name);
+    explicit Channel(std::string name);
 
     struct Shared_enabler;
 
@@ -84,7 +82,6 @@ inline bool operator == (const std::reference_wrapper<const Channel> & lhs,
     return (lhs.get() == rhs.get());
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

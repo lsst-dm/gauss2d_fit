@@ -7,9 +7,7 @@
 
 #include "iostream"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes(double sersicindex) const {
@@ -99,5 +97,4 @@ LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order)
 
 LinearSersicMixInterpolator::~LinearSersicMixInterpolator() {};
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

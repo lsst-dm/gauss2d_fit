@@ -4,9 +4,7 @@
 
 #include <limits>
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
     static const double INF = std::numeric_limits<double>::infinity();
 
@@ -33,5 +31,4 @@ namespace fit
         y = 1 + exp(y);
         return _range/y + _limits->get_min();
     }
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

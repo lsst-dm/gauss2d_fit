@@ -7,9 +7,7 @@
 #include "channel.h"
 #include "parametric.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 typedef std::vector<std::array<size_t, gauss2d::N_EXTRA_MAP>> extra_param_map;
 typedef std::array<double, gauss2d::N_EXTRA_FACTOR> extra_param_factor_values;
@@ -36,7 +34,6 @@ public:
     virtual size_t get_n_gaussians(const Channel & channel) const = 0;
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

@@ -11,9 +11,7 @@
 #include "sersicmix.h"
 #include "sersicparametricellipse.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class SersicMixComponentIndexParameter : public SersicIndexParameter {
@@ -38,14 +36,14 @@ public:
     void set_value(double value) override;
     void set_value_transformed(double value_transformed) override;
 
-    SersicMixComponentIndexParameter(
+    explicit SersicMixComponentIndexParameter(
         double value = _get_default(),
         std::shared_ptr<const parameters::Limits<double>> limits = nullptr,
-        const std::shared_ptr<const parameters::Transform<double>> transform = nullptr,
+        std::shared_ptr<const parameters::Transform<double>> transform = nullptr,
         std::shared_ptr<const parameters::Unit> unit = nullptr,
         bool fixed = false,
         std::string label = "",
-        const std::shared_ptr<const SersicMixInterpolator> interpolator = nullptr
+        std::shared_ptr<const SersicMixInterpolator> interpolator = nullptr
     );
 };
 
@@ -54,7 +52,7 @@ class SersicParametricEllipseHolder {
 public:
     std::shared_ptr<SersicParametricEllipse> _ellipsedata;
 
-    SersicParametricEllipseHolder(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr)
+    explicit SersicParametricEllipseHolder(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr)
     : _ellipsedata(std::move(ellipse)) {
         if(_ellipsedata == nullptr) _ellipsedata = std::make_shared<SersicParametricEllipse>();
     }
@@ -89,7 +87,7 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
     
-    SersicMixComponent(
+    explicit SersicMixComponent(
         std::shared_ptr<SersicParametricEllipse> ellipse = nullptr,
         std::shared_ptr<CentroidParameters> centroid = nullptr,
         std::shared_ptr<IntegralModel> integralmodel = nullptr,
@@ -97,7 +95,6 @@ public:
     );
     ~SersicMixComponent();
 };
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

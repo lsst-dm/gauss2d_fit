@@ -9,9 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 // following numpy.isclose
@@ -150,7 +148,6 @@ void stream_iter_ref(const T & container, std::ostream & stream)
     stream << "]";
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

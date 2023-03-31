@@ -8,9 +8,7 @@
 #include "parameters.h"
 #include "parametric.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class CentroidParameters : public gauss2d::CentroidData, public Parametric
@@ -40,14 +38,13 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    CentroidParameters(
+    explicit CentroidParameters(
         std::shared_ptr<CentroidXParameter> x = nullptr,
         std::shared_ptr<CentroidYParameter> y = nullptr
     );
 
     CentroidParameters(double x, double y);
 };
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

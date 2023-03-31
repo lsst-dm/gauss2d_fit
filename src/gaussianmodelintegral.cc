@@ -3,9 +3,7 @@
 #include "channel.h"
 #include "integralmodel.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 double GaussianModelIntegral::get_value() const {
@@ -34,5 +32,4 @@ GaussianModelIntegral::GaussianModelIntegral(
 }
 GaussianModelIntegral::~GaussianModelIntegral() {};
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

@@ -7,9 +7,7 @@
 #include "componentmixture.h"
 #include "param_filter.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 /*
@@ -54,11 +52,10 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    PsfModel(Components & components);
+    explicit PsfModel(Components & components);
     ~PsfModel();
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

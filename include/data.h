@@ -9,9 +9,7 @@
 #include "param_defs.h"
 #include "parametric.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 /*
@@ -72,7 +70,7 @@ public:
         return str;
     }
 
-    Data(std::vector<std::shared_ptr<const Observation>> observations) {
+    explicit Data(std::vector<std::shared_ptr<const Observation>> observations) {
         _observations.reserve(observations.size());
         _observation_ptrs.reserve(observations.size());
         for(const auto & observation: observations) {
@@ -84,7 +82,6 @@ public:
     }
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

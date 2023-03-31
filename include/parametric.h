@@ -6,9 +6,7 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class Parametric : public Object
@@ -29,9 +27,8 @@ public:
 
     //virtual std::string repr(bool name_keywords = false) const override = 0;
     //virtual std::string str() const override = 0;
-    virtual ~Parametric() {};
+    virtual ~Parametric() = default;
 };
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

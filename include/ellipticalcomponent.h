@@ -7,9 +7,7 @@
 #include "param_filter.h"
 #include "parametricellipse.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class EllipticalComponent : public Component
@@ -30,14 +28,13 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    EllipticalComponent(
+    explicit EllipticalComponent(
         std::shared_ptr<ParametricEllipse> ellipse,
         std::shared_ptr<CentroidParameters> centroid = nullptr,
         std::shared_ptr<IntegralModel> integralmodel = nullptr
     );
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

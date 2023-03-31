@@ -7,9 +7,7 @@
 
 #include "gauss2d/object.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 static const short SERSICMIX_ORDER_DEFAULT = 4;
@@ -30,8 +28,6 @@ public:
     virtual std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const = 0;
 
     virtual unsigned short get_order() const = 0;
-
-    virtual ~SersicMixInterpolator() {};
 };
 
 class SersicMixValues : public Object {
@@ -57,7 +53,6 @@ const std::vector<SersicMixValues> & get_sersic_mix_knots(unsigned short order);
 const std::vector<SersicMixValues> & get_sersic_mix_knots_order4();
 const std::vector<SersicMixValues> & get_sersic_mix_knots_order8();
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

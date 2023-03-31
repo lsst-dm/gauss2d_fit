@@ -16,9 +16,7 @@
 #include "source.h"
 #include "util.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 //enum class Renderer { gauss2d };
@@ -443,11 +441,11 @@ private:
             if constexpr (print) std::cout << "]" << std::endl;
             std::string errmsg_extra = errmsgs[0] + errmsgs[1];
             std::string errmsg_grad = errmsgs[0] + errmsgs[1];
-            if((errmsg_extra != "") || (errmsg_grad != "")) {
+            if(!errmsg_extra.empty() || !errmsg_grad.empty()) {
                 std::string errmsg = "make_evaluator Jacobian map_extra/map_grad have different values"
                     " from old; did you make a new evaluator with different free parameters from an "
                     " old one? Errors:\n" + errmsg_extra;
-                if((errmsg_extra != "") && (errmsg_grad != "")) errmsg += "...\n";
+                if(!errmsg_extra.empty() && !errmsg_grad.empty()) errmsg += "...\n";
                 errmsg += errmsg_grad;
                 throw std::runtime_error(errmsg);
             }
@@ -540,7 +538,7 @@ public:
 
         for(auto & source : _sources) {
             auto data = source->get_gaussians(channel)->get_data();
-            in.push_back(data);
+            in.emplace_back(data);
         }
 
         return std::make_unique<gauss2d::Gaussians>(in);
@@ -814,7 +812,7 @@ public:
                 }
 
                 param.set_value_transformed(value);
-                if(!(param.get_value_transformed() == value)) {
+                if(param.get_value_transformed() != value) {
                     throw std::logic_error("Could not return param=" + param.str() + " to original value="
                         + std::to_string(value));
                 }
@@ -872,7 +870,6 @@ public:
     }
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

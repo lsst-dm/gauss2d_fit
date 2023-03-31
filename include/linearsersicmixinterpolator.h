@@ -3,9 +3,7 @@
 
 #include "sersicmix.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class LinearSersicMixInterpolator : public SersicMixInterpolator {
@@ -26,11 +24,10 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    LinearSersicMixInterpolator(unsigned short order=SERSICMIX_ORDER_DEFAULT);
+    explicit LinearSersicMixInterpolator(unsigned short order=SERSICMIX_ORDER_DEFAULT);
     ~LinearSersicMixInterpolator();
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

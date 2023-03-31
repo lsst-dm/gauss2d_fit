@@ -4,9 +4,7 @@
 #include "component.h"
 #include "parametricmodel.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 // Would consider making this a unique_ptr but pybind11 prevents this:
@@ -22,7 +20,6 @@ public:
     virtual Components get_components() const = 0;
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

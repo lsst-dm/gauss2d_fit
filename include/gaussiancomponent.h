@@ -10,9 +10,7 @@
 #include "param_filter.h"
 #include <memory>
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 // TODO: Revisit the necessity of this class
 // Its purpose is to have the GaussianParametricEllipse stored here and initialized first in
@@ -21,7 +19,7 @@ class GaussianParametricEllipseHolder {
 public:
     std::shared_ptr<GaussianParametricEllipse> _ellipsedata;
 
-    GaussianParametricEllipseHolder(std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr)
+    explicit GaussianParametricEllipseHolder(std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr)
         : _ellipsedata(std::move(ellipse)) {
         if(_ellipsedata == nullptr) _ellipsedata = std::make_shared<GaussianParametricEllipse>();
     }
@@ -49,7 +47,7 @@ public:
     // Useful if you want to make a single-Gaussian, zero-sized component list for the PsfModel
     // when fitting a pre-computed PSF
     static std::vector<std::shared_ptr<Component>> make_uniq_default_gaussians(
-        std::vector<double> sizes={2.},
+        const std::vector<double> & sizes={2.},
         bool fixed=true
     ) {
         std::vector<std::shared_ptr<Component>> comps = {};
@@ -80,13 +78,12 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
     
-    GaussianComponent(
+    explicit GaussianComponent(
         std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr,
         std::shared_ptr<CentroidParameters> centroid = nullptr,
         std::shared_ptr<IntegralModel> integralmodel = nullptr
     );
 };
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

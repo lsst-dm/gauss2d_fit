@@ -11,9 +11,7 @@
 #include "parametric.h"
 #include "util.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 /*
@@ -72,7 +70,7 @@ public:
             + ")";
     }
 
-    const bool operator == (const Observation &other) const {
+    bool operator == (const Observation &other) const {
         return (
             (this->get_image() == other.get_image())
             && (this->get_mask_inverse() == other.get_mask_inverse())
@@ -93,16 +91,15 @@ public:
         {
             throw std::invalid_argument("Must supply non-null image, variance and mask");
         }
-        std::string msg = "";
+        std::string msg;
         bool passed = images_compatible<T, I, T, I>(*_image, *_sigma_inv, &msg);
         passed &= images_compatible<T, I, bool, M>(*_image, *_mask_inv, &msg);
-        if(passed != (msg == "")) throw std::logic_error(
+        if(passed != (msg.empty())) throw std::logic_error(
             "Observation images_compatible=" + std::to_string(passed) + " != msg != '' (=" + msg + ")");
         if(!passed) throw std::invalid_argument("image/variance/mask incompatible: " + msg);
     }
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

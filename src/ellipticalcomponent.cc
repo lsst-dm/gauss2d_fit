@@ -8,9 +8,7 @@
 #include "param_filter.h"
 #include <stdexcept>
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 const CentroidParameters & EllipticalComponent::get_centroid() const { return *_centroid; }
@@ -54,5 +52,4 @@ EllipticalComponent::EllipticalComponent(
     if(_ellipse == nullptr) throw std::invalid_argument("ellipse must not be null");
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

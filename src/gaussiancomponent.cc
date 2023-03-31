@@ -10,9 +10,7 @@
 
 #include <stdexcept>
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 // This is the gauss2d convention; see evaluator.h
 static const std::array<size_t, N_PARAMS_GAUSS2D> IDX_ORDER = {0, 1, 3, 4, 5, 2};
@@ -211,5 +209,4 @@ GaussianComponent::GaussianComponent(
 {
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

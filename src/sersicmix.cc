@@ -6,9 +6,7 @@
 
 #include "util.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 std::string IntegralSize::repr(bool name_keywords) const {
@@ -2086,5 +2084,4 @@ std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order) {
     throw std::invalid_argument("No knots available for Sersic mixture of order " + std::to_string(order));
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

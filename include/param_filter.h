@@ -9,9 +9,7 @@
 
 namespace g2f = gauss2d::fit;
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 struct ParamFilter
@@ -66,6 +64,5 @@ inline void insert_params(const t params_in, t & params_out, ParamFilter * filte
     insert_params_ref<t>(params_in, params_out, filter);
 }
 
-}
-}
+} // namespace gauss2d::fit
 #endif //GAUSS2DFIT_PARAM_FILTER_H

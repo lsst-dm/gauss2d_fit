@@ -6,9 +6,7 @@
 #include "util.h"
 
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 std::set<std::reference_wrapper<const Channel>> LinearIntegralModel::get_channels() const {
@@ -88,5 +86,4 @@ LinearIntegralModel::LinearIntegralModel(const Data * data_in)
 }
 LinearIntegralModel::~LinearIntegralModel() {};
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

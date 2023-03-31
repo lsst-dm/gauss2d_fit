@@ -11,14 +11,12 @@
 #include "parameters/parameter.h"
 #include "parameters/unit.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class UnitNone : public parameters::Unit {
 public:
-    std::string get_name() const {
+    std::string get_name() const override {
         static const std::string name_none = "None";
         return name_none; 
     }
@@ -30,15 +28,15 @@ struct SizeParameter {
     virtual double get_size() const = 0;
     virtual void set_size(double size) = 0;
 
-    virtual ~SizeParameter() {};
+    virtual ~SizeParameter() = default;
 };
 
 struct SizeXParameter : public SizeParameter {
-    virtual ~SizeXParameter() {};
+    virtual ~SizeXParameter() = default;
 };
 
 struct SizeYParameter : public SizeParameter {
-    virtual ~SizeYParameter() {};
+    virtual ~SizeYParameter() = default;
 };
 
 template<typename T>
@@ -147,7 +145,6 @@ struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
     using Param<SigmaYParameter>::Parameter;
 };
 
-}
-}
+} // namespace gauss2d::fit
 
 #endif //GAUSS2DFIT_PARAMETERS_H

@@ -8,9 +8,7 @@
 #include "parameters.h"
 #include "parametricellipse.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 class SersicParametricEllipse : public ParametricEllipse
 {
@@ -50,9 +48,8 @@ public:
         std::shared_ptr<ReffYParameter> size_y,
         std::shared_ptr<RhoParameter> rho=nullptr
     );
-    SersicParametricEllipse(double size_x=0, double size_y=0, double rho=0);
+    explicit SersicParametricEllipse(double size_x=0, double size_y=0, double rho=0);
 };
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

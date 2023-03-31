@@ -7,9 +7,7 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class GaussianModelIntegral : public GaussianIntegral
@@ -19,11 +17,11 @@ protected:
     const std::shared_ptr<const IntegralModel> _integralmodel;
 
 public:
-    virtual double get_value() const override;
-    virtual void set_value(double value) override;
+    double get_value() const override;
+    void set_value(double value) override;
 
-    virtual std::string repr(bool name_keywords = false) const override;
-    virtual std::string str() const override;
+    std::string repr(bool name_keywords = false) const override;
+    std::string str() const override;
 
     GaussianModelIntegral(
         const Channel & channel, const std::shared_ptr<const IntegralModel> integralmodel
@@ -31,7 +29,6 @@ public:
     ~GaussianModelIntegral();
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

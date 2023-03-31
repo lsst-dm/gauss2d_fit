@@ -8,9 +8,7 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class QuasiParametricEllipse : public Parametric
@@ -45,7 +43,6 @@ public:
     };
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

@@ -8,9 +8,7 @@
 #include "parameters.h"
 #include "integralmodel.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class LinearIntegralModel : public IntegralModel
@@ -60,7 +58,6 @@ public:
 };
 
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif

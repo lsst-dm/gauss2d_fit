@@ -18,9 +18,7 @@
 #include "parametricellipse.h"
 #include "sersicmix.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class SersicEllipseData : public EllipseData, public QuasiParametricEllipse
@@ -530,5 +528,4 @@ SersicMixComponent::SersicMixComponent(
 
 SersicMixComponent::~SersicMixComponent() {};
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

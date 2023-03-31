@@ -3,9 +3,7 @@
 #include <optional>
 #include "source.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 void Source::add_extra_param_map(
     const Channel & channel, extra_param_map & map_extra,
@@ -103,5 +101,4 @@ Source::Source(Components & components)
     }
 }
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit

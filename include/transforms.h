@@ -17,9 +17,7 @@
 #include "parameters/transform.h"
 #endif
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
@@ -108,17 +106,16 @@ public:
         _set_range();
     }
 
-    LogitLimitedTransform(
+    explicit LogitLimitedTransform(
         std::shared_ptr<parameters::Limits<double>> limits,
         double factor = 1
     ) {
-        set_limits(limits);
+        set_limits(std::move(limits));
         set_factor(factor);
         _set_range();
     }
 };
 #pragma GCC diagnostic pop
-}
-}
+} // namespace gauss2d::fit
 
-#endif //GAUSS2DFIT_TRANSFORMS_H
+#endif //GAUSS2D_FIT_TRANSFORMS_H

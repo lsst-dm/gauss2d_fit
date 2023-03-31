@@ -5,9 +5,7 @@
 #include "integralmodel.h"
 #include "parametricmodel.h"
 
-namespace gauss2d
-{
-namespace fit
+namespace gauss2d::fit
 {
 
 class Component : public ParametricModel
@@ -16,7 +14,6 @@ public:
     virtual const IntegralModel & get_integralmodel() const = 0;
 };
 
-} // namespace fit
-} // namespace gauss2d
+} // namespace gauss2d::fit
 
 #endif
