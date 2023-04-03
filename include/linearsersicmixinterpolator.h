@@ -6,11 +6,15 @@
 namespace gauss2d::fit
 {
 
+/**
+ * A SersicMixInterpolator that uses linear interpolation between knots.
+ */
 class LinearSersicMixInterpolator : public SersicMixInterpolator {
 private:
     const unsigned short _order;
 
 public:
+    /// The knot positions and values.
     const std::vector<SersicMixValues> & knots;
 
     std::vector<IntegralSize> get_integralsizes(double sersicindex) const override;

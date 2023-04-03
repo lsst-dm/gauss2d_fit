@@ -34,6 +34,14 @@ namespace gauss2d::fit
     storing and checking arguments against the previous call and therefore
     be less efficient.
 */
+/**
+ * @brief A collection of Sources comprising a ParametricModel of Data.
+ *
+ * @tparam T The type of the Image (usually float or double).
+ * @tparam Image The class of image used in Data.
+ * @tparam Indices The class of index map used in Data.
+ * @tparam Mask The class of mask used in Data.
+ */
 template <typename T, typename Image, typename Indices, typename Mask>
 class Model : public ParametricModel
 {
@@ -46,8 +54,13 @@ public:
     typedef std::vector<std::shared_ptr<PsfModel>> PsfModels;
     typedef std::vector<std::shared_ptr<Source>> Sources;
 
+    /// Valid forms of evaluation to setup GaussianEvaluator instances for.
     enum class EvaluatorMode {
-        image, loglike, loglike_image, loglike_grad, jacobian
+        image,         ///< Compute the model images only
+        loglike,       ///< Compute the log likelihood only
+        loglike_image, ///< Compute the model images and log likelihood
+        loglike_grad,  ///< Compute the gradients of the log likelihood
+        jacobian       ///< Compute the model Jacobian
     };
 
 private:
@@ -75,9 +88,8 @@ private:
             + std::to_string(n_obs));
     }
 
+    /// Return a map of source Gaussians for each Channel in Data
     GaussiansMap _get_gaussians_srcs() const {
-        // A map of gaussians for each source by channel
-        // The number of params will be the same but integrals will differ
         GaussiansMap gaussians_srcs{};
         size_t n_gaussians_src = 0;
 
@@ -99,6 +111,7 @@ private:
         return gaussians_srcs;
     }
 
+    /// Evaluate a single observation using the current EvaluatorMode in _mode
     double _evaluate_observation(size_t idx) {
         _check_obs_idx(idx);
         if(_mode == EvaluatorMode::jacobian) {
@@ -140,7 +153,20 @@ private:
         return _evaluators[idx]->loglike_pixel();
     }
 
-    // Setup an evaluator with the necessary outputs
+    /**
+     * Setup GaussianEvaluator instances for every Observation in Data using one EvaluatorMode.
+     *
+     * @param idx_obs The number index of the Observation in Data.
+     * @param mode The EvaluatorMode for Evaluator instances.
+     * @param outputs The list of Image instances to output to, ordered as Data.
+     * @param residual The residual Image for the Evaluator to use.
+     * @param print Whether to print diagnostic information to stdout.
+     * @return A pair of Evaluator instances, along with the associated output Image
+     *         and gradient ImageArray.
+     *
+     * @note Different modes require different lengths of outputs.
+     * @note Not all EvaluatorMode options are currently implemented.
+     */
     std::pair<
         std::unique_ptr<Evaluator>,
         std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<double, Image>>>
@@ -205,7 +231,6 @@ private:
         for(auto psfit = psfcomps->cbegin(); psfit < psfcomps->cend(); psfit++) {
             for(const auto & gaussians : gaussians_src) {
                 for(const auto & gaussian : *gaussians) {
-                //std::as_const(*
                     data.emplace_back(std::make_shared<ConvolvedGaussian>(gaussian, *psfit));
                 }
             }
@@ -250,7 +275,7 @@ private:
             auto filter_free = g2f::ParamFilter{false, true, true, true, channel};
             this->get_parameters_observation_const(params_free, idx_obs, &filter_free);
             params_free = nonconsecutive_unique<ParamBaseCRef>(params_free);
-            //for(const auto & param : free_unique) std::cerr << param.get().str() << endl;
+
             const size_t n_free = params_free.size() + 1;
 
             if(has_outputs) {
@@ -316,6 +341,7 @@ private:
         };
     }
 
+    /// Make new factor/map inputs for GaussianEvaluator, if needed.
     template <bool print>
     void _make_param_maps(
         std::weak_ptr<Image> factors_extra_weak,
@@ -511,7 +537,8 @@ public:
     {
         for(auto & source : _sources) source->add_grad_param_factors(channel, factors);
     }
-    
+
+    /// Evaluate the model for every Observation in _data.
     std::vector<double> evaluate() {
         if(!_is_setup) throw std::runtime_error("Can't call evaluate before setup_evaluators");
 
@@ -524,11 +551,13 @@ public:
         return result;
     }
 
+    /// Evaluate a single observation with the given index in _data.
     double evaluate_observation(size_t idx) {
         _check_obs_idx(idx);
         return _evaluate_observation(_evaluators[idx]);
     }
 
+    /// Return _data
     std::shared_ptr<const ModelData> get_data() const { return _data; }
 
     std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel & channel) const override {
@@ -550,6 +579,7 @@ public:
         return n_g;
     }
 
+    /// Return _outputs (output Image instances for each Observation in _data)
     std::vector<std::shared_ptr<Image>> get_outputs() const { return _outputs; }
 
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override
@@ -568,6 +598,7 @@ public:
         return params;
     }
 
+    /// Same as get_parameters(), but for a single Observation with index idx in _data
     ParamRefs & get_parameters_observation(ParamRefs & params, size_t idx, ParamFilter * filter = nullptr)
     const {
         _check_obs_idx(idx);
@@ -577,6 +608,7 @@ public:
         return params;
     }
 
+    /// Same as get_parameters_const(), but for a single Observation with index idx in _data
     ParamCRefs & get_parameters_observation_const(ParamCRefs & params, size_t idx,
         ParamFilter * filter = nullptr) const {
         _check_obs_idx(idx);
@@ -586,10 +618,12 @@ public:
         return params;
     }
 
+    /// Return _psfmodels, the list of PsfModel instances for each Observation in _data
     PsfModels get_psfmodels() const {
         return _psfmodels;
     }
 
+    /// Return _sources, the list of Source instances for each Observation in _data
     Sources get_sources() const {
         return _sources;
     }
@@ -612,9 +646,17 @@ public:
         }
     }
 
-
-    // Setup evaluators for all observations for repeated evaluations 
-    // (e.g. for fitting with modified params)
+    /**
+     * Setup Evaluator instances for every Observation in _data using the given EvaluatorMode.
+     *
+     * @param mode The EvaluatorMode to use for all Evaluator instances.
+     * @param outputs A vector of vectors of Image outputs for each Evaluator (created if empty and needed).
+     * @param residuals An array of residual
+     * @param print Whether to print diagnostic statement to stdout.
+     *
+     * @note Different modes require different sized vectors for outputs
+     *       EvaluatorMode::jacobian requires one Image per free parameter per Observation.
+     */
     void setup_evaluators(
         EvaluatorMode mode=EvaluatorMode::image,
         std::vector<std::vector<std::shared_ptr<Image>>> outputs={},
@@ -682,6 +724,7 @@ public:
         }
     }
 
+    /// Get the size of this->_data
     size_t size() const { return _size; }
 
     std::string repr(bool name_keywords = false) const override {
@@ -696,6 +739,17 @@ public:
         return str + "], data=" + _data->str() + ")";
     }
 
+    /**
+     * Verify that the Jacobian is correct by comparing to finite differences.
+     *
+     * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
+     * @param findiff_add The minimum value of the finite difference increment.
+     * @param rtol The allowed relative tolerance in the Jacobian as compared to the finite difference.
+     * @param atol The allowed absolute tolerance in the Jacobian as compared to the finite difference.
+     * @return A vector of error messages, one for each Parameter that failed verification.
+     *
+     * @note Verification is done using isclose(), which is modelled after Python's numpy.isclose.
+     */
     std::vector<std::string> verify_jacobian(
         double findiff_frac=1e-4,
         double findiff_add=1e-4,
@@ -830,6 +884,13 @@ public:
         return errors;
     }
 
+    /**
+     * Construct a Model instance from Data, PsfModels and Sources.
+     *
+     * @param data The data to model.
+     * @param psfmodels A vector of PSF models, ordered to match each Observation in data.
+     * @param sources A vector of Source models.
+     */
     Model(
         std::shared_ptr<const ModelData> data,
         PsfModels & psfmodels,

@@ -10,6 +10,9 @@
 namespace gauss2d::fit
 {
 
+/**
+ * A single-channel GaussianIntegral referencing a Parametric IntegralModel.
+ */
 class GaussianModelIntegral : public GaussianIntegral
 {
 protected:
@@ -23,6 +26,12 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
+    /**
+     * Construct a GaussianModelIntegral instance for one Channel.
+     *
+     * @param channel The Channel for the integral.
+     * @param integralmodel An IntegralModel valid for channel.
+     */
     GaussianModelIntegral(
         const Channel & channel, const std::shared_ptr<const IntegralModel> integralmodel
     );

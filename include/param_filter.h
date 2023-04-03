@@ -12,6 +12,9 @@ namespace g2f = gauss2d::fit;
 namespace gauss2d::fit
 {
 
+/**
+ * Options for filtering Parameter instances. Defaults select all.
+ */
 struct ParamFilter
 {
     bool fixed = true;
@@ -21,6 +24,14 @@ struct ParamFilter
     std::optional<std::reference_wrapper<const Channel>> channel = std::nullopt;
 };
 
+/**
+ * Add a Parameter to a vector thereof, if it meets conditions.
+ *
+ * @tparam t The type of the Parameter class (usually double or float).
+ * @param param The Parameter to add (or not).
+ * @param params The vector to add to.
+ * @param filter The filter to apply.
+ */
 template <typename t>
 inline void insert_param(g2f::ParamBase & param, t & params, ParamFilter * filter = nullptr)
 {
@@ -38,6 +49,7 @@ inline void insert_param(g2f::ParamBase & param, t & params, ParamFilter * filte
     }
 }
 
+/// Same as insert_param, but only inserting if filter has a null or matching Channel.
 template <typename t>
 void insert_param_channel(
     const gauss2d::fit::Channel & channel,
@@ -51,6 +63,7 @@ void insert_param_channel(
     }
 }
 
+/// Same as insert_param, but inserting from a (ref to a) collection of Parameter instances.
 template <typename t>
 inline void insert_params_ref(const t & params_in, t & params_out, ParamFilter * filter = nullptr)
 {
@@ -58,6 +71,7 @@ inline void insert_params_ref(const t & params_in, t & params_out, ParamFilter *
     else for(auto & p : params_in) params_out.push_back(p);
 }
 
+/// Same as insert_param, but inserting from a collection of Parameter instances.
 template <typename t>
 inline void insert_params(const t params_in, t & params_out, ParamFilter * filter = nullptr)
 {

@@ -25,6 +25,9 @@ public:
     }
 };
 
+/**
+ * A Component consisting of a 2D Gaussian.
+ */
 class GaussianComponent : private GaussianParametricEllipseHolder, public EllipticalComponent {
 private:
     ParamCRefs _get_parameters_grad(const Channel & channel) const;
@@ -45,7 +48,14 @@ public:
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
     
     // Useful if you want to make a single-Gaussian, zero-sized component list for the PsfModel
-    // when fitting a pre-computed PSF
+    // when fitting a pre-computed
+    /**
+     * Construct a vector of default-initialized GaussianComponent instances.
+     *
+     * @param sizes Vector of initial values for both sigma_x and sigma_y.
+     * @param fixed Whether all Parameter members should be fixed initially.
+     * @return A vector of GaussianComponent instances.
+     */
     static std::vector<std::shared_ptr<Component>> make_uniq_default_gaussians(
         const std::vector<double> & sizes={2.},
         bool fixed=true
@@ -77,7 +87,14 @@ public:
     
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
-    
+
+    /**
+     * Construct a GaussianComponent from ellipse, centroid and integral parameters.
+     *
+     * @param ellipse The GaussianParametricEllipse value; default-initialized if null.
+     * @param centroid The CentroidParameters value; default-initialized if null.
+     * @param integralmodel The IntegralModel value; default-initialized if null.
+     */
     explicit GaussianComponent(
         std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr,
         std::shared_ptr<CentroidParameters> centroid = nullptr,

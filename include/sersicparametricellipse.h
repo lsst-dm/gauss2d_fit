@@ -10,6 +10,9 @@
 
 namespace gauss2d::fit
 {
+/**
+ * A ParametericEllipse with effective radius Parameters.
+ */
 class SersicParametricEllipse : public ParametricEllipse
 {
 private:
@@ -43,6 +46,13 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
+    /**
+     * Construct a SersicParametricEllipse with existing Parameter instances.
+     *
+     * @param size_x The x-axis effective radius parameter.
+     * @param size_y The y-axis effective radius parameter.
+     * @param rho The correlation (rho) parameter.
+     */
     SersicParametricEllipse(
         std::shared_ptr<ReffXParameter> size_x,
         std::shared_ptr<ReffYParameter> size_y,

@@ -12,6 +12,9 @@ namespace gauss2d::fit
 
 static const short SERSICMIX_ORDER_DEFAULT = 4;
 
+/**
+ * A pair of integral - size values for a Gaussian (sub)Component.
+ */
 class IntegralSize : public Object {
 public:
     const double integral;
@@ -22,14 +25,26 @@ public:
     IntegralSize(double integral_, double sigma_);
 };
 
+/**
+ * An interpolator that returns IntegralSize vectors for a given Sersic index.
+ */
 class SersicMixInterpolator : public Object {
 public:
+    /**
+     * Get the vector of IntegralSize values for a given Sersic index.
+     *
+     * @param sersicindex The Sersic index value.
+     * @return The vector of IntegralSize values for sersicindex.
+     */
     virtual std::vector<IntegralSize> get_integralsizes(double sersicindex) const = 0;
     virtual std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const = 0;
 
     virtual unsigned short get_order() const = 0;
 };
 
+/**
+ * A vector of IntegralSize values for a given Sersic index.
+ */
 class SersicMixValues : public Object {
 public:
     const double sersicindex;
@@ -37,7 +52,13 @@ public:
 
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
-    SersicMixValues(double sersicindex_, std::vector<IntegralSize> values_);
+    /**
+     * Construct a SersicMixValues.
+     *
+     * @param sersicindex The value of the Sersic index.
+     * @param values The vector of IntegralSize values for the Sersic index.
+     */
+    SersicMixValues(double sersicindex, std::vector<IntegralSize> values);
 };
 
 inline bool operator < ( const SersicMixValues &lhs, const SersicMixValues &rhs) {

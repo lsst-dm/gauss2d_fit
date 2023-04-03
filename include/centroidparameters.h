@@ -10,7 +10,9 @@
 
 namespace gauss2d::fit
 {
-
+/**
+ * A Centroid with Parameters for x and y
+ */
 class CentroidParameters : public gauss2d::CentroidData, public Parametric
 {
 private:
@@ -25,7 +27,9 @@ public:
     double get_y() const override;
     std::array<double, 2> get_xy() const override;
 
+    /// Get a ref to the x param
     CentroidXParameter & get_x_param() const;
+    /// Get a ref to the y param
     CentroidYParameter & get_y_param() const;
 
     std::shared_ptr<CentroidXParameter> get_x_param_ptr();
@@ -38,11 +42,17 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
+    /**
+     * Construct a CentroidParameters
+     *
+     * @param x The x parameter. Default-constructed if null
+     * @param y The y parameter. Default-constructed if null
+     */
     explicit CentroidParameters(
         std::shared_ptr<CentroidXParameter> x = nullptr,
         std::shared_ptr<CentroidYParameter> y = nullptr
     );
-
+    /// Construct a CentroidParameters with default-constructed Parameters set to x/y values
     CentroidParameters(double x, double y);
 };
 } // namespace gauss2d::fit

@@ -10,6 +10,13 @@
 namespace gauss2d::fit
 {
 
+/*
+The registry serves several purposes:
+    - ensures that Channels are unique and do not share names
+    - allows Channels to be easily found by name.
+    - prevents Channels from being implicitly deleted when no objects reference them
+      (though they can be explicitly deleted in that case)
+*/
 static inline Channel::Registry _registry = {};
 
 // https://stackoverflow.com/questions/8147027/

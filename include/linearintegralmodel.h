@@ -11,6 +11,9 @@
 namespace gauss2d::fit
 {
 
+/**
+ * An IntegralModel with a single linear IntegralParameter per Channel.
+ */
 class LinearIntegralModel : public IntegralModel
 {
 public:
@@ -25,7 +28,9 @@ private:
     struct Shared_enabler;
 
 public:
+    /// Get the IntegralParameter for the given Channel
     std::shared_ptr<IntegralParameter> at(const Channel & channel);
+    /// Get the (const) IntegralParameter for the given Channel
     std::shared_ptr<const IntegralParameter> at(const Channel & channel) const;
 
     typename Data::iterator begin() noexcept;
@@ -42,6 +47,7 @@ public:
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
     ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
 
+    /// Return the size of Data (number of Channel/IntegralParameter instances)
     size_t size() const;
 
     std::string repr(bool name_keywords = false) const override;
@@ -51,8 +57,13 @@ public:
     const bool operator == ( const IntegralModel &m ) const { return &(*this) == &m; };
     const bool operator != ( const IntegralModel &m ) const { return &(*this) != &m; };
 
-
-    // not giving a nullptr default because users should explicitly use the null Channel
+    /**
+     * Construct a LinearIntegralModel from input Data.
+     *
+     * @param data_in A map of IntegralParameter shared_ptr to move for each Channel.
+     *
+     * @note No default initialization is provided, so data_in must not be null.
+     */
     LinearIntegralModel(const Data * data_in);
     ~LinearIntegralModel();
 };

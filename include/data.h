@@ -16,6 +16,17 @@ namespace gauss2d::fit
     A Data is a collection of Observations that a consistent Model can be
     generated for.
 */
+/**
+ * @brief A list of Observation instances that can be modelled.
+ *
+ * A Data is a list of Observation instances that can have associated Model
+ * instances. Multiple Observation instances may have the same Channel, but one
+ * should not include the same Observation multiple time.
+ *
+ * @tparam T The type of the Observation Image (usually float or double)
+ * @tparam I The type of the Observation indices (usually size_t)
+ * @tparam M The type of the Observation Mask (usually bool)
+ */
 template <typename T, typename I, typename M>
 class Data : public Parametric
 {
@@ -36,6 +47,7 @@ public:
     inline auto cbegin() const { return _observations.begin(); }
     inline auto cend() const { return _observations.end(); }
 
+    /// Return the minimum set of Channel instances covering every Observation
     std::set<std::reference_wrapper<const Channel>> get_channels() const {
         return _channels;
     }
@@ -51,6 +63,7 @@ public:
         return params;
     }
 
+    /// Get the number of member Observation
     size_t size() const { return _observations.size(); }
 
     std::string repr(bool name_keywords = false) const override {
@@ -70,6 +83,11 @@ public:
         return str;
     }
 
+    /**
+     * Construct a Data instance
+     *
+     * @param observations The Observation pointers to include. Must not be null.
+     */
     explicit Data(std::vector<std::shared_ptr<const Observation>> observations) {
         _observations.reserve(observations.size());
         _observation_ptrs.reserve(observations.size());

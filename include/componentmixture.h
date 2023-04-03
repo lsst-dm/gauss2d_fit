@@ -14,6 +14,12 @@ namespace gauss2d::fit
 
 typedef std::vector<std::shared_ptr<Component>> Components;
 
+/**
+ * @brief A list of related Component instances.
+ *
+ * A ComponentMixture is any object that is composed of and can return a list
+ * of its constituent components.
+ */
 class ComponentMixture : public ParametricModel
 {
 public:

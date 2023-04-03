@@ -24,6 +24,7 @@ public:
 
 static const UnitNone unit_none {};
 
+/// A Parameter representing a size (i.e. a physical length)
 struct SizeParameter {
     virtual double get_size() const = 0;
     virtual void set_size(double size) = 0;
@@ -80,6 +81,7 @@ public:
     using Param<ProperFractionParameter>::Parameter;
 };
 
+/// A generic scale radius, for profiles without specific names like "effective radius"
 struct RadiusScaleParameter : public Param<RadiusScaleParameter> {
     static inline constexpr double _min = 0.;
     static inline constexpr double _default = 1.;
@@ -147,4 +149,4 @@ struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
 
 } // namespace gauss2d::fit
 
-#endif //GAUSS2DFIT_PARAMETERS_H
+#endif //GAUSS2D_FIT_PARAMETERS_H

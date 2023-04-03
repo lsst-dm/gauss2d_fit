@@ -14,15 +14,23 @@
 namespace gauss2d::fit
 {
 
-/*
-    Observations are images with uncertainties and an optional boolean mask.
-    They can represent physical exposures from a camera or more generic
-    images, although they must have a Channel defined.
-
-    Masks are defined as "inverse" masks, such that a value of 1 means the
-    pixel is to be used e.g. in fitting. Masks are currently *not* used
-    in gauss2d, although that should change in the near future.
-*/
+/**
+ * @brief An observed single-channel image with an associated variance and mask.
+ *
+ * An Observation is an Image in a single Channel with a corresponding variance
+ * and mask. The variance is provided as inverse sigma to facilitate Model
+ * evaluation. Observation Image instances may represent a single physical
+ * exposure or more generic data, such as processed data like coadded/stacked
+ * images.
+ *
+ * @note The Mask convention is that of an "inverse" mask. Pixels with
+ *       positive Mask valuese used, while values <= 0 are ignored.
+ *
+ * @tparam T The type of the Image (usually float or double).
+ * @tparam Image The class of image used in Data.
+ * @tparam Indices The class of index map used in Data.
+ * @tparam Mask The class of mask f.
+ */
 template <typename T, typename I, typename M>
 class Observation : public Parametric
 {
@@ -36,16 +44,23 @@ private:
     const Channel & _channel;
 
 public:
+    /// Get this->_channel
     const Channel & get_channel() const { return _channel; }
-
+    /// Get this->_image
     std::shared_ptr<const Image> get_image_ptr_const() const { return _image; }
+    /// Get this->_sigma_inv
     std::shared_ptr<const Image> get_sigma_inverse_ptr_const() const { return _sigma_inv; }
 
+    /// Get the number of columns in this->_image
     size_t get_n_cols() const { return _image->get_n_cols(); }
+    /// Get the number of rows in this->_image
     size_t get_n_rows() const { return _image->get_n_rows(); }
 
+    /// Get a ref to this->_image
     Image & get_image() const { return *_image; }
+    /// Get a ref to this->_mask
     Mask & get_mask_inverse() const { return *_mask_inv; }
+    /// Get a ref to this->sigma_inv
     Image & get_sigma_inverse() const { return *_sigma_inv; }
 
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override {
@@ -78,6 +93,14 @@ public:
         );
     }
 
+    /**
+     * Construct an Observation instance.
+     *
+     * @param image The Image to assign to _image.
+     * @param sigma_inv The Image to assign to _sigma_inv. Must have identical dimensions as image.
+     * @param mask_inv The mask Image to assign to _mask.
+     * @param channel The channel of every Observation.
+     */
     Observation(
         std::shared_ptr<Image> image,
         std::shared_ptr<Image> sigma_inv,

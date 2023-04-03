@@ -10,6 +10,9 @@
 namespace gauss2d::fit
 {
 
+/**
+ * A Component with an elliptically-symmetric intensity profile.
+ */
 class EllipticalComponent : public Component
 {
 protected:
@@ -18,7 +21,9 @@ protected:
     std::shared_ptr<IntegralModel> _integralmodel;
 
 public:
+    /// Get the centroid Parameter container
     const CentroidParameters & get_centroid() const;
+    /// Get the ellipse Parameter container
     const ParametricEllipse & get_ellipse() const;
     const IntegralModel & get_integralmodel() const override;
 
@@ -28,6 +33,13 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
+    /**
+     * Construct an EllipticalComponent from Parameter containers
+     *
+     * @param ellipse The ellipse Parameter container
+     * @param centroid The centroid Parameter container; default-constructed if null
+     * @param integralmodel The IntegralModel; default-constructed if null
+     */
     explicit EllipticalComponent(
         std::shared_ptr<ParametricEllipse> ellipse,
         std::shared_ptr<CentroidParameters> centroid = nullptr,

@@ -12,7 +12,11 @@
 namespace gauss2d::fit
 {
 
-// following numpy.isclose
+/**
+ * The result of an isclose() check.
+ *
+ * @tparam T The type of value being checked (usually float/double).
+ */
 template <typename T>
 struct IsCloseResult
 {
@@ -28,6 +32,20 @@ struct IsCloseResult
     }
 };
 
+/**
+ * @brief Check if two values are close, within some tolerances.
+ *
+ * This function mimics the behaviour of numpy.isclose as of v1.7.0
+ *
+ * @note See https://numpy.org/doc/stable/reference/generated/numpy.isclose.html
+ *
+ * @tparam T The type of value being checked (usually float/double).
+ * @param a The (measured) value to check.
+ * @param b The (reference) value to check against.
+ * @param rtol The relative tolerance.
+ * @param atol The absolute tolerance.
+ * @return A IsCloseResult object with the result and some metadata.
+ */
 template <typename T>
 IsCloseResult<T> isclose(T a, T b, T rtol=1e-5, T atol=1e-8)
 {
