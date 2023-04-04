@@ -9,26 +9,26 @@
 namespace gauss2d::fit
 {
 void PsfModel::add_extra_param_map(
-    const Channel & channel, extra_param_map & map_extra,
-    const grad_param_map & map_grad, ParameterMap & offsets
+        const Channel & channel, ExtraParamMap & map_extra,
+        const GradParamMap & map_grad, ParameterMap & offsets
 ) const
 {
     for(auto & component : _components) component->add_extra_param_map(
         channel, map_extra, map_grad, offsets);
 }
 
-void PsfModel::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
+void PsfModel::add_extra_param_factors(const Channel & channel, ExtraParamFactors & factors) const
 {
     for(auto & component : _components) component->add_extra_param_factors(channel, factors);
 }
 
-void PsfModel::add_grad_param_map(const Channel & channel, grad_param_map & map, ParameterMap & offsets
+void PsfModel::add_grad_param_map(const Channel & channel, GradParamMap & map, ParameterMap & offsets
     ) const
 {
     for(auto & component : _components) component->add_grad_param_map(channel, map, offsets);
 }
 
-void PsfModel::add_grad_param_factors(const Channel & channel, grad_param_factors & factors) const
+void PsfModel::add_grad_param_factors(const Channel & channel, GradParamFactors & factors) const
 {
     for(auto & component : _components) component->add_grad_param_factors(channel, factors);
 }
@@ -64,12 +64,12 @@ ParamCRefs & PsfModel::get_parameters_const(ParamCRefs & params, ParamFilter * f
     return params;
 }
 
-void PsfModel::set_extra_param_factors(const Channel & channel, extra_param_factors & factors, size_t index) const
+void PsfModel::set_extra_param_factors(const Channel & channel, ExtraParamFactors & factors, size_t index) const
 {
     for(auto & component : _components) component->set_extra_param_factors(channel, factors, index);
 }
 
-void PsfModel::set_grad_param_factors(const Channel & channel, grad_param_factors & factors, size_t index) const
+void PsfModel::set_grad_param_factors(const Channel & channel, GradParamFactors & factors, size_t index) const
 {
     for(auto & component : _components) component->set_grad_param_factors(channel, factors, index);
 }

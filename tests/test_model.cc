@@ -282,11 +282,11 @@ TEST_CASE("Model") {
     CHECK(n_gauss_psf == 2);
     for(size_t p = 0; p < n_gauss_psf; ++p) CHECK(psfcomps->at(p).get_integral_value() > 0);
 
-    auto map_extra = std::make_shared<g2f::extra_param_map>();
-    auto map_grad = std::make_shared<g2f::grad_param_map>();
+    auto map_extra = std::make_shared<g2f::ExtraParamMap>();
+    auto map_grad = std::make_shared<g2f::GradParamMap>();
 
-    auto factors_extra = std::make_shared<g2f::extra_param_factors>();
-    auto factors_grad = std::make_shared<g2f::grad_param_factors>();
+    auto factors_extra = std::make_shared<g2f::ExtraParamFactors>();
+    auto factors_grad = std::make_shared<g2f::GradParamFactors>();
 
     const size_t n_gauss = n_gauss_src*n_gauss_psf;
 

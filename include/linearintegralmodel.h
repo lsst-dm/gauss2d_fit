@@ -36,7 +36,7 @@ public:
 
     std::set<std::reference_wrapper<const Channel>> get_channels() const override;
     double get_integral(const Channel & channel) const override;
-    std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>> get_integral_derivative_factors(
+    std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(
         const Channel & channel) const override;
 
     ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;

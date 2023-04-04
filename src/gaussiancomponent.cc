@@ -50,8 +50,8 @@ ParamCRefs GaussianComponent::_get_parameters_grad(const Channel & channel) cons
 }
 
 void GaussianComponent::add_extra_param_map(
-    const Channel & channel, extra_param_map & map_extra, const grad_param_map & map_grad,
-    ParameterMap & offsets
+        const Channel & channel, ExtraParamMap & map_extra, const GradParamMap & map_grad,
+        ParameterMap & offsets
 ) const
 {
     auto factors_int = _integralmodel->get_integral_derivative_factors(channel);
@@ -80,13 +80,13 @@ void GaussianComponent::add_extra_param_map(
     map_extra.push_back({idx, offset});
 }
 
-void GaussianComponent::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
+void GaussianComponent::add_extra_param_factors(const Channel & channel, ExtraParamFactors & factors) const
 {
     factors.push_back({0, 0, 0});
 }
 
 void GaussianComponent::add_grad_param_map(
-    const Channel & channel, grad_param_map & map, ParameterMap & offsets
+        const Channel & channel, GradParamMap & map, ParameterMap & offsets
 ) const
 {
     auto params = nonconsecutive_unique(this->_get_parameters_grad(channel));
@@ -119,7 +119,7 @@ void GaussianComponent::add_grad_param_map(
     }
 }
 
-void GaussianComponent::add_grad_param_factors(const Channel & channel, grad_param_factors & factors) const
+void GaussianComponent::add_grad_param_factors(const Channel & channel, GradParamFactors & factors) const
 {
     factors.push_back({1, 1, 1, 1, 1, 1});
 }
@@ -148,7 +148,7 @@ ParamCRefs & GaussianComponent::get_parameters_const(ParamCRefs & params, ParamF
 }
 
 void GaussianComponent::set_extra_param_factors(
-    const Channel & channel, extra_param_factors & factors, size_t index
+        const Channel & channel, ExtraParamFactors & factors, size_t index
 ) const {
     auto factors_int = _integralmodel->get_integral_derivative_factors(channel);
     const size_t n_factors = factors_int.size();
@@ -170,7 +170,7 @@ void GaussianComponent::set_extra_param_factors(
 }
 
 void GaussianComponent::set_grad_param_factors(
-    const Channel & channel, grad_param_factors & factors, size_t index
+        const Channel & channel, GradParamFactors & factors, size_t index
 ) const {
     auto params = this->_get_parameters_grad(channel);
     auto & values = factors.at(index);

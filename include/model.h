@@ -53,9 +53,9 @@ public:
 private:
     std::shared_ptr<const ModelData> _data;
     std::vector<std::unique_ptr<Evaluator>> _evaluators = {};
-    extra_param_factors _factors_extra = {};
+    ExtraParamFactors _factors_extra = {};
     std::vector<std::weak_ptr<Image>> _factors_extra_in;
-    grad_param_factors _factors_grad = {};
+    GradParamFactors _factors_grad = {};
     std::vector<std::weak_ptr<Image>> _factors_grad_in;
     GaussiansMap _gaussians_srcs;
     std::vector<std::shared_ptr<ImageArray<double, Image>>> _grads;
@@ -347,10 +347,10 @@ private:
         auto factors_grad_mut = expired ? std::make_shared<Image>(
             n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys) : factors_grad_weak.lock();;
 
-        extra_param_map map_extra = {};
-        grad_param_map map_grad = {};
-        extra_param_factors & factors_extra = _factors_extra;
-        grad_param_factors & factors_grad = _factors_grad;
+        ExtraParamMap map_extra = {};
+        GradParamMap map_grad = {};
+        ExtraParamFactors & factors_extra = _factors_extra;
+        GradParamFactors & factors_grad = _factors_grad;
         factors_extra.resize(0);
         factors_grad.resize(0);
 
@@ -492,22 +492,22 @@ private:
 
 public:
     void add_extra_param_map(
-        const Channel & channel, extra_param_map & map_extra, const grad_param_map & map_grad,
-        ParameterMap & offsets
+            const Channel & channel, ExtraParamMap & map_extra, const GradParamMap & map_grad,
+            ParameterMap & offsets
     ) const override
     {
         for(auto & source : _sources) source->add_extra_param_map(channel, map_extra, map_grad, offsets);
     }
-    void add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const override
+    void add_extra_param_factors(const Channel & channel, ExtraParamFactors & factors) const override
     {
         for(auto & source : _sources) source->add_extra_param_factors(channel, factors);
     }
-    void add_grad_param_map(const Channel & channel, grad_param_map & map, ParameterMap & offsets
+    void add_grad_param_map(const Channel & channel, GradParamMap & map, ParameterMap & offsets
         ) const override
     {
         for(auto & source : _sources) source->add_grad_param_map(channel, map, offsets);
     }
-    void add_grad_param_factors(const Channel & channel, grad_param_factors & factors) const override
+    void add_grad_param_factors(const Channel & channel, GradParamFactors & factors) const override
     {
         for(auto & source : _sources) source->add_grad_param_factors(channel, factors);
     }
@@ -594,7 +594,7 @@ public:
         return _sources;
     }
 
-    void set_extra_param_factors(const Channel & channel, extra_param_factors & factors, size_t index)
+    void set_extra_param_factors(const Channel & channel, ExtraParamFactors & factors, size_t index)
         const override
     {
         for(auto & source : _sources) {
@@ -603,7 +603,7 @@ public:
         }
     }
 
-    void set_grad_param_factors(const Channel & channel, grad_param_factors & factors, size_t index)
+    void set_grad_param_factors(const Channel & channel, GradParamFactors & factors, size_t index)
         const override
     {
         for(auto & source : _sources) {

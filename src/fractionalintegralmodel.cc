@@ -64,7 +64,7 @@ double FractionalIntegralModel::get_integral(const Channel & channel) const {
     return _data.at(channel)->get_value()*(_get_integral_remainder(_parent.get(), *_model, channel));
 }
 
-std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>> 
+std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>>
 FractionalIntegralModel::get_integral_derivative_factors(const Channel & channel) const {
     const auto & frac = *(this->_data.at(channel));
     /*

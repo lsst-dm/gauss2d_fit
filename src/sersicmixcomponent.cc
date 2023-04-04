@@ -113,7 +113,7 @@ public:
         }
         return get_value();
     }
-    std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>> get_integral_derivative_factors(
+    std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(
         const Channel & channel) const override {
             // TODO: Refactor this?
         return {};
@@ -276,7 +276,7 @@ void SersicMixComponentIndexParameter::set_value_transformed(double value) {
 }
 
 void SersicMixComponent::add_extra_param_map(
-    const Channel & channel, extra_param_map & map_extra, const grad_param_map & map_grad, ParameterMap & offsets
+        const Channel & channel, ExtraParamMap & map_extra, const GradParamMap & map_grad, ParameterMap & offsets
 ) const
 {
     if(_sersicindex->get_free())
@@ -307,7 +307,7 @@ void SersicMixComponent::add_extra_param_map(
     }
 }
 
-void SersicMixComponent::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
+void SersicMixComponent::add_extra_param_factors(const Channel & channel, ExtraParamFactors & factors) const
 {
     for(size_t idx_g = 0; idx_g < _sersicindex->order; ++idx_g)
     {
@@ -315,7 +315,7 @@ void SersicMixComponent::add_extra_param_factors(const Channel & channel, extra_
     }
 }
 
-void SersicMixComponent::add_grad_param_map(const Channel & channel, grad_param_map & map, ParameterMap & offsets
+void SersicMixComponent::add_grad_param_map(const Channel & channel, GradParamMap & map, ParameterMap & offsets
     ) const
 {
     ParamCRefs params;
@@ -357,7 +357,7 @@ void SersicMixComponent::add_grad_param_map(const Channel & channel, grad_param_
     }
 }
 
-void SersicMixComponent::add_grad_param_factors(const Channel & channel, grad_param_factors & factors) const
+void SersicMixComponent::add_grad_param_factors(const Channel & channel, GradParamFactors & factors) const
 {
     ParamCRefs params;
     ParamFilter filter{};
@@ -406,7 +406,7 @@ ParamCRefs & SersicMixComponent::get_parameters_const(ParamCRefs & params, Param
 }
 
 void SersicMixComponent::set_extra_param_factors(
-    const Channel & channel, extra_param_factors & factors, size_t index
+        const Channel & channel, ExtraParamFactors & factors, size_t index
 ) const {
     if(_sersicindex->get_free())
     {
@@ -435,7 +435,7 @@ void SersicMixComponent::set_extra_param_factors(
 }
 
 void SersicMixComponent::set_grad_param_factors(
-    const Channel & channel, grad_param_factors & factors, size_t index
+        const Channel & channel, GradParamFactors & factors, size_t index
 ) const {
     ParamCRefs params;
     ParamFilter filter{};

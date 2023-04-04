@@ -17,7 +17,7 @@ double LinearIntegralModel::get_integral(const Channel & channel) const {
     return _data.at(channel)->get_value();
 }
 
-std::vector<std::pair<ParamBaseCRef, extra_param_factor_values>>
+std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>>
 LinearIntegralModel::get_integral_derivative_factors(const Channel & channel) const {
     return {};       
 }

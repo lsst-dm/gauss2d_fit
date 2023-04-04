@@ -6,26 +6,26 @@
 namespace gauss2d::fit
 {
 void Source::add_extra_param_map(
-    const Channel & channel, extra_param_map & map_extra,
-    const grad_param_map & map_grad, ParameterMap & offsets
+        const Channel & channel, ExtraParamMap & map_extra,
+        const GradParamMap & map_grad, ParameterMap & offsets
 ) const
 {
     for(auto & component : _components) component->add_extra_param_map(
         channel, map_extra, map_grad, offsets);
 }
 
-void Source::add_extra_param_factors(const Channel & channel, extra_param_factors & factors) const
+void Source::add_extra_param_factors(const Channel & channel, ExtraParamFactors & factors) const
 {
     for(auto & component : _components) component->add_extra_param_factors(channel, factors);
 }
 
-void Source::add_grad_param_map(const Channel & channel, grad_param_map & map, ParameterMap & offsets
+void Source::add_grad_param_map(const Channel & channel, GradParamMap & map, ParameterMap & offsets
     ) const
 {
     for(auto & component : _components) component->add_grad_param_map(channel, map, offsets);
 }
 
-void Source::add_grad_param_factors(const Channel & channel, grad_param_factors & factors) const
+void Source::add_grad_param_factors(const Channel & channel, GradParamFactors & factors) const
 {
     for(auto & component : _components) component->add_grad_param_factors(channel, factors);
 }
@@ -63,14 +63,14 @@ ParamCRefs & Source::get_parameters_const(ParamCRefs & params, ParamFilter * fil
     return params;
 }
 
-void Source::set_extra_param_factors(const Channel & channel, extra_param_factors & factors, size_t index) const {
+void Source::set_extra_param_factors(const Channel & channel, ExtraParamFactors & factors, size_t index) const {
     for(auto & component : _components) {
         component->set_extra_param_factors(channel, factors, index);
         index += component->get_n_gaussians(channel);
     }
 }
 
-void Source::set_grad_param_factors(const Channel & channel, grad_param_factors & factors, size_t index) const {
+void Source::set_grad_param_factors(const Channel & channel, GradParamFactors & factors, size_t index) const {
     for(auto & component : _components) {
         component->set_grad_param_factors(channel, factors, index);
         index += component->get_n_gaussians(channel);
