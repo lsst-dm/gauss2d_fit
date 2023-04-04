@@ -10,17 +10,28 @@
 
 namespace gauss2d::fit
 {
-
-class QuasiParametricEllipse : public Parametric
+class QuasiEllipse
+/**
+ * @brief An ellipse with two scale sizes.
+ *
+ * This form of ellipse may have any radial profile, and is labelled "Quasi"
+ * to distinguish it from the base gauss2d Ellipse and variants, which
+ * specifically represent 2D Gaussians with sigma/FWHM parameters.
+ */
 {
 public:
     virtual double get_rho() const = 0;
     virtual double get_size_x() const = 0;
     virtual double get_size_y() const = 0;
     virtual std::array<double, 3> get_xyr() const { return {get_size_x(), get_size_y(), get_rho()}; };
+
+    virtual ~QuasiEllipse() = default;
 };
 
-class ParametricEllipse : public QuasiParametricEllipse
+/**
+ *
+ */
+class ParametricEllipse : public Parametric, public QuasiEllipse
 {
 public:
     virtual RhoParameter & get_rho_param() const = 0;

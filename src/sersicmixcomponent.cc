@@ -21,7 +21,7 @@
 namespace gauss2d::fit
 {
 
-class SersicEllipseData : public EllipseData, public QuasiParametricEllipse
+class SersicEllipseData : public EllipseData, public QuasiEllipse
 {
 private:
     const std::shared_ptr<const ReffXParameter> _size_x;
@@ -31,15 +31,6 @@ private:
     unsigned short _index;
 
 public:
-
-    ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override {
-        throw std::runtime_error("Can't get_parameters on SersicEllipseData");
-    }
-
-    ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override {
-        throw std::runtime_error("Can't get_parameters on SersicEllipseData");
-    }
-
     double get_sizeratio() const { return _sersicindex->get_sizeratio(_index); }
 
     double get_sigma_x() const override { return get_sizeratio()*_size_x->get_value(); }
@@ -71,7 +62,6 @@ public:
     void set_xyr(const std::array<double, 3> & xyr) override {
         throw std::runtime_error("Can't set on SersicEllipseData");
     }
-
 
     std::string repr(bool name_keywords) const override {
         return std::string("SersicEllipseData(")
