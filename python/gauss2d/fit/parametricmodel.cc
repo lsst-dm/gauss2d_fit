@@ -35,7 +35,7 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_parametricmodel(py::module &m)
-{
-    auto _p = py::class_<g2f::ParametricModel, std::shared_ptr<g2f::ParametricModel>, g2f::Parametric>(m, "ParametricModel");
+void bind_parametricmodel(py::module &m) {
+    auto _p = py::class_<g2f::ParametricModel, std::shared_ptr<g2f::ParametricModel>, g2f::Parametric>(
+            m, "ParametricModel");
 }

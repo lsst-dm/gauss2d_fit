@@ -6,13 +6,11 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 /**
  * A parametric object that can return and filter its Parameter instances.
  */
-class Parametric : public Object
-{
+class Parametric : public Object {
 public:
     /**
      * Add Parameter refs matching the filter to a vector, in order.
@@ -21,25 +19,25 @@ public:
      * @param filter The filter to apply to this Object's parameters.
      * @return A ref to params (for method chaining)
      */
-    virtual ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const = 0;
+    virtual ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const = 0;
     /// Same as get_parameters(), but for const refs.
-    virtual ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const = 0;
+    virtual ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const = 0;
 
     /// Same as get_parameters(), but returning a new vector.
-    ParamRefs get_parameters_new(ParamFilter * filter = nullptr) const {
-        ParamRefs params {};
+    ParamRefs get_parameters_new(ParamFilter* filter = nullptr) const {
+        ParamRefs params{};
         get_parameters(params, filter);
         return params;
     }
     /// Same as get_parameters_const(), but returning a new vector.
-    ParamCRefs get_parameters_const_new(ParamFilter * filter = nullptr) const {
-        ParamCRefs params {};
+    ParamCRefs get_parameters_const_new(ParamFilter* filter = nullptr) const {
+        ParamCRefs params{};
         get_parameters_const(params, filter);
         return params;
     }
 
     virtual ~Parametric() = default;
 };
-} // namespace gauss2d::fit
+}  // namespace gauss2d::fit
 
 #endif

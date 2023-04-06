@@ -31,8 +31,7 @@
  * below should only be changed with caution.
  */
 
-PYBIND11_MODULE(_gauss2d_fit, m)
-{
+PYBIND11_MODULE(_gauss2d_fit, m) {
     m.doc() = "Gauss2DFit Python bindings";
     py::module::import("gauss2d");
 

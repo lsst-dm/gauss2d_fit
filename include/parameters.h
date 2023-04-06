@@ -11,18 +11,17 @@
 #include "parameters/parameter.h"
 #include "parameters/unit.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 
 class UnitNone : public parameters::Unit {
 public:
     std::string get_name() const override {
         static const std::string name_none = "None";
-        return name_none; 
+        return name_none;
     }
 };
 
-static const UnitNone unit_none {};
+static const UnitNone unit_none{};
 
 /// A Parameter representing a size (i.e. a physical length)
 struct SizeParameter {
@@ -40,7 +39,7 @@ struct SizeYParameter : public SizeParameter {
     virtual ~SizeYParameter() = default;
 };
 
-template<typename T>
+template <typename T>
 using Param = parameters::Parameter<double, T>;
 
 struct CentroidXParameter : public Param<CentroidXParameter> {
@@ -100,7 +99,7 @@ struct ReffXParameter : public Param<ReffXParameter>, SizeXParameter {
     using Param<ReffXParameter>::Parameter;
 };
 
-struct ReffYParameter : public Param<ReffYParameter>, SizeYParameter  {
+struct ReffYParameter : public Param<ReffYParameter>, SizeYParameter {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
@@ -137,7 +136,7 @@ struct SigmaXParameter : public Param<SigmaXParameter>, SizeXParameter {
     using Param<SigmaXParameter>::Parameter;
 };
 
-struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
+struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
@@ -147,6 +146,6 @@ struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
     using Param<SigmaYParameter>::Parameter;
 };
 
-} // namespace gauss2d::fit
+}  // namespace gauss2d::fit
 
-#endif //GAUSS2D_FIT_PARAMETERS_H
+#endif  // GAUSS2D_FIT_PARAMETERS_H

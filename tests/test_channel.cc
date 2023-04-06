@@ -6,8 +6,7 @@
 
 namespace g2f = gauss2d::fit;
 
-TEST_CASE("Channels")
-{
+TEST_CASE("Channels") {
     CHECK(g2f::Channel::get_channels().size() == 1);
     CHECK_THROWS_AS(g2f::Channel::make_const("None"), std::invalid_argument);
     auto x = g2f::Channel::make("x");

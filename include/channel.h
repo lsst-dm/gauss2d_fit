@@ -13,8 +13,7 @@
 
 #include "util.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 
 /**
  * @brief An observational channel, usually representing some range of wavelengths of light.
@@ -27,19 +26,18 @@ namespace gauss2d::fit
  *
  * @note Channels are compared and sorted alphabetically.
  */
-class Channel : public Object
-{
+class Channel : public Object {
 public:
     typedef std::map<std::string, std::shared_ptr<const Channel>> Registry;
 
 private:
-/**
- * @brief Channel's private constructor.
- *
- * This constructor is private to force all newly-made Channels to be registered.
- *
- * @param name The name of the channel
- */
+    /**
+     * @brief Channel's private constructor.
+     *
+     * This constructor is private to force all newly-made Channels to be registered.
+     *
+     * @param name The name of the channel
+     */
     explicit Channel(std::string name);
 
     struct Shared_enabler;
@@ -79,7 +77,7 @@ public:
     const std::string name;
 
     static const std::shared_ptr<const Channel> NONE_PTR();
-    static const Channel & NONE();
+    static const Channel &NONE();
 
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
@@ -96,24 +94,24 @@ public:
 
     // TODO: Figure out why tests compile but do not run without this operator.
     // Until then, do NOT remove.
-    const bool operator < ( const Channel &c ) const;
-    const bool operator == ( const Channel &c ) const;
-    const bool operator != ( const Channel &c ) const;
+    const bool operator<(const Channel &c) const;
+    const bool operator==(const Channel &c) const;
+    const bool operator!=(const Channel &c) const;
 
-    Channel (const Channel&) = delete;
-    Channel& operator= (const Channel&) = delete;
+    Channel(const Channel &) = delete;
+    Channel &operator=(const Channel &) = delete;
 };
 
-inline bool operator < (const std::reference_wrapper<const Channel> & lhs,
-                 const std::reference_wrapper<const Channel> & rhs) {
+inline bool operator<(const std::reference_wrapper<const Channel> &lhs,
+                      const std::reference_wrapper<const Channel> &rhs) {
     return (lhs.get() < rhs.get());
 }
 
-inline bool operator == (const std::reference_wrapper<const Channel> & lhs,
-                 const std::reference_wrapper<const Channel> & rhs) {
+inline bool operator==(const std::reference_wrapper<const Channel> &lhs,
+                       const std::reference_wrapper<const Channel> &rhs) {
     return (lhs.get() == rhs.get());
 }
 
-} // namespace gauss2d::fit
+}  // namespace gauss2d::fit
 
 #endif

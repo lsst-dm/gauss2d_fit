@@ -7,8 +7,7 @@
 
 namespace g2f = gauss2d::fit;
 
-TEST_CASE("GaussianParametricEllipse")
-{
+TEST_CASE("GaussianParametricEllipse") {
     const double SIZE = 5.;
 
     auto sig_x = std::make_shared<g2f::SigmaXParameter>(SIZE);

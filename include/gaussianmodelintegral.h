@@ -7,16 +7,14 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 
 /**
  * A single-channel GaussianIntegral referencing a Parametric IntegralModel.
  */
-class GaussianModelIntegral : public GaussianIntegral
-{
+class GaussianModelIntegral : public GaussianIntegral {
 protected:
-    const Channel & _channel;
+    const Channel& _channel;
     const std::shared_ptr<const IntegralModel> _integralmodel;
 
 public:
@@ -32,12 +30,10 @@ public:
      * @param channel The Channel for the integral.
      * @param integralmodel An IntegralModel valid for channel.
      */
-    GaussianModelIntegral(
-        const Channel & channel, const std::shared_ptr<const IntegralModel> integralmodel
-    );
+    GaussianModelIntegral(const Channel& channel, const std::shared_ptr<const IntegralModel> integralmodel);
     ~GaussianModelIntegral();
 };
 
-} // namespace gauss2d::fit
+}  // namespace gauss2d::fit
 
 #endif

@@ -5,12 +5,11 @@
 
 #include "parameters/parameter.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 using ParamBase = parameters::ParameterBase<double>;
 using ParamBaseCRef = std::reference_wrapper<const ParamBase>;
 using ParamCRefs = std::vector<ParamBaseCRef>;
 using ParamBaseRef = std::reference_wrapper<ParamBase>;
 using ParamRefs = std::vector<ParamBaseRef>;
-}
-#endif //GAUSS2D_FIT_PARAM_DEFS_H
+}  // namespace gauss2d::fit
+#endif  // GAUSS2D_FIT_PARAM_DEFS_H

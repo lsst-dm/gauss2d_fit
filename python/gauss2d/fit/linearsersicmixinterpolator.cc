@@ -37,17 +37,15 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_linearsersicmixinterpolator(py::module &m)
-{
-    auto _e = py::class_<g2f::LinearSersicMixInterpolator,
-        std::shared_ptr<g2f::LinearSersicMixInterpolator>,
-        g2f::SersicMixInterpolator
-    >(m, "LinearSersicMixInterpolator")
-        .def(py::init<short>(), "order"_a=g2f::SERSICMIX_ORDER_DEFAULT)
-        .def("integralsizes", &g2f::LinearSersicMixInterpolator::get_integralsizes)
-        .def("integralsizes_derivs", &g2f::LinearSersicMixInterpolator::get_integralsizes_derivs)
-        .def_property_readonly("order", &g2f::LinearSersicMixInterpolator::get_order)
-        .def("__repr__", [](const g2f::LinearSersicMixInterpolator &self) { return self.repr(true); })
-        .def("__str__", &g2f::LinearSersicMixInterpolator::str)
-    ;
+void bind_linearsersicmixinterpolator(py::module &m) {
+    auto _e = py::class_<g2f::LinearSersicMixInterpolator, std::shared_ptr<g2f::LinearSersicMixInterpolator>,
+                         g2f::SersicMixInterpolator>(m, "LinearSersicMixInterpolator")
+                      .def(py::init<short>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT)
+                      .def("integralsizes", &g2f::LinearSersicMixInterpolator::get_integralsizes)
+                      .def("integralsizes_derivs",
+                           &g2f::LinearSersicMixInterpolator::get_integralsizes_derivs)
+                      .def_property_readonly("order", &g2f::LinearSersicMixInterpolator::get_order)
+                      .def("__repr__",
+                           [](const g2f::LinearSersicMixInterpolator &self) { return self.repr(true); })
+                      .def("__str__", &g2f::LinearSersicMixInterpolator::str);
 }

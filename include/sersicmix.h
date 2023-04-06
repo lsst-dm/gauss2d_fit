@@ -7,8 +7,7 @@
 
 #include "gauss2d/object.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 
 static const short SERSICMIX_ORDER_DEFAULT = 4;
 
@@ -61,19 +60,19 @@ public:
     SersicMixValues(double sersicindex, std::vector<IntegralSize> values);
 };
 
-inline bool operator < ( const SersicMixValues &lhs, const SersicMixValues &rhs) {
+inline bool operator<(const SersicMixValues &lhs, const SersicMixValues &rhs) {
     return lhs.sersicindex < rhs.sersicindex;
 }
-inline bool operator < ( const SersicMixValues &lhs, double x) { return lhs.sersicindex < x; }
-inline bool operator < ( double x, const SersicMixValues &rhs) { return x < rhs.sersicindex; }
+inline bool operator<(const SersicMixValues &lhs, double x) { return lhs.sersicindex < x; }
+inline bool operator<(double x, const SersicMixValues &rhs) { return x < rhs.sersicindex; }
 
 std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
 
-const std::vector<SersicMixValues> & get_sersic_mix_knots(unsigned short order);
+const std::vector<SersicMixValues> &get_sersic_mix_knots(unsigned short order);
 
-const std::vector<SersicMixValues> & get_sersic_mix_knots_order4();
-const std::vector<SersicMixValues> & get_sersic_mix_knots_order8();
+const std::vector<SersicMixValues> &get_sersic_mix_knots_order4();
+const std::vector<SersicMixValues> &get_sersic_mix_knots_order8();
 
-} // namespace gauss2d::fit
+}  // namespace gauss2d::fit
 
 #endif

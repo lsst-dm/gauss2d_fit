@@ -7,8 +7,7 @@
 #include "componentmixture.h"
 #include "param_filter.h"
 
-namespace gauss2d::fit
-{
+namespace gauss2d::fit {
 /**
  * @brief A Gaussian mixture model of a point spread function.
  *
@@ -24,38 +23,37 @@ namespace gauss2d::fit
  * so non-NONE Channels are disallowed to reflect this fact.
  *
  */
-class PsfModel : public ComponentMixture
-{
+class PsfModel : public ComponentMixture {
 private:
     Components _components = {};
 
 public:
-    void add_extra_param_map(const Channel & channel, ExtraParamMap & map_extra,
-                             const GradParamMap & map_grad, ParameterMap & offsets
-    ) const override;
-    void add_extra_param_factors(const Channel & channel, ExtraParamFactors & factors) const override;
-    void add_grad_param_map(const Channel & channel, GradParamMap & map, ParameterMap & offsets
-        ) const override;
-    void add_grad_param_factors(const Channel & channel, GradParamFactors & factor) const override;
-    
+    void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
+                             ParameterMap& offsets) const override;
+    void add_extra_param_factors(const Channel& channel, ExtraParamFactors& factors) const override;
+    void add_grad_param_map(const Channel& channel, GradParamMap& map, ParameterMap& offsets) const override;
+    void add_grad_param_factors(const Channel& channel, GradParamFactors& factor) const override;
+
     Components get_components() const override;
-    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(
-        const Channel & channel = Channel::NONE()) const override;
-    size_t get_n_gaussians(const Channel & channel = Channel::NONE()) const override;
+    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel
+                                                            = Channel::NONE()) const override;
+    size_t get_n_gaussians(const Channel& channel = Channel::NONE()) const override;
 
-    ParamRefs & get_parameters(ParamRefs & params, ParamFilter * filter = nullptr) const override;
-    ParamCRefs & get_parameters_const(ParamCRefs & params, ParamFilter * filter = nullptr) const override;
+    ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
+    ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 
-    void set_extra_param_factors(const Channel & channel, ExtraParamFactors & factors, size_t index) const override;
-    void set_grad_param_factors(const Channel & channel, GradParamFactors & factor, size_t index) const override;
+    void set_extra_param_factors(const Channel& channel, ExtraParamFactors& factors,
+                                 size_t index) const override;
+    void set_grad_param_factors(const Channel& channel, GradParamFactors& factor,
+                                size_t index) const override;
 
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    explicit PsfModel(Components & components);
+    explicit PsfModel(Components& components);
     ~PsfModel();
 };
 
-} // namespace gauss2d::fit
+}  // namespace gauss2d::fit
 
 #endif

@@ -37,21 +37,20 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_fractionalintegralmodel(py::module &m)
-{
+void bind_fractionalintegralmodel(py::module &m) {
     auto _p = py::class_<g2f::FractionalIntegralModel, std::shared_ptr<g2f::FractionalIntegralModel>,
-        g2f::IntegralModel>(m, "FractionalIntegralModel")
-        .def(py::init(&g2f::FractionalIntegralModel::make))
-        .def_property_readonly("channels", &g2f::FractionalIntegralModel::get_channels)
-        .def_property_readonly("integral", &g2f::FractionalIntegralModel::get_integral)
-        .def("parameters", &g2f::FractionalIntegralModel::get_parameters,
-            "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
-        .def_property_readonly("parent_model", &g2f::FractionalIntegralModel::get_parent_model)
-        .def_static("model", &g2f::FractionalIntegralModel::find_model)
-        .def("__getitem__", [](const g2f::FractionalIntegralModel & self, const g2f::Channel & c)
-            { return self.at(c); })
-        .def("__len__", &g2f::FractionalIntegralModel::size)
-        .def("__repr__", [](const g2f::FractionalIntegralModel &self) { return self.repr(true); })
-        .def("__str__", &g2f::FractionalIntegralModel::str)
-    ;
+                         g2f::IntegralModel>(m, "FractionalIntegralModel")
+                      .def(py::init(&g2f::FractionalIntegralModel::make))
+                      .def_property_readonly("channels", &g2f::FractionalIntegralModel::get_channels)
+                      .def_property_readonly("integral", &g2f::FractionalIntegralModel::get_integral)
+                      .def("parameters", &g2f::FractionalIntegralModel::get_parameters,
+                           "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
+                      .def_property_readonly("parent_model", &g2f::FractionalIntegralModel::get_parent_model)
+                      .def_static("model", &g2f::FractionalIntegralModel::find_model)
+                      .def("__getitem__", [](const g2f::FractionalIntegralModel &self,
+                                             const g2f::Channel &c) { return self.at(c); })
+                      .def("__len__", &g2f::FractionalIntegralModel::size)
+                      .def("__repr__",
+                           [](const g2f::FractionalIntegralModel &self) { return self.repr(true); })
+                      .def("__str__", &g2f::FractionalIntegralModel::str);
 }

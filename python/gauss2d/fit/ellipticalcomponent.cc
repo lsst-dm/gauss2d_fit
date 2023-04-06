@@ -38,10 +38,7 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_ellipticalcomponent(py::module &m)
-{
-    auto _e = py::class_<g2f::EllipticalComponent,
-        std::shared_ptr<g2f::EllipticalComponent>,
-        g2f::Component
-    >(m, "EllipticalComponent");
+void bind_ellipticalcomponent(py::module &m) {
+    auto _e = py::class_<g2f::EllipticalComponent, std::shared_ptr<g2f::EllipticalComponent>, g2f::Component>(
+            m, "EllipticalComponent");
 }
