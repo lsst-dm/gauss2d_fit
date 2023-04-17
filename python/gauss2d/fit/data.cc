@@ -43,23 +43,22 @@ namespace g2p = gauss2d::python;
 typedef g2f::Data<double, g2p::PyImage<double>, g2p::PyImage<bool>> Data;
 typedef g2f::Observation<double, g2p::PyImage<double>, g2p::PyImage<bool>> Observation;
 
-void bind_data(py::module &m)
-{
-   auto _o = py::class_<Data, std::shared_ptr<Data>, g2f::Parametric
-    >(m, "Data")
-        .def(py::init<std::vector<std::shared_ptr<const Observation>>>(), "data"_a)
-        .def_property_readonly("channels", &Data::get_channels)
-        .def("parameters", &Data::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
-        .def_property_readonly("size", &Data::size)
-        .def("__getitem__", &Data::at)
-        .def("__len__", &Data::size)
-        .def("__repr__", &Data::str)
-    ;
-/*
-    inline auto begin() const { return _observations.begin(); }
-    inline auto end() const { return _observations.end(); }
+void bind_data(py::module &m) {
+    auto _o = py::class_<Data, std::shared_ptr<Data>, g2f::Parametric>(m, "Data")
+                      .def(py::init<std::vector<std::shared_ptr<const Observation>>>(), "data"_a)
+                      .def_property_readonly("channels", &Data::get_channels)
+                      .def("parameters", &Data::get_parameters, "parameters"_a = g2f::ParamRefs(),
+                           "paramfilter"_a = nullptr)
+                      .def_property_readonly("size", &Data::size)
+                      .def("__getitem__", &Data::at)
+                      .def("__len__", &Data::size)
+                      .def("__repr__", [](const Data &self) { return self.repr(true); })
+                      .def("__str__", &Data::str);
+    /*
+        inline auto begin() const { return _observations.begin(); }
+        inline auto end() const { return _observations.end(); }
 
-    inline auto cbegin() const { return _observations.begin(); }
-    inline auto cend() const { return _observations.end(); }
-*/
+        inline auto cbegin() const { return _observations.begin(); }
+        inline auto cend() const { return _observations.end(); }
+    */
 }

@@ -5,18 +5,18 @@
 #include "integralmodel.h"
 #include "parametricmodel.h"
 
-namespace gauss2d
-{
-namespace fit
-{
-
-class Component : public ParametricModel
-{
+namespace gauss2d::fit {
+/**
+ * @brief An atomic constituent of a source.
+ *
+ * A Component is the smallest (atomic) constituent of a source, representing some 2D intensity distribution.
+ * It can be composed of multiple Gaussians but must control all of their values with Parameters.
+ */
+class Component : public ParametricModel {
 public:
-    virtual const IntegralModel & get_integralmodel() const = 0;
+    virtual const IntegralModel& get_integralmodel() const = 0;
 };
 
-} // namespace fit
-} // namespace gauss2d
+}  // namespace gauss2d::fit
 
 #endif

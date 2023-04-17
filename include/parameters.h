@@ -11,37 +11,35 @@
 #include "parameters/parameter.h"
 #include "parameters/unit.h"
 
-namespace gauss2d
-{
-namespace fit
-{
+namespace gauss2d::fit {
 
 class UnitNone : public parameters::Unit {
 public:
-    std::string get_name() const {
+    std::string get_name() const override {
         static const std::string name_none = "None";
-        return name_none; 
+        return name_none;
     }
 };
 
-static const UnitNone unit_none {};
+static const UnitNone unit_none{};
 
+/// A Parameter representing a size (i.e. a physical length)
 struct SizeParameter {
     virtual double get_size() const = 0;
     virtual void set_size(double size) = 0;
 
-    virtual ~SizeParameter() {};
+    virtual ~SizeParameter() = default;
 };
 
 struct SizeXParameter : public SizeParameter {
-    virtual ~SizeXParameter() {};
+    virtual ~SizeXParameter() = default;
 };
 
 struct SizeYParameter : public SizeParameter {
-    virtual ~SizeYParameter() {};
+    virtual ~SizeYParameter() = default;
 };
 
-template<typename T>
+template <typename T>
 using Param = parameters::Parameter<double, T>;
 
 struct CentroidXParameter : public Param<CentroidXParameter> {
@@ -82,6 +80,7 @@ public:
     using Param<ProperFractionParameter>::Parameter;
 };
 
+/// A generic scale radius, for profiles without specific names like "effective radius"
 struct RadiusScaleParameter : public Param<RadiusScaleParameter> {
     static inline constexpr double _min = 0.;
     static inline constexpr double _default = 1.;
@@ -100,7 +99,7 @@ struct ReffXParameter : public Param<ReffXParameter>, SizeXParameter {
     using Param<ReffXParameter>::Parameter;
 };
 
-struct ReffYParameter : public Param<ReffYParameter>, SizeYParameter  {
+struct ReffYParameter : public Param<ReffYParameter>, SizeYParameter {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
@@ -137,7 +136,7 @@ struct SigmaXParameter : public Param<SigmaXParameter>, SizeXParameter {
     using Param<SigmaXParameter>::Parameter;
 };
 
-struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
+struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
@@ -147,7 +146,6 @@ struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter  {
     using Param<SigmaYParameter>::Parameter;
 };
 
-}
-}
+}  // namespace gauss2d::fit
 
-#endif //GAUSS2DFIT_PARAMETERS_H
+#endif  // GAUSS2D_FIT_PARAMETERS_H

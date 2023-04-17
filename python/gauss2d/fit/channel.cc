@@ -36,24 +36,22 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_channel(py::module &m)
-{
-    auto _c = py::class_<g2f::Channel, std::shared_ptr<g2f::Channel>
-    >(m, "Channel")
-        .def(py::init(&g2f::Channel::make))
-        .def_static("erase", &g2f::Channel::erase)
-        .def_property_readonly_static("all", [](py::object) {
-            return g2f::Channel::get_channels(); })
-        .def_static("find", &g2f::Channel::find_channel)
-        .def_static("get", &g2f::Channel::get_channel)
-        .def_readonly("name", &g2f::Channel::name)
-        .def_property_readonly_static("NONE", [](py::object) {
-            return g2f::Channel::NONE_PTR(); })
-        .def("__repr__", &g2f::Channel::str)
-    ;
-/*
-    const bool operator < ( const Channel &c ) const;
-    const bool operator == ( const Channel &c ) const;
-    const bool operator != ( const Channel &c ) const;
-*/
+void bind_channel(py::module &m) {
+    auto _c = py::class_<g2f::Channel, std::shared_ptr<g2f::Channel> >(m, "Channel")
+                      .def(py::init(&g2f::Channel::make))
+                      .def_static("erase", &g2f::Channel::erase)
+                      .def_property_readonly_static("all",
+                                                    [](py::object) { return g2f::Channel::get_channels(); })
+                      .def_static("find", &g2f::Channel::find_channel)
+                      .def_static("get", &g2f::Channel::get_channel)
+                      .def_readonly("name", &g2f::Channel::name)
+                      .def_property_readonly_static("NONE",
+                                                    [](py::object) { return g2f::Channel::NONE_PTR(); })
+                      .def("__repr__", [](const g2f::Channel &self) { return self.repr(true); })
+                      .def("__str__", &g2f::Channel::str);
+    /*
+        const bool operator < ( const Channel &c ) const;
+        const bool operator == ( const Channel &c ) const;
+        const bool operator != ( const Channel &c ) const;
+    */
 }

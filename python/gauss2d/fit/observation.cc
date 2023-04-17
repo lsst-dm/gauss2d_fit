@@ -43,22 +43,19 @@ typedef g2p::PyImage<double> Image;
 typedef g2p::PyImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 
-void bind_observation(py::module &m)
-{
-   auto _o = py::class_<Observation, std::shared_ptr<Observation>, g2f::Parametric
-    >(m, "Observation")
-    .def(py::init<std::shared_ptr<Image>,
-                std::shared_ptr<Image>,
-                std::shared_ptr<Mask>,
-                const g2f::Channel &>(),
-                "image"_a, "sigma_inv"_a, "mask_inv"_a, "channel"_a)
-    .def_property_readonly("channel", &Observation::get_channel)
-    .def_property_readonly("image", &Observation::get_image)
-    .def_property_readonly("mask_inv", &Observation::get_mask_inverse)
-    .def_property_readonly("sigma_inv", &Observation::get_sigma_inverse)
-    .def_property_readonly("n_cols", &Observation::get_n_cols)
-    .def_property_readonly("n_rows", &Observation::get_n_rows)
-    .def("parameters", &Observation::get_parameters, "parameters"_a=g2f::ParamRefs(), "paramfilter"_a=nullptr)
-    .def("__repr__", &Observation::str)
-    ;
+void bind_observation(py::module &m) {
+    auto _o = py::class_<Observation, std::shared_ptr<Observation>, g2f::Parametric>(m, "Observation")
+                      .def(py::init<std::shared_ptr<Image>, std::shared_ptr<Image>, std::shared_ptr<Mask>,
+                                    const g2f::Channel &>(),
+                           "image"_a, "sigma_inv"_a, "mask_inv"_a, "channel"_a)
+                      .def_property_readonly("channel", &Observation::get_channel)
+                      .def_property_readonly("image", &Observation::get_image)
+                      .def_property_readonly("mask_inv", &Observation::get_mask_inverse)
+                      .def_property_readonly("sigma_inv", &Observation::get_sigma_inverse)
+                      .def_property_readonly("n_cols", &Observation::get_n_cols)
+                      .def_property_readonly("n_rows", &Observation::get_n_rows)
+                      .def("parameters", &Observation::get_parameters, "parameters"_a = g2f::ParamRefs(),
+                           "paramfilter"_a = nullptr)
+                      .def("__repr__", [](const Observation &self) { return self.repr(true); })
+                      .def("__str__", &Observation::str);
 }

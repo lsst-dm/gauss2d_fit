@@ -35,16 +35,15 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_param_filter(py::module &m)
-{
+void bind_param_filter(py::module &m) {
     auto _p = py::class_<g2f::ParamFilter, std::shared_ptr<g2f::ParamFilter>>(m, "ParamFilter")
-        .def(py::init<bool, bool, bool, bool,
-            std::optional<std::reference_wrapper<const g2f::Channel>>>(),
-            "fixed"_a=true, "free"_a=true, "linear"_a=true, "nonlinear"_a=true, "channel"_a=std::nullopt)
-        .def_readwrite("channel", &g2f::ParamFilter::channel)
-        .def_readwrite("fixed", &g2f::ParamFilter::fixed)
-        .def_readwrite("free", &g2f::ParamFilter::free)
-        .def_readwrite("linear", &g2f::ParamFilter::linear)
-        .def_readwrite("nonlinear", &g2f::ParamFilter::nonlinear)
-    ;
+                      .def(py::init<bool, bool, bool, bool,
+                                    std::optional<std::reference_wrapper<const g2f::Channel>>>(),
+                           "fixed"_a = true, "free"_a = true, "linear"_a = true, "nonlinear"_a = true,
+                           "channel"_a = std::nullopt)
+                      .def_readwrite("channel", &g2f::ParamFilter::channel)
+                      .def_readwrite("fixed", &g2f::ParamFilter::fixed)
+                      .def_readwrite("free", &g2f::ParamFilter::free)
+                      .def_readwrite("linear", &g2f::ParamFilter::linear)
+                      .def_readwrite("nonlinear", &g2f::ParamFilter::nonlinear);
 }

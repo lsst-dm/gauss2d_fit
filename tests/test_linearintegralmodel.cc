@@ -9,8 +9,7 @@
 
 namespace g2f = gauss2d::fit;
 
-TEST_CASE("LinearIntegralModel")
-{
+TEST_CASE("LinearIntegralModel") {
     const auto c1 = g2f::Channel::make("1");
     const auto c2 = g2f::Channel::make("2");
     const auto c3 = g2f::Channel::make("3");

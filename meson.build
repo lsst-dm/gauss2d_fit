@@ -27,3 +27,5 @@ pkg_mod.generate(libraries : gauss2dfitlib,
                  name : 'libgauss2dfit',
                  filebase : 'gauss2dfit',
                  description : 'Create, manipulate and evaluate 2D Gaussian mixtures and images thereof.')
+
+subdir('doc')

@@ -3,33 +3,34 @@
 
 #include "sersicmix.h"
 
-namespace gauss2d
-{
-namespace fit
-{
+namespace gauss2d::fit {
 
+/**
+ * A SersicMixInterpolator that uses linear interpolation between knots.
+ */
 class LinearSersicMixInterpolator : public SersicMixInterpolator {
 private:
     const unsigned short _order;
 
 public:
-    const std::vector<SersicMixValues> & knots;
+    /// The knot positions and values.
+    const std::vector<SersicMixValues>& knots;
 
     std::vector<IntegralSize> get_integralsizes(double sersicindex) const override;
     std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const override;
-    
+
     unsigned short get_order() const override;
 
     const double sersicindex_min;
     const double sersicindex_max;
 
+    std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    LinearSersicMixInterpolator(unsigned short order=SERSICMIX_ORDER_DEFAULT);
+    explicit LinearSersicMixInterpolator(unsigned short order = SERSICMIX_ORDER_DEFAULT);
     ~LinearSersicMixInterpolator();
 };
 
-} // namespace fit
-} // namespace gauss2d
+}  // namespace gauss2d::fit
 
 #endif

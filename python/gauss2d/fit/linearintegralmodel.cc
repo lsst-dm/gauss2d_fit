@@ -37,25 +37,24 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_linearintegralmodel(py::module &m)
-{
+void bind_linearintegralmodel(py::module &m) {
     auto _p = py::class_<g2f::LinearIntegralModel, std::shared_ptr<g2f::LinearIntegralModel>,
-        g2f::IntegralModel>(m, "LinearIntegralModel")
-        .def(py::init<const g2f::LinearIntegralModel::Data *>(), "data"_a)
-        .def_property_readonly("channels", &g2f::LinearIntegralModel::get_channels)
-        .def_property_readonly("integral", &g2f::LinearIntegralModel::get_integral)
-        .def("parameters", &g2f::LinearIntegralModel::get_parameters, "parameters"_a=g2f::ParamRefs(),
-            "paramfilter"_a=nullptr)
-        .def("__getitem__", [](const g2f::LinearIntegralModel & self, const g2f::Channel & c)
-            { return self.at(c); })
-        .def("__len__", &g2f::LinearIntegralModel::size)
-        .def("__repr__", &g2f::LinearIntegralModel::str)
-    ;
-/*    
-    typename Data::iterator begin() noexcept;
-    typename Data::const_iterator cbegin() const noexcept;
+                         g2f::IntegralModel>(m, "LinearIntegralModel")
+                      .def(py::init<const g2f::LinearIntegralModel::Data *>(), "data"_a)
+                      .def_property_readonly("channels", &g2f::LinearIntegralModel::get_channels)
+                      .def_property_readonly("integral", &g2f::LinearIntegralModel::get_integral)
+                      .def("parameters", &g2f::LinearIntegralModel::get_parameters,
+                           "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
+                      .def("__getitem__", [](const g2f::LinearIntegralModel &self,
+                                             const g2f::Channel &c) { return self.at(c); })
+                      .def("__len__", &g2f::LinearIntegralModel::size)
+                      .def("__repr__", [](const g2f::LinearIntegralModel &self) { return self.repr(true); })
+                      .def("__str__", &g2f::LinearIntegralModel::str);
+    /*
+        typename Data::iterator begin() noexcept;
+        typename Data::const_iterator cbegin() const noexcept;
 
-    typename Data::iterator end() noexcept;
-    typename Data::const_iterator cend() const noexcept;
-*/
+        typename Data::iterator end() noexcept;
+        typename Data::const_iterator cend() const noexcept;
+    */
 }

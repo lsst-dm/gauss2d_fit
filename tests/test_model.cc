@@ -39,79 +39,57 @@ namespace g2f = gauss2d::fit;
 
 Channels CHANNELS_NONE = {g2f::Channel::NONE_PTR()};
 
-std::shared_ptr<Data> make_data(
-    Channels channels,
-    const size_t n_x,
-    const size_t n_y,
-    const double sigma_inv_value=1.
-) {
+std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_t n_y,
+                                const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation>> observations;
-    for(const auto & channel_ptr : channels)
-    {
+    for (const auto& channel_ptr : channels) {
         auto err = std::make_unique<Image>(n_y, n_x);
-        *err  += sigma_inv_value;
-        auto observation = std::make_shared<Observation>(
-            std::make_unique<Image>(n_y, n_x),
-            std::move(err),
-            std::make_unique<Mask>(n_y, n_x),
-            *channel_ptr
-        );
+        *err += sigma_inv_value;
+        auto observation = std::make_shared<Observation>(std::make_unique<Image>(n_y, n_x), std::move(err),
+                                                         std::make_unique<Mask>(n_y, n_x), *channel_ptr);
         observations.emplace_back(observation);
     }
     return std::make_shared<Data>(observations);
 }
 
 g2f::LinearIntegralModel::Data make_integrals(
-    const std::vector<std::shared_ptr<const g2f::Channel>> & channels,
-    double value = 1.,
-    bool fixed = false
-) {
+        const std::vector<std::shared_ptr<const g2f::Channel>>& channels, double value = 1.,
+        bool fixed = false) {
     g2f::LinearIntegralModel::Data integrals{};
-    for(const auto & channel: channels) {
+    for (const auto& channel : channels) {
         auto param = std::make_shared<g2f::IntegralParameter>(value);
-        if(fixed) param->set_fixed(true);
+        if (fixed) param->set_fixed(true);
         integrals[*channel] = std::move(param);
     }
     return integrals;
 }
 
-void verify_model(
-    Model & model,
-    const std::vector<std::shared_ptr<const g2f::Channel>> & channels,
-    g2f::ParamRefs params_free,
-    bool check_outputs_differ=true,
-    bool print=false
-) {
+void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
+                  g2f::ParamRefs params_free, bool check_outputs_differ = true, bool print = false) {
     const size_t n_channels = channels.size();
-    for(size_t i = 0; i < 2; ++i)
-    {
-        for(unsigned short do_jacobian=false; do_jacobian <= true; do_jacobian++)
-        {            
-            model.setup_evaluators(
-                do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image, {}, {}, print
-            );
+    for (size_t i = 0; i < 2; ++i) {
+        for (unsigned short do_jacobian = false; do_jacobian <= true; do_jacobian++) {
+            model.setup_evaluators(do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image,
+                                   {}, {}, print);
 
             std::vector<double> result = model.evaluate();
 
             auto outputs = model.get_outputs();
-            if(do_jacobian) {
+            if (do_jacobian) {
                 auto errors = model.verify_jacobian();
                 std::string errormsg = "";
-                if(errors.size() != 0) {
+                if (errors.size() != 0) {
                     std::stringstream ss;
                     ss << "";
-                    std::copy(
-                        std::begin(errors),
-                        std::end(errors),
-                        std::experimental::make_ostream_joiner(ss, "\n")
-                    );
+                    std::copy(std::begin(errors), std::end(errors),
+                              std::experimental::make_ostream_joiner(ss, "\n"));
                     errormsg = ss.str();
                 }
                 CHECK(errormsg == "");
             } else {
                 CHECK(outputs.size() == n_channels);
                 CHECK(result[0] == 0);
-                for(size_t idx_channel = 1; idx_channel < n_channels; ++idx_channel) {
+                for (size_t idx_channel = 1; idx_channel < n_channels; ++idx_channel) {
                     CHECK(result[idx_channel] == 0);
                     bool values_equal = outputs[0]->get_value(0, 0) == outputs[1]->get_value(0, 0);
                     CHECK(values_equal != check_outputs_differ);
@@ -119,25 +97,21 @@ void verify_model(
             }
         }
 
-        for(auto & param : params_free) {
+        for (auto& param : params_free) {
             double value = param.get().get_value_transformed();
             try {
                 param.get().set_value_transformed(value + 0.01);
-            } catch(const std::runtime_error & err) {
+            } catch (const std::runtime_error& err) {
                 param.get().set_value_transformed(value - 0.01);
             }
         }
     }
-
 }
 
 TEST_CASE("Model") {
-    const std::vector<std::shared_ptr<const g2f::Channel>> channels = {
-        // TODO: Figure out how this works - auto const conversion?
-        g2f::Channel::make("r"),
-        g2f::Channel::make("g"),
-        g2f::Channel::make("b")
-    };
+    const std::vector<std::shared_ptr<const g2f::Channel>> channels
+            = {// TODO: Figure out how this works - auto const conversion?
+               g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")};
 
     auto data = make_data(channels, 11, 13);
     g2f::ParamCRefs params_data{};
@@ -145,48 +119,45 @@ TEST_CASE("Model") {
     CHECK(params_data.size() == 0);
 
     Model::PsfModels psfmodels{};
-    for(size_t i = 0; i < data->size(); ++i) {
+    for (size_t i = 0; i < data->size(); ++i) {
         g2f::Components comps;
         auto integrals = make_integrals(CHANNELS_NONE, 1.0, true);
         auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
         g2f::ParamRefs params_integralmodel;
         model_total->get_parameters(params_integralmodel);
-        for(const auto & param : params_integralmodel) param.get().set_fixed(true);
+        for (const auto& param : params_integralmodel) param.get().set_fixed(true);
         std::shared_ptr<g2f::IntegralModel> last = model_total;
 
         double integral = 0;
-        std::vector<std::pair<double, double>> sizefracs = {{0., 1./(i + 2.)}, {2., 1.}};
+        std::vector<std::pair<double, double>> sizefracs = {{0., 1. / (i + 2.)}, {2., 1.}};
         const size_t idx_sizefrac_last = sizefracs.size() - 1;
-        for(size_t idx_comp = 0; idx_comp <= idx_sizefrac_last; ++idx_comp)
-        {
-            const auto & sizefrac = sizefracs[idx_comp];
+        for (size_t idx_comp = 0; idx_comp <= idx_sizefrac_last; ++idx_comp) {
+            const auto& sizefrac = sizefracs[idx_comp];
             auto frac = std::make_shared<g2f::ProperFractionParameter>(sizefrac.second);
             CHECK(frac->get_value() == sizefrac.second);
             // Would set this condition if we wanted the other fractions free
             // if(sizefrac.second == 1)
             frac->set_fixed(true);
-            g2f::FractionalIntegralModel::Data data {{g2f::Channel::NONE(), frac}};
+            g2f::FractionalIntegralModel::Data data{{g2f::Channel::NONE(), frac}};
             auto model_frac = g2f::FractionalIntegralModel::make(data, last, idx_comp == idx_sizefrac_last);
 
             double integral_comp = model_frac->get_integral(g2f::Channel::NONE());
-            if(idx_comp == 0) {
+            if (idx_comp == 0) {
                 CHECK(integral_comp == sizefrac.second);
             }
-            
+
             integral += integral_comp;
-            
+
             auto comp = std::make_unique<g2f::GaussianComponent>(
-                std::make_shared<g2f::GaussianParametricEllipse>(sizefrac.first, sizefrac.first, 0),
-                nullptr,
-                model_frac
-            );
+                    std::make_shared<g2f::GaussianParametricEllipse>(sizefrac.first, sizefrac.first, 0),
+                    nullptr, model_frac);
             auto gaussians = comp->get_gaussians(g2f::Channel::NONE());
             CHECK(gaussians->size() == 1);
             CHECK(gaussians->at(0).get_integral_value() == integral_comp);
 
             g2f::ParamRefs params_comp;
             comp->get_parameters(params_comp);
-            for(const auto & param : params_comp) param.get().set_fixed(true);
+            for (const auto& param : params_comp) param.get().set_fixed(true);
             comps.emplace_back(std::move(comp));
             last = model_frac;
         }
@@ -198,19 +169,19 @@ TEST_CASE("Model") {
         psfmodel->get_parameters_const(params_psf);
         // 2 comps x (6 gauss + 1 frac) (last constant unity frac omitted)
         CHECK(params_psf.size() == 14);
-        for(const auto & param : params_psf) CHECK(param.get().get_fixed() == true);
+        for (const auto& param : params_psf) CHECK(param.get().get_fixed() == true);
 
         const auto gaussians = psfmodel->get_gaussians();
         CHECK(gaussians->size() == 2);
 
         size_t g = 0;
-        for(const auto & gauss : *gaussians) {
+        for (const auto& gauss : *gaussians) {
             std::string msg = "obs[" + std::to_string(i) + "," + std::to_string(g) + "]";
             CHECK_MESSAGE(gauss->get_integral_value() > 0, msg);
             g++;
         }
-        //std::cerr << psfmodel->str() << std::endl;
-        //std::cerr << gaussians->str() << std::endl;
+        // std::cerr << psfmodel->str() << std::endl;
+        // std::cerr << gaussians->str() << std::endl;
 
         psfmodels.push_back(std::move(psfmodel));
     }
@@ -218,33 +189,25 @@ TEST_CASE("Model") {
     const bool free_sersicindex = true;
 
     Model::Sources sources{};
-    for(size_t i=0; i < 2; ++i)
-    {
+    for (size_t i = 0; i < 2; ++i) {
         std::vector<std::shared_ptr<g2f::Component>> comps;
-        for(size_t c=0; c < 2; ++c)
-        {
+        for (size_t c = 0; c < 2; ++c) {
             auto centroids = std::make_shared<g2f::CentroidParameters>(c + i + 1, c + i + 1.5);
             auto integrals = make_integrals(channels, c + 1);
             auto integralmodel = std::make_shared<g2f::LinearIntegralModel>(&integrals);
             std::shared_ptr<g2f::Component> comp;
-            if(i == 0)
-            {
+            if (i == 0) {
                 comp = std::make_shared<g2f::GaussianComponent>(
-                    std::make_shared<g2f::GaussianParametricEllipse>(c + 0.5, c + 1.5, 0),
-                    centroids,
-                    integralmodel
-                );
+                        std::make_shared<g2f::GaussianParametricEllipse>(c + 0.5, c + 1.5, 0), centroids,
+                        integralmodel);
             } else {
-                auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(0.5 + 3.5*c);
+                auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(0.5 + 3.5 * c);
                 sersic_n->set_free(free_sersicindex);
                 auto reff_x = std::make_shared<g2f::ReffXParameter>(c + 0.5);
                 auto reff_y = std::make_shared<g2f::ReffYParameter>(c + 1.5);
                 comp = std::make_shared<g2f::SersicMixComponent>(
-                    std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y),
-                    centroids,
-                    integralmodel,
-                    sersic_n
-                );
+                        std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y), centroids,
+                        integralmodel, sersic_n);
             }
             comps.emplace_back(comp);
         }
@@ -269,7 +232,7 @@ TEST_CASE("Model") {
     const size_t n_params_psf_uniq = 36;
     CHECK(paramset.size() == n_params_src + n_params_psf_uniq);
 
-    const auto & channel = *channels[0];
+    const auto& channel = *channels[0];
 
     CHECK(model->get_n_gaussians(channel) == 10);
     auto gaussians = model->get_gaussians(channel);
@@ -280,15 +243,15 @@ TEST_CASE("Model") {
     const auto psfcomps = model->get_psfmodels().at(0)->get_gaussians();
     const size_t n_gauss_psf = psfcomps->size();
     CHECK(n_gauss_psf == 2);
-    for(size_t p = 0; p < n_gauss_psf; ++p) CHECK(psfcomps->at(p).get_integral_value() > 0);
+    for (size_t p = 0; p < n_gauss_psf; ++p) CHECK(psfcomps->at(p).get_integral_value() > 0);
 
-    auto map_extra = std::make_shared<g2f::extra_param_map>();
-    auto map_grad = std::make_shared<g2f::grad_param_map>();
+    auto map_extra = std::make_shared<g2f::ExtraParamMap>();
+    auto map_grad = std::make_shared<g2f::GradParamMap>();
 
-    auto factors_extra = std::make_shared<g2f::extra_param_factors>();
-    auto factors_grad = std::make_shared<g2f::grad_param_factors>();
+    auto factors_extra = std::make_shared<g2f::ExtraParamFactors>();
+    auto factors_grad = std::make_shared<g2f::GradParamFactors>();
 
-    const size_t n_gauss = n_gauss_src*n_gauss_psf;
+    const size_t n_gauss = n_gauss_src * n_gauss_psf;
 
     map_extra->reserve(n_gauss);
     map_grad->reserve(n_gauss);
@@ -300,11 +263,10 @@ TEST_CASE("Model") {
     g2f::ParamFilter filter{false, true, true, true, channel};
     g2f::ParameterMap offsets{};
 
-    for(const auto & source : model->get_sources()) {
+    for (const auto& source : model->get_sources()) {
         source->get_parameters_const(params_src_free_const, &filter);
         source->get_parameters(params_src_free, &filter);
-        for(size_t i_psf = 0; i_psf < n_gauss_psf; ++i_psf)
-        {
+        for (size_t i_psf = 0; i_psf < n_gauss_psf; ++i_psf) {
             source->add_grad_param_map(channel, *map_grad, offsets);
             source->add_extra_param_map(channel, *map_extra, *map_grad, offsets);
 
@@ -315,7 +277,7 @@ TEST_CASE("Model") {
     auto n_free = params_src_free.size();
     // 2 sources x (2 comps x (1 integral, 2 centroid, 3 ellipse)) = 24
     // + 1 source x (2 comps x 1 sersicindex) = 26
-    CHECK(n_free == 24 + 2*free_sersicindex);
+    CHECK(n_free == 24 + 2 * free_sersicindex);
 
     CHECK(offsets.size() == n_free);
 
@@ -337,30 +299,25 @@ TEST_CASE("Model PSF") {
 
     const bool fixed = false;
     auto cens = std::make_shared<g2f::CentroidParameters>(
-        std::make_shared<g2f::CentroidXParameter>(0, nullptr, nullptr, nullptr, fixed),
-        std::make_shared<g2f::CentroidYParameter>(0, nullptr, nullptr, nullptr, fixed)
-    );
+            std::make_shared<g2f::CentroidXParameter>(0, nullptr, nullptr, nullptr, fixed),
+            std::make_shared<g2f::CentroidYParameter>(0, nullptr, nullptr, nullptr, fixed));
 
-    for(const auto & sizefrac : {std::pair{1.5, 1.0-1e-15}, {2.5, 1.0}})
-    {
+    for (const auto& sizefrac : {std::pair{1.5, 1.0 - 1e-15}, {2.5, 1.0}}) {
         const auto is_last = sizefrac.second == 1;
         auto frac = std::make_shared<g2f::ProperFractionParameter>(sizefrac.second);
         // Would set this condition if we wanted the other fractions free
-        if(is_last) frac->set_fixed(true);
-        g2f::FractionalIntegralModel::Data data {{g2f::Channel::NONE(), frac}};
-        const double & size = sizefrac.first;
+        if (is_last) frac->set_fixed(true);
+        g2f::FractionalIntegralModel::Data data{{g2f::Channel::NONE(), frac}};
+        const double& size = sizefrac.first;
 
         last = g2f::FractionalIntegralModel::make(data, last, is_last);
 
         comps.emplace_back(std::make_shared<g2f::GaussianComponent>(
-            std::make_shared<g2f::GaussianParametricEllipse>(
-                std::make_shared<g2f::SigmaXParameter>(size, nullptr, nullptr, nullptr, fixed),
-                std::make_shared<g2f::SigmaYParameter>(size, nullptr, nullptr, nullptr, fixed),
-                std::make_shared<g2f::RhoParameter>(0, nullptr, nullptr, nullptr, fixed)
-            ),
-            cens,
-            last
-        ));
+                std::make_shared<g2f::GaussianParametricEllipse>(
+                        std::make_shared<g2f::SigmaXParameter>(size, nullptr, nullptr, nullptr, fixed),
+                        std::make_shared<g2f::SigmaYParameter>(size, nullptr, nullptr, nullptr, fixed),
+                        std::make_shared<g2f::RhoParameter>(0, nullptr, nullptr, nullptr, fixed)),
+                cens, last));
     }
     g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
     Model::PsfModels psfmodels({std::make_shared<g2f::PsfModel>(psfcomps)});

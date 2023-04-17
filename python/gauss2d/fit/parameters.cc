@@ -42,30 +42,22 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_parameters(py::module &m)
-{
-   auto _u = py::class_<parameters::Unit,
-        std::shared_ptr<parameters::Unit>
-    >(m, "Unit");
-    py::class_<g2f::UnitNone,
-        std::shared_ptr<g2f::UnitNone>,
-        parameters::Unit
-    >(m, "UnitNone")
-        .def(py::init<>())
-        .def_property_readonly("name", &g2f::UnitNone::get_name)
-    ;
+void bind_parameters(py::module &m) {
+    auto _u = py::class_<parameters::Unit, std::shared_ptr<parameters::Unit>>(m, "Unit");
+    py::class_<g2f::UnitNone, std::shared_ptr<g2f::UnitNone>, parameters::Unit>(m, "UnitNone")
+            .def(py::init<>())
+            .def_property_readonly("name", &g2f::UnitNone::get_name);
     declare_limits<double>(m);
     using Parameter = parameters::ParameterBase<double>;
     auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "Parameter");
     auto integral = declare_parameter<double, g2f::IntegralParameter>(m, "Integral");
-    integral.def_property("label", &g2f::IntegralParameter::get_label,
-        &g2f::IntegralParameter::set_label);
+    integral.def_property("label", &g2f::IntegralParameter::get_label, &g2f::IntegralParameter::set_label);
     declare_parameter<double, g2f::CentroidXParameter>(m, "CentroidX");
     declare_parameter<double, g2f::CentroidYParameter>(m, "CentroidY");
     declare_parameter<double, g2f::MoffatConcentrationParameter>(m, "MoffatConcentration");
     auto propfrac = declare_parameter<double, g2f::ProperFractionParameter>(m, "ProperFraction");
     propfrac.def_property("label", &g2f::ProperFractionParameter::get_label,
-        &g2f::ProperFractionParameter::set_label);
+                          &g2f::ProperFractionParameter::set_label);
     declare_sizeparameter_base<double>(m);
     declare_parameter<double, g2f::RadiusScaleParameter>(m, "RadiusScale");
     declare_sizeparameter<double, g2f::ReffXParameter, g2f::SizeXParameter>(m, "ReffX");
@@ -82,5 +74,5 @@ void bind_parameters(py::module &m)
     declare_transform<double, g2f::LogitTransform>(m, "Logit");
     // TODO: Determine why this won't work with std::shared_ptr<parameters::Limits<double>>
     declare_transform_full<double, g2f::LogitLimitedTransform, true, true,
-        std::shared_ptr<Limits<double>>, double >(m, "LogitLimited");
+                           std::shared_ptr<parameters::Limits<double>>, double>(m, "LogitLimited");
 }

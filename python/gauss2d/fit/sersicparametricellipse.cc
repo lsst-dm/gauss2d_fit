@@ -36,33 +36,32 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_sersicparametricellipse(py::module &m)
-{
-    auto _e = py::class_<g2f::SersicParametricEllipse,
-        std::shared_ptr<g2f::SersicParametricEllipse>,
-        g2f::ParametricEllipse
-    >(m, "SersicParametricEllipse")
-        .def(py::init<double, double, double>(), "size_x"_a=0, "size_y"_a=0, "rho"_a=0)
-        .def(py::init<
-            std::shared_ptr<g2f::ReffXParameter>,
-            std::shared_ptr<g2f::ReffYParameter>,
-            std::shared_ptr<g2f::RhoParameter>
-            >(),
-            "size_x"_a=nullptr, "size_y"_a=nullptr, "rho"_a=nullptr)
-        .def_property("rho", &g2f::SersicParametricEllipse::get_rho,
-            &g2f::SersicParametricEllipse::set_rho)
-        .def_property("size_x", &g2f::SersicParametricEllipse::get_size_x,
-            &g2f::SersicParametricEllipse::set_size_x)
-        .def_property("size_y", &g2f::SersicParametricEllipse::get_size_y,
-            &g2f::SersicParametricEllipse::set_size_y)
-        .def_property("xyr", &g2f::SersicParametricEllipse::get_xyr,
-            &g2f::SersicParametricEllipse::set_xyr)
-        .def_property_readonly("rho_param", &g2f::SersicParametricEllipse::get_rho_param)
-        .def_property_readonly("size_x_param", &g2f::SersicParametricEllipse::get_size_x_param)
-        .def_property_readonly("size_y_param", &g2f::SersicParametricEllipse::get_size_y_param)
-        .def_property_readonly("rho_param_ptr", &g2f::SersicParametricEllipse::get_rho_param_ptr)
-        .def_property_readonly("size_x_param_ptr", &g2f::SersicParametricEllipse::get_size_x_param_ptr)
-        .def_property_readonly("size_y_param_ptr", &g2f::SersicParametricEllipse::get_size_y_param_ptr)
-        .def("__repr__", &g2f::SersicParametricEllipse::str)
-    ;
+void bind_sersicparametricellipse(py::module &m) {
+    auto _e = py::class_<g2f::SersicParametricEllipse, std::shared_ptr<g2f::SersicParametricEllipse>,
+                         g2f::ParametricEllipse>(m, "SersicParametricEllipse")
+                      .def(py::init<double, double, double>(), "size_x"_a = 0, "size_y"_a = 0, "rho"_a = 0)
+                      .def(py::init<std::shared_ptr<g2f::ReffXParameter>,
+                                    std::shared_ptr<g2f::ReffYParameter>,
+                                    std::shared_ptr<g2f::RhoParameter> >(),
+                           "size_x"_a = nullptr, "size_y"_a = nullptr, "rho"_a = nullptr)
+                      .def_property("rho", &g2f::SersicParametricEllipse::get_rho,
+                                    &g2f::SersicParametricEllipse::set_rho)
+                      .def_property("size_x", &g2f::SersicParametricEllipse::get_size_x,
+                                    &g2f::SersicParametricEllipse::set_size_x)
+                      .def_property("size_y", &g2f::SersicParametricEllipse::get_size_y,
+                                    &g2f::SersicParametricEllipse::set_size_y)
+                      .def_property("xyr", &g2f::SersicParametricEllipse::get_xyr,
+                                    &g2f::SersicParametricEllipse::set_xyr)
+                      .def_property_readonly("rho_param", &g2f::SersicParametricEllipse::get_rho_param)
+                      .def_property_readonly("size_x_param", &g2f::SersicParametricEllipse::get_size_x_param)
+                      .def_property_readonly("size_y_param", &g2f::SersicParametricEllipse::get_size_y_param)
+                      .def_property_readonly("rho_param_ptr",
+                                             &g2f::SersicParametricEllipse::get_rho_param_ptr)
+                      .def_property_readonly("size_x_param_ptr",
+                                             &g2f::SersicParametricEllipse::get_size_x_param_ptr)
+                      .def_property_readonly("size_y_param_ptr",
+                                             &g2f::SersicParametricEllipse::get_size_y_param_ptr)
+                      .def("__repr__",
+                           [](const g2f::SersicParametricEllipse &self) { return self.repr(true); })
+                      .def("__str__", &g2f::SersicParametricEllipse::str);
 }

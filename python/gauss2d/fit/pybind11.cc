@@ -25,8 +25,13 @@
 
 #include "pybind11.h"
 
-PYBIND11_MODULE(_gauss2d_fit, m)
-{
+/*
+ * This structure generates a single module. The only major downside is that
+ * abstract types need to be declared in the correct order, so the ordering
+ * below should only be changed with caution.
+ */
+
+PYBIND11_MODULE(_gauss2d_fit, m) {
     m.doc() = "Gauss2DFit Python bindings";
     py::module::import("gauss2d");
 

@@ -9,7 +9,7 @@ namespace g2 = gauss2d;
 namespace g2f = gauss2d::fit;
 
 TEST_CASE("GaussianComponent") {
-    const auto & C = g2f::Channel::NONE();
+    const auto& C = g2f::Channel::NONE();
     auto comp = std::make_shared<g2f::GaussianComponent>();
     CHECK(comp->str().size() > 0);
 
@@ -20,7 +20,7 @@ TEST_CASE("GaussianComponent") {
     CHECK(comp->get_n_gaussians(C) == 1);
     auto gaussians = comp->get_gaussians(C);
     CHECK(gaussians->size() == 1);
-    const auto & g0 = gaussians->at(0);
+    const auto& g0 = gaussians->at(0);
     const g2::Gaussian g1{};
     CHECK(g0.get_centroid_const() == g1.get_centroid_const());
     CHECK(g0.get_ellipse_const() == g1.get_ellipse_const());

@@ -6,18 +6,13 @@
 #include "channel.h"
 #include "parametric.h"
 
-namespace gauss2d
-{
-namespace fit
-{
+namespace gauss2d::fit {
 
-class IntegralModel : public Parametric
-{
+class IntegralModel : public Parametric {
 public:
-    virtual double get_integral(const Channel & channel) const = 0;
+    virtual double get_integral(const Channel& channel) const = 0;
 };
 
-} // namespace fit
-} // namespace gauss2d
+}  // namespace gauss2d::fit
 
 #endif

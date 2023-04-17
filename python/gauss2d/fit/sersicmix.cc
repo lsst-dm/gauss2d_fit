@@ -35,29 +35,24 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_sersicmix(py::module &m)
-{
-    auto _is = py::class_<g2f::IntegralSize,
-        std::shared_ptr<g2f::IntegralSize>,
-        gauss2d::Object
-    >(m, "IntegralSize")
-        .def(py::init<const double, const double>(), "integral"_a=0, "sigma"_a=0)
-        .def_readonly("integral", &g2f::IntegralSize::integral)
-        .def_readonly("sigma", &g2f::IntegralSize::sigma)
-        .def("__repr__", &g2f::IntegralSize::str)
-    ;
+void bind_sersicmix(py::module &m) {
+    auto _is = py::class_<g2f::IntegralSize, std::shared_ptr<g2f::IntegralSize>, gauss2d::Object>(
+                       m, "IntegralSize")
+                       .def(py::init<const double, const double>(), "integral"_a = 0, "sigma"_a = 0)
+                       .def_readonly("integral", &g2f::IntegralSize::integral)
+                       .def_readonly("sigma", &g2f::IntegralSize::sigma)
+                       .def("__repr__", [](const g2f::IntegralSize &self) { return self.repr(true); })
+                       .def("__str__", &g2f::IntegralSize::str);
 
     auto _smi = py::class_<g2f::SersicMixInterpolator, std::shared_ptr<g2f::SersicMixInterpolator>>(
-        m, "SersicMixInterpolator");
+            m, "SersicMixInterpolator");
 
-    auto _smv = py::class_<g2f::SersicMixValues,
-        std::shared_ptr<g2f::SersicMixValues>,
-        gauss2d::Object
-    >(m, "SersicMixValues")
-        .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
-        .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
-        .def("__repr__", &g2f::SersicMixValues::str)
-    ;
+    auto _smv = py::class_<g2f::SersicMixValues, std::shared_ptr<g2f::SersicMixValues>, gauss2d::Object>(
+                        m, "SersicMixValues")
+                        .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
+                        .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
+                        .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true); })
+                        .def("__str__", &g2f::SersicMixValues::str);
 
     // TODO: bind this function
     // std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
