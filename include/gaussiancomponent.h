@@ -44,14 +44,15 @@ public:
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
     ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 
-    // Useful if you want to make a single-Gaussian, zero-sized component list for the PsfModel
-    // when fitting a pre-computed
     /**
      * Construct a vector of default-initialized GaussianComponent instances.
      *
      * @param sizes Vector of initial values for both sigma_x and sigma_y.
      * @param fixed Whether all Parameter members should be fixed initially.
      * @return A vector of GaussianComponent instances.
+     *
+     * @note This can be used to initialize a trivial PsfModel as a
+     * noralized, zero-size single Gaussian.
      */
     static std::vector<std::shared_ptr<Component>> make_uniq_default_gaussians(
             const std::vector<double>& sizes = {2.}, bool fixed = true) {
