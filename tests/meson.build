@@ -5,6 +5,7 @@ test_names = [
     'fractionalintegralmodel',
     'gaussiancomponent',
     'gaussianparametricellipse',
+    'gaussianprior',
     'linearintegralmodel',
     'linearsersicmixinterpolator',
     'model',

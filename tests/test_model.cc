@@ -17,6 +17,7 @@
 #include "ellipticalcomponent.h"
 #include "fractionalintegralmodel.h"
 #include "gaussiancomponent.h"
+#include "gaussianprior.h"
 #include "integralmodel.h"
 #include "linearintegralmodel.h"
 #include "model.h"
@@ -70,7 +71,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
     for (size_t i = 0; i < 2; ++i) {
         for (unsigned short do_jacobian = false; do_jacobian <= true; do_jacobian++) {
             model.setup_evaluators(do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image,
-                                   {}, {}, print);
+                                   {}, {}, {}, {}, print);
 
             std::vector<double> result = model.evaluate();
 
@@ -109,9 +110,10 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 }
 
 TEST_CASE("Model") {
-    const std::vector<std::shared_ptr<const g2f::Channel>> channels
-            = {// TODO: Figure out how this works - auto const conversion?
-               g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")};
+    const std::vector<std::shared_ptr<const g2f::Channel>> channels = {
+        // TODO: Figure out how this works - auto const conversion?
+       g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")
+    };
 
     auto data = make_data(channels, 11, 13);
     g2f::ParamCRefs params_data{};
@@ -189,10 +191,14 @@ TEST_CASE("Model") {
     const bool free_sersicindex = true;
 
     Model::Sources sources{};
+    std::vector<std::shared_ptr<g2f::Prior>> priors = {};
     for (size_t i = 0; i < 2; ++i) {
         std::vector<std::shared_ptr<g2f::Component>> comps;
         for (size_t c = 0; c < 2; ++c) {
             auto centroids = std::make_shared<g2f::CentroidParameters>(c + i + 1, c + i + 1.5);
+            priors.emplace_back(
+                std::make_shared<g2f::GaussianPrior>(centroids->get_x_param_ptr(), centroids->get_x(), 1.0, false)
+            );
             auto integrals = make_integrals(channels, c + 1);
             auto integralmodel = std::make_shared<g2f::LinearIntegralModel>(&integrals);
             std::shared_ptr<g2f::Component> comp;
@@ -214,9 +220,10 @@ TEST_CASE("Model") {
         auto source = std::make_shared<g2f::Source>(comps);
         sources.push_back(source);
     }
-
-    auto model = std::make_shared<Model>(data, psfmodels, sources);
+    auto params_src = sources[0]->get_parameters_const_new();
+    auto model = std::make_shared<Model>(data, psfmodels, sources, priors);
     CHECK(model->str() != "");
+    CHECK(model->get_priors().size() == priors.size());
 
     auto params = model->get_parameters_const_new();
     // 2 sources x (2 comps x (3 integral, 2 centroid, 3 ellipse)) = 32
@@ -322,8 +329,9 @@ TEST_CASE("Model PSF") {
     g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
     Model::PsfModels psfmodels({std::make_shared<g2f::PsfModel>(psfcomps)});
     Model::Sources sources({std::make_shared<g2f::Source>(comps)});
-    auto model = std::make_shared<Model>(data, psfmodels, sources);
 
+    std::vector<std::shared_ptr<g2f::Prior>> priors = {};
+    auto model = std::make_shared<Model>(data, psfmodels, sources, priors);
     g2f::ParamRefs params_free;
     g2f::ParamFilter filter{false, true, true, true, g2f::Channel::NONE()};
     g2f::ParameterMap offsets{};
@@ -332,6 +340,5 @@ TEST_CASE("Model PSF") {
     params_free = g2f::nonconsecutive_unique(params_free);
     // 2 cens + 1 fluxfrac + 2*(2sigmas + rho) = 9
     CHECK(params_free.size() == 9);
-
     verify_model(*model, channels, params_free, true, true);
 }

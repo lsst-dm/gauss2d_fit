@@ -51,25 +51,32 @@ void bind_model(py::module &m) {
                       .value("loglike_grad", Model::EvaluatorMode::loglike_grad)
                       .value("jacobian", Model::EvaluatorMode::jacobian)
                       .export_values();
-    model.def(py::init<std::shared_ptr<const Model::ModelData>, Model::PsfModels &, Model::Sources &>(),
-              "data"_a, "psfmodels"_a, "sources"_a)
-            .def("evaluate", py::overload_cast<>(&Model::evaluate))
-            .def_property_readonly("data", &Model::get_data)
-            .def("gaussians",
-                 [](const Model &m, const g2f::Channel &c) {
-                     return std::shared_ptr<const gauss2d::Gaussians>(m.get_gaussians(c));
-                 })
-            .def_property_readonly("outputs", &Model::get_outputs)
-            .def("parameters", &Model::get_parameters, "parameters"_a = g2f::ParamRefs(),
-                 "paramfilter"_a = nullptr)
-            .def_property_readonly("psfmodels", &Model::get_psfmodels)
-            .def_property_readonly("sources", &Model::get_sources)
-            .def("setup_evaluators", &Model::setup_evaluators,
-                 "evaluatormode"_a = Model::EvaluatorMode::image,
-                 "outputs"_a = std::vector<std::vector<std::shared_ptr<Image>>>{},
-                 "residuals"_a = std::vector<std::shared_ptr<Image>>{}, "print"_a = false)
-            .def("verify_jacobian", &Model::verify_jacobian, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4,
-                 "rtol"_a = 1e-3, "atol"_a = 1e-3)
-            .def("__repr__", [](const Model &self) { return self.repr(true); })
-            .def("__str__", &Model::str);
+    model.def(
+        py::init<std::shared_ptr<const Model::ModelData>, Model::PsfModels &, Model::Sources &, Model::Priors &>(),
+            "data"_a, "psfmodels"_a, "sources"_a, "priors"_a=Model::Priors{})
+        .def("evaluate", py::overload_cast<>(&Model::evaluate))
+        .def_property_readonly("data", &Model::get_data)
+        .def("gaussians",
+             [](const Model &m, const g2f::Channel &c) {
+                 return std::shared_ptr<const gauss2d::Gaussians>(m.get_gaussians(c));
+             })
+        .def_property_readonly("mode", &Model::get_mode)
+        .def_property_readonly("outputs", &Model::get_outputs)
+        .def("parameters", &Model::get_parameters, "parameters"_a = g2f::ParamRefs(),
+             "paramfilter"_a = nullptr)
+        .def_property_readonly("priors", &Model::get_priors)
+        .def_property_readonly("psfmodels", &Model::get_psfmodels)
+        .def_property_readonly("sources", &Model::get_sources)
+        .def("setup_evaluators", &Model::setup_evaluators,
+             "evaluatormode"_a = Model::EvaluatorMode::image,
+             "outputs"_a = std::vector<std::vector<std::shared_ptr<Image>>>{},
+             "residuals"_a = std::vector<std::shared_ptr<Image>>{},
+             "outputs_prior"_a = std::vector<std::shared_ptr<Image>>{},
+             "residuals_prior"_a = std::shared_ptr<Image>{},
+             "force"_a = false,
+             "print"_a = false)
+        .def("verify_jacobian", &Model::verify_jacobian, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4,
+             "rtol"_a = 1e-3, "atol"_a = 1e-3)
+        .def("__repr__", [](const Model &self) { return self.repr(true); })
+        .def("__str__", &Model::str);
 }

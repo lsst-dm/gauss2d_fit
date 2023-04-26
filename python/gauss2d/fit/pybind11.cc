@@ -42,6 +42,7 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
     bind_component(m);
     bind_componentmixture(m);
     bind_integralmodel(m);
+    bind_prior(m);
     bind_sersicmix(m);
 
     bind_centroidparameters(m);
@@ -52,6 +53,7 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
     bind_gaussiancomponent(m);
     bind_gaussianmodelintegral(m);
     bind_gaussianparametricellipse(m);
+    bind_gaussianprior(m);
     bind_linearintegralmodel(m);
     bind_linearsersicmixinterpolator(m);
     bind_model(m);
