@@ -15,6 +15,7 @@ gauss2dfit_sources = [
     'sersicmix.cc',
     'sersicmixcomponent.cc',
     'sersicparametricellipse.cc',
+    'shapeprior.cc',
     'source.cc',
     'transforms.cc',
 ]

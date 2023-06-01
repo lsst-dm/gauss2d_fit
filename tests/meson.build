@@ -14,6 +14,7 @@ test_names = [
     'psfmodel',
     'sersicmix',
     'sersicmixcomponent',
+    'shapeprior',
     'source',
 ]
 foreach test_name : test_names

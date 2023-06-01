@@ -26,6 +26,8 @@
 #include "param_filter.h"
 #include "parameters.h"
 #include "sersicmixcomponent.h"
+#include "shapeprior.h"
+#include "transforms.h"
 #include "util.h"
 
 typedef gauss2d::VectorImage<double> Image;
@@ -110,10 +112,9 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 }
 
 TEST_CASE("Model") {
-    const std::vector<std::shared_ptr<const g2f::Channel>> channels = {
-        // TODO: Figure out how this works - auto const conversion?
-       g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")
-    };
+    const std::vector<std::shared_ptr<const g2f::Channel>> channels
+            = {// TODO: Figure out how this works - auto const conversion?
+               g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")};
 
     auto data = make_data(channels, 11, 13);
     g2f::ParamCRefs params_data{};
@@ -190,31 +191,43 @@ TEST_CASE("Model") {
 
     const bool free_sersicindex = true;
 
+    auto limits_axrat_logit = std::make_shared<parameters::Limits<double>>(-1e-10, 1 + 1e-10);
+    auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
+
     Model::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
     for (size_t i = 0; i < 2; ++i) {
         std::vector<std::shared_ptr<g2f::Component>> comps;
         for (size_t c = 0; c < 2; ++c) {
             auto centroids = std::make_shared<g2f::CentroidParameters>(c + i + 1, c + i + 1.5);
-            priors.emplace_back(
-                std::make_shared<g2f::GaussianPrior>(centroids->get_x_param_ptr(), centroids->get_x(), 1.0, false)
-            );
+            priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroids->get_x_param_ptr(),
+                                                                     centroids->get_x(), 1.0, false));
             auto integrals = make_integrals(channels, c + 1);
             auto integralmodel = std::make_shared<g2f::LinearIntegralModel>(&integrals);
             std::shared_ptr<g2f::Component> comp;
+            std::shared_ptr<g2f::ParametricEllipse> ellipse;
             if (i == 0) {
-                comp = std::make_shared<g2f::GaussianComponent>(
-                        std::make_shared<g2f::GaussianParametricEllipse>(c + 0.5, c + 1.5, 0), centroids,
-                        integralmodel);
+                auto ellipse_g = std::make_shared<g2f::GaussianParametricEllipse>(c + 0.5, c + 1.5, 0);
+                ellipse = ellipse_g;
+                comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroids, integralmodel);
             } else {
                 auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(0.5 + 3.5 * c);
                 sersic_n->set_free(free_sersicindex);
                 auto reff_x = std::make_shared<g2f::ReffXParameter>(c + 0.5);
                 auto reff_y = std::make_shared<g2f::ReffYParameter>(c + 1.5);
-                comp = std::make_shared<g2f::SersicMixComponent>(
-                        std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y), centroids,
-                        integralmodel, sersic_n);
+                auto ellipse_s = std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y);
+                ellipse = ellipse_s;
+                comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
+                                                                 sersic_n);
             }
+            auto prior_size = std::make_shared<g2f::ParametricGaussian1D>(
+                    std::make_shared<g2f::MeanParameter>(0.7, nullptr,
+                                                         g2f::get_transform_default<g2f::Log10Transform>()),
+                    std::make_shared<g2f::StdDevParameter>(0.5));
+            auto prior_axrat = std::make_shared<g2f::ParametricGaussian1D>(
+                    std::make_shared<g2f::MeanParameter>(0.7, nullptr, transform_axrat),
+                    std::make_shared<g2f::StdDevParameter>(1.0));
+            auto prior = g2f::ShapePrior(ellipse, prior_size, prior_axrat);
             comps.emplace_back(comp);
         }
         auto source = std::make_shared<g2f::Source>(comps);

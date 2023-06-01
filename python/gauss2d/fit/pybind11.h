@@ -55,6 +55,7 @@ void bind_psfmodel(py::module &m);
 void bind_sersicmix(py::module &m);
 void bind_sersicmixcomponent(py::module &m);
 void bind_sersicparametricellipse(py::module &m);
+void bind_shapeprior(py::module &m);
 void bind_source(py::module &m);
 
 #endif

@@ -28,6 +28,7 @@ headers = [
     'sersicmix.h',
     'sersicmixcomponent.h',
     'sersicparametricellipse.h',
+    'shapeprior.h',
     'source.h',
     'transforms.h',
     'util.h',

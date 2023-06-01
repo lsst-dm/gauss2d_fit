@@ -26,6 +26,7 @@ sources = [
     'sersicmix.cc',
     'sersicmixcomponent.cc',
     'sersicparametricellipse.cc',
+    'shapeprior.cc',
     'source.cc',
     'pybind11.cc',
 ]
