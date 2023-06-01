@@ -7,9 +7,6 @@
 
 #include "param_defs.h"
 
-const double LOG_1 = log(1);
-const double SQRT_2_PI = sqrt(2.*M_PI);
-
 namespace gauss2d::fit {
 /**
  * Results from the evaluation of a prior probability function.

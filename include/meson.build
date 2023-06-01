@@ -13,6 +13,7 @@ headers = [
     'integralmodel.h',
     'linearintegralmodel.h',
     'linearsersicmixinterpolator.h',
+    'math.h',
     'model.h',
     'observation.h',
     'param_defs.h',
