@@ -29,18 +29,12 @@ public:
      * @param transformed Whether the prior is based on the transformed value of param.
      */
     GaussianPrior(std::shared_ptr<const ParamBase> param, double mean, double stddev, bool transformed);
-    /**
-     * Evaluate the log likelihood and residual-dependent terms.
-     *
-     * @param calc_jacobians Whether to compute the Jacobian and residual terms.
-     * @param normalize_loglike Whether to add the constant (sigma-dependent) factors to the log likehood.
-     * @return The result of the evaluation.
-     */
-    PriorEvaluation evaluate(bool calc_jacobians=false, bool normalize_loglike=false) const;
 
-    const ParamBase & get_param() const;
+    PriorEvaluation evaluate(bool calc_jacobians = false, bool normalize_loglike = false) const override;
 
-    double get_loglike_const_term() const override;
+    const ParamBase& get_param() const;
+
+    std::vector<double> get_loglike_const_terms() const override;
     double get_mean() const;
     double get_stddev() const;
     bool get_transformed() const;

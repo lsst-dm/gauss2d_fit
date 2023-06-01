@@ -18,7 +18,9 @@ TEST_CASE("GaussianPrior") {
     auto prior = g2f::GaussianPrior(param, mean, stddev, false);
 
     CHECK(prior.evaluate().loglike == 0);
-    CHECK(prior.get_loglike_const_term() == -log(sqrt(2*M_PI)));
+    auto terms = prior.get_loglike_const_terms();
+    CHECK(terms.size() == 1);
+    CHECK(terms[0] == -log(sqrt(2 * M_PI)));
     CHECK(prior.repr().size() > 0);
     CHECK(prior.repr(true).size() > 0);
     CHECK(prior.str().size() > 0);

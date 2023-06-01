@@ -38,10 +38,12 @@ namespace g2f = gauss2d::fit;
 
 void bind_prior(py::module &m) {
     auto _e = py::class_<g2f::PriorEvaluation, std::shared_ptr<g2f::PriorEvaluation>>(m, "PriorEvaluation")
-        .def(py::init<double, std::map<g2f::ParamBaseCRef, double>, std::vector<double>>(),
-            "loglike"_a, "jacobians"_a = std::map<g2f::ParamBaseCRef, double>{}, "residuals"_a=std::vector<double>{})
-        .def_readwrite("loglike", &g2f::PriorEvaluation::loglike)
-        .def_readwrite("jacobians", &g2f::PriorEvaluation::jacobians)
-        .def_readwrite("residuals", &g2f::PriorEvaluation::residuals);
+                      .def(py::init<double, std::map<g2f::ParamBaseCRef, std::vector<double>>,
+                                    std::vector<double>>(),
+                           "loglike"_a, "jacobians"_a = std::map<g2f::ParamBaseCRef, std::vector<double>>{},
+                           "residuals"_a = std::vector<double>{})
+                      .def_readwrite("loglike", &g2f::PriorEvaluation::loglike)
+                      .def_readwrite("jacobians", &g2f::PriorEvaluation::jacobians)
+                      .def_readwrite("residuals", &g2f::PriorEvaluation::residuals);
     auto _p = py::class_<g2f::Prior, std::shared_ptr<g2f::Prior>, gauss2d::Object>(m, "Prior");
 }

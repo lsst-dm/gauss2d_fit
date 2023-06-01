@@ -38,15 +38,21 @@ using namespace pybind11::literals;
 namespace g2f = gauss2d::fit;
 
 void bind_gaussianprior(py::module &m) {
-    auto _e = py::class_<g2f::GaussianPrior, std::shared_ptr<g2f::GaussianPrior>, g2f::Prior>(m, "GaussianPrior")
-        .def(py::init<std::shared_ptr<const g2f::ParamBase>, double, double, bool>(),
-           "param"_a = nullptr, "mean"_a = 0, "stddev"_a = 1., "transformed"_a = false)
-        .def("evaluate", &g2f::GaussianPrior::evaluate, "calc_jacobians"_a = false, "normalize_loglike"_a = false)
-        .def_property("mean", &g2f::GaussianPrior::get_mean, &g2f::GaussianPrior::set_mean)
-        .def_property_readonly("param", &g2f::GaussianPrior::get_param)
-        .def_property("stddev", &g2f::GaussianPrior::get_stddev, &g2f::GaussianPrior::set_stddev)
-        .def_property("transformed", &g2f::GaussianPrior::get_transformed, &g2f::GaussianPrior::set_transformed)
-        .def("__len__", &g2f::GaussianPrior::size)
-        .def("__repr__", [](const g2f::GaussianPrior &self) { return self.repr(true); })
-        .def("__str__", &g2f::GaussianPrior::str);
+    auto _e = py::class_<g2f::GaussianPrior, std::shared_ptr<g2f::GaussianPrior>, g2f::Prior>(m,
+                                                                                              "GaussianPrior")
+                      .def(py::init<std::shared_ptr<const g2f::ParamBase>, double, double, bool>(),
+                           "param"_a = nullptr, "mean"_a = 0, "stddev"_a = 1., "transformed"_a = false)
+                      .def("evaluate", &g2f::GaussianPrior::evaluate, "calc_jacobians"_a = false,
+                           "normalize_loglike"_a = false)
+                      .def_property_readonly("loglike_const_terms",
+                                             &g2f::GaussianPrior::get_loglike_const_terms)
+                      .def_property("mean", &g2f::GaussianPrior::get_mean, &g2f::GaussianPrior::set_mean)
+                      .def_property_readonly("param", &g2f::GaussianPrior::get_param)
+                      .def_property("stddev", &g2f::GaussianPrior::get_stddev,
+                                    &g2f::GaussianPrior::set_stddev)
+                      .def_property("transformed", &g2f::GaussianPrior::get_transformed,
+                                    &g2f::GaussianPrior::set_transformed)
+                      .def("__len__", &g2f::GaussianPrior::size)
+                      .def("__repr__", [](const g2f::GaussianPrior &self) { return self.repr(true); })
+                      .def("__str__", &g2f::GaussianPrior::str);
 }
