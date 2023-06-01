@@ -60,6 +60,7 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
     bind_observation(m);
     bind_param_filter(m);
     bind_parameters(m);
+    bind_parametricgaussian1d(m);
     bind_psfmodel(m);
     bind_sersicmixcomponent(m);
     bind_sersicparametricellipse(m);

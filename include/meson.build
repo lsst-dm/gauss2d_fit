@@ -21,6 +21,7 @@ headers = [
     'parameters.h',
     'parametric.h',
     'parametricellipse.h',
+    'parametricgaussian1d.h',
     'parametricmodel.h',
     'prior.h',
     'psfmodel.h',

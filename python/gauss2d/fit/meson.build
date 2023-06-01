@@ -18,6 +18,7 @@ sources = [
     'param_filter.cc',
     'parameters.cc',
     'parametric.cc',
+    'parametricgaussian1d.cc',
     'parametricellipse.cc',
     'parametricmodel.cc',
     'prior.cc',

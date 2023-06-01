@@ -10,6 +10,7 @@ test_names = [
     'linearsersicmixinterpolator',
     'model',
     'observation',
+    'parametricgaussian1d',
     'psfmodel',
     'sersicmix',
     'sersicmixcomponent',

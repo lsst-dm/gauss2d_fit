@@ -47,6 +47,7 @@ void bind_observation(py::module &m);
 void bind_param_filter(py::module &m);
 void bind_parameters(py::module &m);
 void bind_parametric(py::module &m);
+void bind_parametricgaussian1d(py::module &m);
 void bind_parametricellipse(py::module &m);
 void bind_parametricmodel(py::module &m);
 void bind_prior(py::module &m);
