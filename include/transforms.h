@@ -108,6 +108,13 @@ public:
         _set_range();
     }
 };
+
+template <class T>
+std::shared_ptr<T> get_transform_default() {
+    static T transform_default{};
+    static std::shared_ptr<T> ptr{std::shared_ptr<T>{}, &transform_default};
+    return ptr;
+}
 #pragma GCC diagnostic pop
 }  // namespace gauss2d::fit
 
