@@ -40,5 +40,8 @@ namespace g2f = gauss2d::fit;
 
 void bind_ellipticalcomponent(py::module &m) {
     auto _e = py::class_<g2f::EllipticalComponent, std::shared_ptr<g2f::EllipticalComponent>, g2f::Component>(
-            m, "EllipticalComponent");
+                      m, "EllipticalComponent")
+                      .def_property_readonly("centroid", &g2f::EllipticalComponent::get_centroid)
+                      .def_property_readonly("ellipse", &g2f::EllipticalComponent::get_ellipse)
+                      .def_property_readonly("integralmodel", &g2f::EllipticalComponent::get_integralmodel);
 }
