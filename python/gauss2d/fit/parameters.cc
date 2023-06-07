@@ -71,6 +71,8 @@ void bind_parameters(py::module &m) {
     declare_transform_base<double>(m);
     declare_transform<double, parameters::UnitTransform<double>>(m, "Unit");
     declare_transform<double, g2f::InverseTransform>(m, "Inverse");
+    declare_transform<double, g2f::JanskyToABMagTransform>(m, "JanskyToABMag");
+    declare_transform<double, g2f::NanojanskyToABMagTransform>(m, "NanojanskyToABMag");
     declare_transform<double, g2f::LogTransform>(m, "Log");
     declare_transform<double, g2f::Log10Transform>(m, "Log10");
     declare_transform<double, g2f::LogitTransform>(m, "Logit");
