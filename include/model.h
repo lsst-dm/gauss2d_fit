@@ -214,7 +214,7 @@ private:
         return _evaluators[idx]->loglike_pixel();
     }
 
-    /// Evaluate a single prior  using the current EvaluatorMode in _mode
+    /// Evaluate all priors using the current EvaluatorMode in _mode
     double _evaluate_priors() {
         bool is_jacobian = _mode == EvaluatorMode::jacobian;
         double loglike = 0;
@@ -1059,6 +1059,18 @@ public:
                                      + "]: n_failed=" + std::to_string(n_failed)
                                      + "; median evaluated/expected=" + std::to_string(median));
                 }
+            }
+        }
+        filter.channel = std::nullopt;
+
+        ParamRefs params{};
+        this->get_parameters_observation(params, 0, &filter);
+        params = nonconsecutive_unique(params);
+
+        for(const auto & prior: this->_priors) {
+            auto result = prior->evaluate(true);
+            for(const auto & [key, value]: result.jacobians) {
+
             }
         }
         return errors;
