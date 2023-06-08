@@ -145,6 +145,19 @@ void stream_iter_ref(const T& container, std::ostream& stream) {
     stream << "]";
 }
 
+template <typename T>
+std::string to_string_float(const T value, const int precision = 6, const bool scientific = true) {
+    std::ostringstream out;
+    out.precision(precision);
+    if (scientific) {
+        out << std::scientific;
+    } else {
+        out << std::fixed;
+    }
+    out << value;
+    return std::move(out).str();
+}
+
 }  // namespace gauss2d::fit
 
 #endif
