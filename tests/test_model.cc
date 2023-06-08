@@ -202,6 +202,8 @@ TEST_CASE("Model") {
             auto centroids = std::make_shared<g2f::CentroidParameters>(c + i + 1, c + i + 1.5);
             priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroids->get_x_param_ptr(),
                                                                      centroids->get_x(), 1.0, false));
+            priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroids->get_y_param_ptr(),
+                                                                     centroids->get_y(), 0.5, false));
             auto integrals = make_integrals(channels, c + 1);
             auto integralmodel = std::make_shared<g2f::LinearIntegralModel>(&integrals);
             std::shared_ptr<g2f::Component> comp;
@@ -227,7 +229,7 @@ TEST_CASE("Model") {
             auto prior_axrat = std::make_shared<g2f::ParametricGaussian1D>(
                     std::make_shared<g2f::MeanParameter>(0.7, nullptr, transform_axrat),
                     std::make_shared<g2f::StdDevParameter>(1.0));
-            auto prior = g2f::ShapePrior(ellipse, prior_size, prior_axrat);
+            priors.emplace_back(std::make_shared<g2f::ShapePrior>(ellipse, prior_size, prior_axrat));
             comps.emplace_back(comp);
         }
         auto source = std::make_shared<g2f::Source>(comps);

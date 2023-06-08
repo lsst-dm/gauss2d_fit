@@ -22,7 +22,8 @@
  */
 
 #include "shapeprior.h"
-#include "util.h"
+
+#include "param_defs.h"
 
 #include "gauss2d/ellipse.h"
 
@@ -159,7 +160,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
     }
 
     if (calc_jacobians) {
-        ParamRefs params = _ellipse->get_parameters_new();
+        ParamRefs params = nonconsecutive_unique(_ellipse->get_parameters_new());
         for (auto& paramref : params) {
             auto& param = paramref.get();
             double value = param.get_value();
@@ -174,12 +175,11 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
                                          + " to original value=" + to_string_float(value) + " (stuck at "
                                          + to_string_float(value_new) + "); check limits");
             }
-            double denom_jac = delta * param.get_transform_derivative();
-            std::vector<double> jacobian(result.residuals.size());
+            std::vector<double> jacobians(result.residuals.size());
             for (size_t idx = 0; idx < result.residuals.size(); ++idx) {
-                jacobian[idx] = (result_new.residuals[idx] - result.residuals[idx]) / denom_jac;
+                jacobians[idx] = (result_new.residuals[idx] - result.residuals[idx]) / delta;
             }
-            result.jacobians[paramref] = jacobian;
+            result.jacobians[paramref] = jacobians;
         }
     }
 

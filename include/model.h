@@ -1,6 +1,7 @@
 #ifndef GAUSS2D_FIT_MODEL_H
 #define GAUSS2D_FIT_MODEL_H
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -227,7 +228,7 @@ private:
                 size_t idx_jac = idx_resid;
                 size_t n_resid = eval.residuals.size();
                 for (const double value : eval.residuals) {
-                    this->_residuals_prior->set_value(0, idx++, value);
+                    this->_residuals_prior->set_value(0, idx_resid++, value);
                 }
                 // Reset the index back to the original start
                 idx_resid = idx_jac;
@@ -990,8 +991,8 @@ public:
             auto result = _make_evaluator(idx, EvaluatorMode::loglike_image);
             double loglike_img = result.first->loglike_pixel();
             if (loglike_jac != loglike_img)
-                errors.push_back("loglike_jac=" + std::to_string(loglike_jac) + "loglike_img="
-                                 + std::to_string(loglike_img) + "for exp[" + std::to_string(idx) + "]:");
+                errors.push_back("loglike_jac=" + to_string_float(loglike_jac) + "loglike_img="
+                                 + to_string_float(loglike_img) + "for exp[" + std::to_string(idx) + "]:");
 
             const auto& image_current = *(result.second.first);
 
@@ -1003,29 +1004,9 @@ public:
                 const double value = param.get_value_transformed();
                 double diff = value * findiff_frac;
                 if (std::abs(diff) < findiff_add) diff = findiff_add;
-                double value_new = value + diff;
+                diff = finite_difference_param(param, diff);
 
                 auto result_diff = _make_evaluator(idx, EvaluatorMode::image);
-
-                try {
-                    param.set_value_transformed(value_new);
-                    // If the param is near an upper limit, this might fail: try -diff then
-                    if (param.get_value_transformed() != value_new) {
-                        diff = -diff;
-                        value_new = value + diff;
-                        param.set_value_transformed(value_new);
-                    }
-                } catch (const std::runtime_error& err) {
-                    diff = -diff;
-                    value_new = value + diff;
-                    param.set_value_transformed(value_new);
-                    if (param.get_value_transformed() != value_new) {
-                        throw std::runtime_error("Couldn't set param=" + param.str()
-                                                 + " to new value_transformed=" + std::to_string(value)
-                                                 + " +/- " + std::to_string(diff)
-                                                 + "; are limits too restrictive?");
-                    }
-                }
 
                 result_diff.first->loglike_pixel();
 
@@ -1067,10 +1048,60 @@ public:
         this->get_parameters_observation(params, 0, &filter);
         params = nonconsecutive_unique(params);
 
-        for(const auto & prior: this->_priors) {
-            auto result = prior->evaluate(true);
-            for(const auto & [key, value]: result.jacobians) {
+        for (const auto& prior : this->_priors) {
+            auto result_base = prior->evaluate(true);
+            auto residuals_base = result_base.residuals;
+            const size_t n_values = residuals_base.size();
 
+            for (const auto& [param_cref, values_base] : result_base.jacobians) {
+                if (values_base.size() != n_values) {
+                    throw std::logic_error("values_base.size()=" + std::to_string(values_base.size())
+                                           + " != residuals_base.size()=" + std::to_string(n_values));
+                }
+
+                // TODO: Determine if it's possible to get mutable ref from set.find
+                // (set.find only ever seems to return cref, so maybe not)
+                auto found = std::find(params.begin(), params.end(), param_cref);
+                if (found == params.end()) {
+                    throw std::logic_error("Couldn't find " + param_cref.get().str() + " in all params");
+                }
+                auto& param = (*found).get();
+
+                const double value = param.get_value_transformed();
+                double delta = value * findiff_frac;
+                if (std::abs(delta) < findiff_add) delta = findiff_add;
+                delta = finite_difference_param(param, delta);
+                auto result_new = prior->evaluate(true);
+
+                const size_t idx_param = _offsets_params.at(param);
+
+                std::vector<double> ratios = {};
+                size_t n_failed = 0;
+                size_t idx_value = 0;
+                for (const double jac_base : values_base) {
+                    double jac_findiff
+                            = (result_new.residuals[idx_value] - result_base.residuals[idx_value]) / delta;
+                    auto close = isclose(jac_base, jac_findiff, rtol, atol);
+                    if (!close.isclose) {
+                        n_failed++;
+                        prior->evaluate(true);
+                        ratios.push_back(jac_base / jac_findiff);
+                    }
+                    idx_value++;
+                }
+                param.set_value_transformed(value);
+                if (param.get_value_transformed() != value) {
+                    throw std::logic_error("Could not return param=" + param.str()
+                                           + " to original value=" + std::to_string(value));
+                }
+                if (n_failed > 0) {
+                    std::sort(ratios.begin(), ratios.end());
+                    double median = ratios[ratios.size() / 2];
+                    errors.push_back("Param[" + std::to_string(idx_param) + "]=" + param.str()
+                                     + " failed for prior=" + prior->str()
+                                     + ": n_failed=" + std::to_string(n_failed)
+                                     + "; median evaluated/expected=" + std::to_string(median));
+                }
             }
         }
         return errors;
