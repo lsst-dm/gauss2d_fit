@@ -163,25 +163,8 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         for (auto& paramref : params) {
             auto& param = paramref.get();
             double value = param.get_value();
-            double value_trans = param.get_value_transformed();
-            double delta = -_options->get_delta_jacobian();
-            bool good = false;
+            double delta = finite_difference_param(param, _options->get_delta_jacobian());
 
-            for (double sign : {1, -1}) {
-                try {
-                    double eps = sign * delta;
-                    param.set_value_transformed(value_trans + eps);
-                    good = true;
-                    delta = eps;
-                    break;
-                } catch (const std::runtime_error& e) {
-                    // Keep trying
-                }
-            }
-            if (!good || (delta == 0)) {
-                throw std::runtime_error("Couldn't set " + param.str() + " with delta=+/-"
-                                         + std::to_string(delta));
-            }
             auto result_new = this->evaluate(false, normalize);
             // Return to the old value
             param.set_value(value);
