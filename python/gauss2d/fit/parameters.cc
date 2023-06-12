@@ -49,7 +49,7 @@ void bind_parameters(py::module &m) {
             .def_property_readonly("name", &g2f::UnitNone::get_name);
     declare_limits<double>(m);
     using Parameter = parameters::ParameterBase<double>;
-    auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "Parameter");
+    auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "ParameterD");
     auto integral = declare_parameter<double, g2f::IntegralParameter>(m, "Integral");
     integral.def_property("label", &g2f::IntegralParameter::get_label, &g2f::IntegralParameter::set_label);
     declare_parameter<double, g2f::CentroidXParameter>(m, "CentroidX");
