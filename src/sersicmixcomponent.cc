@@ -407,7 +407,7 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
         } else {
             const auto deriv = param.get_transform_derivative();
             if (deriv == 0)
-                throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "=" + param.str()
+                throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "]=" + param.str()
                                          + " get_transform_derivative=0 (will result in divide by 0)");
             values_base[order_param] /= deriv;
         }
