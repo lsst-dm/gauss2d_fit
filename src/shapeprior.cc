@@ -100,7 +100,7 @@ std::string ShapePriorOptions::repr(bool name_keywords) const {
 }
 
 std::string ShapePriorOptions::str() const {
-    return "ShapePriorOptions(delta_jacobian" + std::to_string(_delta_jacobian) + ", size_maj_floor="
+    return "ShapePriorOptions(delta_jacobian=" + std::to_string(_delta_jacobian) + ", size_maj_floor="
            + std::to_string(_size_maj_floor) + ", axrat_floor=" + std::to_string(_axrat_floor) + ")";
 }
 

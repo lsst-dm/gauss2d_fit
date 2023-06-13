@@ -28,13 +28,13 @@ ParamCRefs& EllipticalComponent::get_parameters_const(ParamCRefs& params, ParamF
 }
 
 std::string EllipticalComponent::repr(bool name_keywords) const {
-    return (name_keywords ? "centroid=" : "") + _centroid->repr(name_keywords) + ", "
-           + (name_keywords ? "ellipse=" : "") + _ellipse->repr(name_keywords) + ", "
+    return (name_keywords ? "ellipse=" : "") + _ellipse->repr(name_keywords) + ", "
+           + (name_keywords ? "centroid=" : "") + _centroid->repr(name_keywords) + ", "
            + (name_keywords ? "integralmodel=" : "") + _integralmodel->repr(name_keywords);
 }
 
 std::string EllipticalComponent::str() const {
-    return "centroid=" + _centroid->str() + ", ellipse=" + _ellipse->str()
+    return "ellipse=" + _ellipse->str() + ", centroid=" + _centroid->str()
            + ", integralmodel=" + _integralmodel->str();
 }
 

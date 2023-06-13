@@ -909,15 +909,23 @@ public:
     size_t size() const { return _size; }
 
     std::string repr(bool name_keywords = false) const override {
-        std::string str = std::string("Model(") + (name_keywords ? "sources=[" : "[");
+        std::string str = std::string("Model(") + (name_keywords ? "data=" : "") + _data->repr(name_keywords) + ", "
+            + (name_keywords ? "psfmodels=[" : "[");
+        for (const auto& x : _psfmodels) str += x->repr(name_keywords) + ",";
+        str += (name_keywords ? "], sources=[" : "], [");
         for (const auto& s : _sources) str += s->repr(name_keywords) + ",";
-        return str + "], " + (name_keywords ? "data=" : "") + _data->repr() + ")";
+        str += (name_keywords ? "], priors=[" : "], [");
+        return str + "])";
     }
 
     std::string str() const override {
-        std::string str = "Model(sources=[";
-        for (const auto& s : _sources) str += s->str() + ",";
-        return str + "], data=" + _data->str() + ")";
+        std::string str = "Model(data=" + _data->str() + ", psfmodels=[";
+        for (const auto& x : _psfmodels) str += x->str() + ",";
+        str += "], sources=[";
+        for (const auto& x : _sources) str += x->str() + ",";
+        str += "], priors=[";
+        for (const auto& x : _priors) str += x->str() + ",";
+        return str + "])";
     }
 
     /**

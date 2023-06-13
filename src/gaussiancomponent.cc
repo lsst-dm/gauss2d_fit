@@ -174,13 +174,10 @@ void GaussianComponent::set_grad_param_factors(const Channel& channel, GradParam
 }
 
 std::string GaussianComponent::repr(bool name_keywords) const {
-    return "GaussianComponent(" + EllipticalComponent::repr(name_keywords) + ", "
-           + (name_keywords ? "photo=" : "") + _integralmodel->repr(name_keywords) + ")";
+    return "GaussianComponent(" + EllipticalComponent::repr(name_keywords) + ")";
 }
 
-std::string GaussianComponent::str() const {
-    return "GaussianComponent(" + EllipticalComponent::str() + ", photo=" + _integralmodel->str() + ")";
-}
+std::string GaussianComponent::str() const { return "GaussianComponent(" + EllipticalComponent::str() + ")"; }
 
 GaussianComponent::GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse,
                                      std::shared_ptr<CentroidParameters> centroid,
