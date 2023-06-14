@@ -54,7 +54,7 @@ void bind_model(py::module &m) {
     model.def(py::init<std::shared_ptr<const Model::ModelData>, Model::PsfModels &, Model::Sources &,
                        Model::Priors &>(),
               "data"_a, "psfmodels"_a, "sources"_a, "priors"_a = Model::Priors{})
-            .def("evaluate", py::overload_cast<>(&Model::evaluate))
+            .def("evaluate", &Model::evaluate, "print"_a = false)
             .def_property_readonly("data", &Model::get_data)
             .def("gaussians",
                  [](const Model &m, const g2f::Channel &c) {

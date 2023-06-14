@@ -175,8 +175,15 @@ private:
         return gaussians_srcs;
     }
 
-    /// Evaluate a single observation using the current EvaluatorMode in _mode
-    double _evaluate_observation(size_t idx) {
+    /**
+     * Evaluate a single observation using the current EvaluatorMode in _mode
+     *
+     * @param idx The index of the observation.
+     * @param print Whether to print diagnostic statements to stdout.
+     * @return The log likelihood of the model for this observation
+     */
+    double _evaluate_observation(size_t idx, bool print = false) {
+        if (print) std::cout << "Evaluating observation[" << idx << "]" << std::endl;
         if (_mode == EvaluatorMode::jacobian) {
             const auto& channel = _data->at(idx).get().get_channel();
             const size_t n_gaussians_psf = _psfcomps[idx]->size();
@@ -190,6 +197,9 @@ private:
                 size_t i_src = 0;
                 for (const auto& src : this->get_sources()) {
                     const size_t n_gauss_src = gaussians_src[i_src++]->size();
+                    if (print)
+                        std::cout << "Setting factors for psf[" << i_psf << "], src[" << i_src << "]"
+                                  << std::endl;
                     if (n_gauss_src != src->get_n_gaussians(channel)) {
                         throw std::logic_error(
                                 this->str() + "._data[" + channel.str() + "].get_n_gaussians(channel)="
@@ -215,12 +225,18 @@ private:
         return _evaluators[idx]->loglike_pixel();
     }
 
-    /// Evaluate all priors using the current EvaluatorMode in _mode
-    double _evaluate_priors() {
+    /**
+     * Evaluate the prior using the current EvaluatorMode in _mode
+     *
+     * @param print Whether to print diagnostic statements to stdout.
+     * @return The sum of the log likelihoods of the priors
+     */
+    double _evaluate_priors(bool print = false) {
         bool is_jacobian = _mode == EvaluatorMode::jacobian;
         double loglike = 0;
         size_t idx_resid = 0;
 
+        if (print) std::cout << "Evaluating priors" << std::endl;
         for (const auto& prior : _priors) {
             auto eval = prior->evaluate(is_jacobian);
             loglike += eval.loglike;
@@ -247,6 +263,9 @@ private:
                 }
                 idx_resid += n_resid;
             }
+            if (print)
+                std::cout << "Evaluated prior with loglike=" << eval.loglike << "; at idx_resid=" << idx_resid
+                          << std::endl;
         }
         return loglike;
     }
@@ -597,17 +616,18 @@ public:
     /**
      * Evaluate the model for every Observation in _data.
      *
+     * * @param print Whether to print diagnostic statements to stdout.
      * @return The log likelihood of each observation, followed by the summed log likelihood of the priors.
      */
-    std::vector<double> evaluate() {
+    std::vector<double> evaluate(bool print = false) {
         if (!_is_setup) throw std::runtime_error("Can't call evaluate before setup_evaluators");
 
         std::vector<double> result(_size + 1);
 
         for (size_t idx = 0; idx < _size; ++idx) {
-            result[idx] = this->_evaluate_observation(idx);
+            result[idx] = this->_evaluate_observation(idx, print);
         }
-        result[_size] = this->_evaluate_priors();
+        result[_size] = this->_evaluate_priors(print);
 
         return result;
     }
@@ -743,7 +763,7 @@ public:
      * @param outputs A vector of vectors of Image outputs for each Evaluator (created if empty and needed).
      * @param residuals An array of residual
      * @param force Whether to force setting up even if already set up in the same mode
-     * @param print Whether to print diagnostic statement to stdout.
+     * @param print Whether to print diagnostic statements to stdout.
      *
      * @note Different modes require different sized vectors for outputs
      *       EvaluatorMode::jacobian requires one Image per free parameter per Observation.
@@ -791,6 +811,11 @@ public:
                 params_free = nonconsecutive_unique<ParamBaseCRef>(params_free);
                 _n_params_free = params_free.size();
 
+                if (print) {
+                    std::cout << "setup_evaluators jacobian called for model:" << std::endl;
+                    std::cout << this->str() << std::endl;
+                }
+
                 if (_size_priors > 0) {
                     size_t n_prior_residuals = 0;
                     for (const auto& prior : this->_priors) {
@@ -805,13 +830,16 @@ public:
                         throw std::invalid_argument("residuals_prior=" + _residuals_prior->str()
                                                     + " rows,cols != 1," + std::to_string(n_prior_residuals));
                     }
+                    if (print) std::cout << "residuals_prior built/validated" << std::endl;
                     for (size_t col = 0; col < n_prior_residuals; ++col)
                         _residuals_prior->set_value(0, col, 0);
+                    if (print) std::cout << "residuals_prior reset" << std::endl;
                     const size_t n_params_jac = _n_params_free + 1;
                     if (outputs_prior.size() == 0) {
                         for (size_t idx_jac = 0; idx_jac < n_params_jac; ++idx_jac) {
                             _outputs_prior.emplace_back(std::make_shared<Image>(1, n_prior_residuals));
                         }
+                        if (print) std::cout << "outputs_prior built" << std::endl;
                     } else if (outputs_prior.size() != n_params_jac) {
                         throw std::invalid_argument(
                                 "jacobian outputs_prior->size()=" + std::to_string(outputs_prior.size())
@@ -835,6 +863,7 @@ public:
                         _outputs_prior.emplace_back(std::move(output_prior));
                         idx_jac++;
                     }
+                    if (print) std::cout << "outputs_prior validated" << std::endl;
                 }
             } else if (mode == EvaluatorMode::loglike_grad) {
                 // TODO: implement
@@ -847,6 +876,8 @@ public:
 
             // Apparently this can't go directly in a ternary statement, so here it is
             std::vector<std::shared_ptr<Image>> outputs_obs{};
+
+            if (print) std::cout << "making evaluators" << std::endl;
 
             for (size_t idx = 0; idx < _size; ++idx) {
                 auto result = this->_make_evaluator(idx, mode, has_outputs ? outputs[idx] : outputs_obs,
@@ -861,6 +892,8 @@ public:
                     _outputs.emplace_back(std::move(result.second.first));
                 }
             }
+
+            if (print) std::cout << "evaluators made" << std::endl;
 
             size_t n_residuals_prior = 0;
             std::set<ParamBaseCRef> params_prior;
@@ -893,6 +926,7 @@ public:
                 }
                 idx_prior++;
             }
+            if (print && (_priors.size() > 0)) std::cout << "priors validated" << std::endl;
             if (is_jacobian && (_size_priors > 0)) {
                 if (_residuals_prior->get_n_cols() != n_residuals_prior) {
                     throw std::invalid_argument("residuals_prior=" + _residuals_prior->str() + " n_residuals="
@@ -909,8 +943,8 @@ public:
     size_t size() const { return _size; }
 
     std::string repr(bool name_keywords = false) const override {
-        std::string str = std::string("Model(") + (name_keywords ? "data=" : "") + _data->repr(name_keywords) + ", "
-            + (name_keywords ? "psfmodels=[" : "[");
+        std::string str = std::string("Model(") + (name_keywords ? "data=" : "") + _data->repr(name_keywords)
+                          + ", " + (name_keywords ? "psfmodels=[" : "[");
         for (const auto& x : _psfmodels) str += x->repr(name_keywords) + ",";
         str += (name_keywords ? "], sources=[" : "], [");
         for (const auto& s : _sources) str += s->repr(name_keywords) + ",";
