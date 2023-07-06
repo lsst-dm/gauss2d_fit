@@ -109,7 +109,8 @@ ProperFractionParameter &FractionalIntegralModel::get_parameter_frac(const Chann
 
 ParamRefs &FractionalIntegralModel::get_parameters(ParamRefs &params, ParamFilter *filter) const {
     _model->get_parameters(params, filter);
-    const size_t n_p_max = _data.size() - this->is_final();
+    // Don't return the n_channels fixed frac=1 parameters at the end
+    const size_t n_p_max = _data.size() - (this->is_final() ? this->get_channels().size() : 0);
     size_t i = 0;
     for (auto &p : _data) {
         if (i++ == n_p_max) break;
@@ -120,7 +121,7 @@ ParamRefs &FractionalIntegralModel::get_parameters(ParamRefs &params, ParamFilte
 
 ParamCRefs &FractionalIntegralModel::get_parameters_const(ParamCRefs &params, ParamFilter *filter) const {
     _model->get_parameters_const(params, filter);
-    const size_t n_p_max = _data.size() - this->is_final();
+    const size_t n_p_max = _data.size() - (this->is_final() ? this->get_channels().size() : 0);
     size_t i = 0;
     for (const auto &p : _data) {
         if (i++ == n_p_max) break;
