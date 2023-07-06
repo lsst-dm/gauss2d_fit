@@ -146,6 +146,27 @@ void stream_iter_ref(const T& container, std::ostream& stream) {
 }
 
 template <typename T>
+std::string str_map_refw(const T& container) {
+    std::string str = "[";
+    for (const auto& [obj, value] : container) {
+        str += obj.get().str() + " : " + std::to_string(value) + ", ";
+    }
+    return str.substr(0, str.size() - 2 * (container.size() > 0)) + "]";
+}
+
+template <template <typename...> class Container, class Value>
+Value sum_iter(const Container<Value>& container) {
+    Value sum = 0;
+    for (const auto& value : container) sum += value;
+    return sum;
+}
+
+template <template <typename...> class Container, class Value>
+Container<Value> tail_iter(const Container<Value>& container, size_t n) {
+    return Container<Value>(container.begin(), container.begin() + n);
+}
+
+template <typename T>
 std::string to_string_float(const T value, const int precision = 6, const bool scientific = true) {
     std::ostringstream out;
     out.precision(precision);
@@ -156,6 +177,16 @@ std::string to_string_float(const T value, const int precision = 6, const bool s
     }
     out << value;
     return std::move(out).str();
+}
+
+template <template <typename...> class Container, class Value>
+std::string to_string_float_iter(const Container<Value>& container, const int precision = 6,
+                                 const bool scientific = true) {
+    std::string str = "[";
+    for (const auto& value : container) {
+        str += to_string_float(value, precision, scientific) + ", ";
+    }
+    return str.substr(0, str.size() - 2 * (container.size() > 0)) + "]";
 }
 
 }  // namespace gauss2d::fit
