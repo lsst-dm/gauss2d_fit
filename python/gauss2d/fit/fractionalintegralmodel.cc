@@ -40,9 +40,12 @@ namespace g2f = gauss2d::fit;
 void bind_fractionalintegralmodel(py::module &m) {
     auto _p = py::class_<g2f::FractionalIntegralModel, std::shared_ptr<g2f::FractionalIntegralModel>,
                          g2f::IntegralModel>(m, "FractionalIntegralModel")
-                      .def(py::init(&g2f::FractionalIntegralModel::make))
+                      .def(py::init(&g2f::FractionalIntegralModel::make), "data"_a, "model"_a,
+                           "is_final"_a = false)
                       .def_property_readonly("channels", &g2f::FractionalIntegralModel::get_channels)
-                      .def_property_readonly("integral", &g2f::FractionalIntegralModel::get_integral)
+                      .def("integral", &g2f::FractionalIntegralModel::get_integral, "channel"_a)
+                      .def("integral_remainder", &g2f::FractionalIntegralModel::get_integral_remainder,
+                           "channel"_a)
                       .def("parameters", &g2f::FractionalIntegralModel::get_parameters,
                            "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
                       .def_property_readonly("parent_model", &g2f::FractionalIntegralModel::get_parent_model)
