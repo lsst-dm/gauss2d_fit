@@ -54,12 +54,22 @@ void bind_model(py::module &m) {
     model.def(py::init<std::shared_ptr<const Model::ModelData>, Model::PsfModels &, Model::Sources &,
                        Model::Priors &>(),
               "data"_a, "psfmodels"_a, "sources"_a, "priors"_a = Model::Priors{})
-            .def("evaluate", &Model::evaluate, "print"_a = false)
+            .def("compute_loglike_grad", &Model::compute_loglike_grad, "print"_a = false, "verify"_a = false,
+                 "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4, "rtol"_a = 1e-3, "atol"_a = 1e-3)
+            .def(
+                    "compute_hessian",
+                    [](Model &m, bool transformed, double findiff_frac, double findiff_add) {
+                        return std::shared_ptr(m.compute_hessian(transformed, findiff_frac, findiff_add));
+                    },
+                    "transformed"_a = false, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4)
             .def_property_readonly("data", &Model::get_data)
-            .def("gaussians",
-                 [](const Model &m, const g2f::Channel &c) {
-                     return std::shared_ptr<const gauss2d::Gaussians>(m.get_gaussians(c));
-                 })
+            .def("evaluate", &Model::evaluate, "print"_a = false)
+            .def(
+                    "gaussians",
+                    [](const Model &m, const g2f::Channel &c) {
+                        return std::shared_ptr<const gauss2d::Gaussians>(m.get_gaussians(c));
+                    },
+                    "channel"_a)
             .def_property_readonly("mode", &Model::get_mode)
             .def_property_readonly("outputs", &Model::get_outputs)
             .def("parameters", &Model::get_parameters, "parameters"_a = g2f::ParamRefs(),

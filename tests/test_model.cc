@@ -47,10 +47,14 @@ std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_
                                 const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation>> observations;
     for (const auto& channel_ptr : channels) {
+        auto img = std::make_unique<Image>(n_y, n_x);
+        img->fill(0);
         auto err = std::make_unique<Image>(n_y, n_x);
-        *err += sigma_inv_value;
-        auto observation = std::make_shared<Observation>(std::make_unique<Image>(n_y, n_x), std::move(err),
-                                                         std::make_unique<Mask>(n_y, n_x), *channel_ptr);
+        err->fill(sigma_inv_value);
+        auto mask = std::make_unique<Mask>(n_y, n_x);
+        mask->fill(1);
+        auto observation = std::make_shared<Observation>(std::move(img), std::move(err), std::move(mask),
+                                                         *channel_ptr);
         observations.emplace_back(observation);
     }
     return std::make_shared<Data>(observations);
@@ -61,8 +65,9 @@ g2f::LinearIntegralModel::Data make_integrals(
         bool fixed = false) {
     g2f::LinearIntegralModel::Data integrals{};
     for (const auto& channel : channels) {
-        auto param = std::make_shared<g2f::IntegralParameter>(value);
-        if (fixed) param->set_fixed(true);
+        auto param = std::make_shared<g2f::IntegralParameter>(
+                value, nullptr, g2f::get_transform_default<g2f::Log10Transform>(), nullptr, fixed,
+                (*channel).name);
         integrals[*channel] = std::move(param);
     }
     return integrals;
@@ -74,18 +79,28 @@ std::shared_ptr<t> make_shared_fixed(double value) {
 }
 
 void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
-                  g2f::ParamRefs params_free, bool check_outputs_differ = true, bool print = false) {
+                  g2f::ParamRefs params_free, bool check_outputs_differ = true, bool print = false,
+                  double findiff_frac = 1e-4, double findiff_add = 1e-4, double rtol = 1e-3,
+                  double atol = 1e-3) {
     const size_t n_channels = channels.size();
+    model.setup_evaluators(Model::EvaluatorMode::loglike);
+    auto loglike = model.evaluate();
+    size_t n_loglike = loglike.size();
+
     for (size_t i = 0; i < 2; ++i) {
         for (unsigned short do_jacobian = false; do_jacobian <= true; do_jacobian++) {
             model.setup_evaluators(do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image,
                                    {}, {}, {}, {}, print);
 
-            std::vector<double> result = model.evaluate();
+            auto result = model.evaluate();
+            for (size_t idx_like; idx_like < n_loglike; ++idx_like) {
+                auto close = g2f::isclose(loglike[idx_like], result[idx_like]);
+                CHECK_MESSAGE(close.isclose, "loglike[", std::to_string(idx_like), ") !close: ", close.str());
+            }
 
             auto outputs = model.get_outputs();
             if (do_jacobian) {
-                auto errors = model.verify_jacobian();
+                auto errors = model.verify_jacobian(findiff_frac, findiff_add, rtol, atol);
                 std::string errormsg = "";
                 if (errors.size() != 0) {
                     std::stringstream ss;
@@ -110,8 +125,10 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
             double value = param.get().get_value_transformed();
             try {
                 param.get().set_value_transformed(value + 0.01);
+                param.get().set_value_transformed(value);
             } catch (const std::runtime_error& err) {
                 param.get().set_value_transformed(value - 0.01);
+                param.get().set_value_transformed(value);
             }
         }
     }
@@ -130,7 +147,8 @@ TEST_CASE("Model") {
     Model::PsfModels psfmodels{};
     for (size_t i = 0; i < data->size(); ++i) {
         g2f::Components comps;
-        auto integrals = make_integrals(CHANNELS_NONE, 1.0, true);
+        const double integral_factor = 1.1;
+        auto integrals = make_integrals(CHANNELS_NONE, integral_factor, true);
         auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
         g2f::ParamRefs params_integralmodel;
         model_total->get_parameters(params_integralmodel);
@@ -152,7 +170,7 @@ TEST_CASE("Model") {
 
             double integral_comp = model_frac->get_integral(g2f::Channel::NONE());
             if (idx_comp == 0) {
-                CHECK(integral_comp == sizefrac.second);
+                CHECK(integral_comp == integral_factor * sizefrac.second);
             }
 
             integral += integral_comp;
@@ -170,15 +188,16 @@ TEST_CASE("Model") {
             comps.emplace_back(std::move(comp));
             last = model_frac;
         }
-        CHECK(std::abs(integral - 1) < 1e-12);
+        CHECK(std::abs(integral - integral_factor) < 1e-12);
 
         auto psfmodel = std::make_shared<g2f::PsfModel>(comps);
 
-        g2f::ParamCRefs params_psf{};
-        psfmodel->get_parameters_const(params_psf);
+        auto params_psf = psfmodel->get_parameters_const_new();
         // 2 comps x (6 gauss + 1 frac) (last constant unity frac omitted)
         CHECK(params_psf.size() == 14);
-        for (const auto& param : params_psf) CHECK(param.get().get_fixed() == true);
+        for (const auto& param : params_psf) {
+            CHECK(param.get().get_fixed() == true);
+        }
 
         const auto gaussians = psfmodel->get_gaussians();
         CHECK(gaussians->size() == 2);
@@ -221,8 +240,10 @@ TEST_CASE("Model") {
             } else {
                 auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(0.5 + 3.5 * c);
                 sersic_n->set_free(free_sersicindex);
-                auto reff_x = std::make_shared<g2f::ReffXParameter>(c + 0.5);
-                auto reff_y = std::make_shared<g2f::ReffYParameter>(c + 1.5);
+                auto reff_x = std::make_shared<g2f::ReffXParameter>(
+                        c + 0.5, nullptr, g2f::get_transform_default<g2f::Log10Transform>());
+                auto reff_y = std::make_shared<g2f::ReffYParameter>(
+                        c + 1.5, nullptr, g2f::get_transform_default<g2f::Log10Transform>());
                 auto ellipse_s = std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y);
                 ellipse = ellipse_s;
                 comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
@@ -260,6 +281,11 @@ TEST_CASE("Model") {
     const size_t n_params_psf_uniq = 36;
     CHECK(paramset.size() == n_params_src + n_params_psf_uniq);
 
+    g2f::ParamFilter filter_free{false, true, true, true};
+    params = model->get_parameters_const_new(&filter_free);
+    params = g2f::nonconsecutive_unique(params);
+    CHECK(params.size() == n_params_src);
+
     const auto& channel = *channels[0];
 
     CHECK(model->get_n_gaussians(channel) == 10);
@@ -286,6 +312,7 @@ TEST_CASE("Model") {
     factors_extra->reserve(n_gauss);
     factors_grad->reserve(n_gauss);
 
+    // Check that filtering by channel works
     g2f::ParamCRefs params_src_free_const;
     g2f::ParamRefs params_src_free;
     g2f::ParamFilter filter{false, true, true, true, channel};
@@ -315,6 +342,38 @@ TEST_CASE("Model") {
     CHECK(factors_grad->size() == n_gauss);
 
     verify_model(*model, channels, params_src_free);
+
+    auto grads = model->compute_loglike_grad(false, true);
+    CHECK(grads.size() == n_params_src);
+
+    std::vector<double> values_transformed;
+    for (const auto& param : params) values_transformed.push_back(param.get().get_value_transformed());
+
+    for (unsigned int transformed = 0; transformed <= 1; ++transformed) {
+        auto hessian = model->compute_hessian(transformed);
+        size_t idx_param = 0;
+        for (const auto& paramref : params) {
+            const auto& param = paramref.get();
+            double value_new = param.get_value_transformed();
+            double value_old = values_transformed[idx_param++];
+            CHECK_MESSAGE(g2f::isclose(value_old, value_new).isclose, param.str(),
+                          " value_transformed changed from ", g2f::to_string_float(value_old), " to ",
+                          g2f::to_string_float(value_new),
+                          " with compute_hessian(transformed=", std::to_string(transformed), ")");
+        }
+        auto hessian2 = model->compute_hessian(transformed);
+        const auto n_cols = hessian->get_n_cols();
+        const auto n_rows = hessian->get_n_rows();
+        for (size_t row = 0; row < n_rows; ++row) {
+            for (size_t col = 0; col < n_cols; ++col) {
+                auto value = hessian->get_value(row, col);
+                CHECK_MESSAGE(value != 0, "hessian[", row, ",", col, "] == 0 (", value, ")");
+                auto value2 = hessian2->get_value(row, col);
+                CHECK_MESSAGE(g2f::isclose(value, value2).isclose, "hessian[", row, ",", col, "]=(", value,
+                              ")!= hessian2 value=(", value2, ")");
+            }
+        }
+    }
 }
 
 TEST_CASE("Model PSF") {
@@ -361,9 +420,10 @@ TEST_CASE("Model PSF") {
     verify_model(*model, channels, params_free, true, true);
 }
 
-// A test attempting to reproduce a segfault
+// This has some overlap with the Model test case but it's not really problematic
 TEST_CASE("Model with priors") {
-    auto data = make_data(CHANNELS_NONE, 33, 33);
+    const size_t n_x = 33, n_y = 33;
+    auto data = make_data(CHANNELS_NONE, n_x, n_y);
     auto centroid_psf = std::make_shared<g2f::CentroidParameters>(
             make_shared_fixed<g2f::CentroidXParameter>(0), make_shared_fixed<g2f::CentroidYParameter>(0));
     g2f::LinearIntegralModel::Data model_psf_ref_data
@@ -420,15 +480,29 @@ TEST_CASE("Model with priors") {
 
     auto model = std::make_shared<Model>(data, psfmodels, sources, priors);
 
-    // Test repeat evaluation with and without forcing.
+    g2f::ParamFilter filter{false, true, true, true, g2f::Channel::NONE()};
+    auto params_free = model->get_parameters_new(&filter);
+    params_free = g2f::nonconsecutive_unique(params_free);
+
+    verify_model(*model, CHANNELS_NONE, params_free, true, true, 1e-5, 1e-5);
+
+    // Test repeat evaluation with and without forcing and specifiying outputs
     model->setup_evaluators(Model::EvaluatorMode::jacobian);
     model->evaluate();
+
     model->setup_evaluators(Model::EvaluatorMode::loglike_image);
     model->evaluate();
     model->setup_evaluators(Model::EvaluatorMode::jacobian, {}, {}, {}, nullptr, false);
     model->evaluate();
-    model->setup_evaluators(Model::EvaluatorMode::loglike_image);
+    std::vector<std::vector<std::shared_ptr<Image>>> outputs = {{std::make_shared<Image>(n_y, n_x)}};
+    model->setup_evaluators(Model::EvaluatorMode::loglike_image, outputs, {}, {}, nullptr, false);
     model->evaluate();
-    model->setup_evaluators(Model::EvaluatorMode::jacobian, {}, {}, {}, nullptr, true);
+    // outputs is too short
+    CHECK_THROWS_AS(model->setup_evaluators(Model::EvaluatorMode::jacobian, outputs, {}, {}, nullptr, true),
+                    std::invalid_argument);
+    // test that failed setup causes evaluate to throw until set up successfully
+    CHECK_THROWS_AS(model->evaluate(), std::runtime_error);
+    outputs[0].resize(params_free.size() + 1, outputs[0][0]);
+    model->setup_evaluators(Model::EvaluatorMode::jacobian, outputs, {}, {}, nullptr, true);
     model->evaluate();
 }
