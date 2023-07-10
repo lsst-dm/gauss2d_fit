@@ -168,7 +168,7 @@ void GaussianComponent::set_grad_param_factors(const Channel& channel, GradParam
                 throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "]=" + param.str()
                                          + " get_transform_derivative=0 (will result in divide by 0)");
             }
-            values[order_param] /= deriv;
+            values[order_param] = 1.0 / deriv;
         }
     }
 }
