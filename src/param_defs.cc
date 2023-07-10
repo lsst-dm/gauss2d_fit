@@ -15,11 +15,12 @@ double finite_difference_param(ParamBase& param, double delta) {
     } catch (const std::runtime_error& err) {
         delta = -delta;
         value_new = value + delta;
-        param.set_value_transformed(value_new);
-        if (param.get_value_transformed() != value_new) {
+        try {
+            param.set_value_transformed(value_new);
+        } catch (const std::runtime_error& err2) {
             throw std::runtime_error("Couldn't set param=" + param.str()
-                                     + " to new value_transformed=" + std::to_string(value) + " +/- "
-                                     + std::to_string(delta) + "; are limits too restrictive?");
+                                     + " to new value_transformed=" + std::to_string(value_new) + " due to "
+                                     + err2.what() + "; are limits too restrictive?");
         }
     }
     return delta;
