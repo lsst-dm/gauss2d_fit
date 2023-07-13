@@ -49,10 +49,10 @@ void bind_centroidparameters(py::module &m) {
                       .def_property("x", &g2f::CentroidParameters::get_x, &g2f::CentroidParameters::set_x)
                       .def_property("y", &g2f::CentroidParameters::get_y, &g2f::CentroidParameters::set_y)
                       .def_property("xy", &g2f::CentroidParameters::get_xy, &g2f::CentroidParameters::set_xy)
-                      .def_property_readonly("get_x_param", &g2f::CentroidParameters::get_x_param)
-                      .def_property_readonly("get_y_param", &g2f::CentroidParameters::get_y_param)
-                      .def_property_readonly("get_x_param_ptr", &g2f::CentroidParameters::get_x_param_ptr)
-                      .def_property_readonly("get_y_param_ptr", &g2f::CentroidParameters::get_y_param_ptr)
+                      .def_property_readonly("x_param", &g2f::CentroidParameters::get_x_param)
+                      .def_property_readonly("y_param", &g2f::CentroidParameters::get_y_param)
+                      .def_property_readonly("x_param_ptr", &g2f::CentroidParameters::get_x_param_ptr)
+                      .def_property_readonly("y_param_ptr", &g2f::CentroidParameters::get_y_param_ptr)
                       .def("__repr__", [](const g2f::CentroidParameters &self) { return self.repr(true); })
                       .def("__str__", &g2f::CentroidParameters::str);
 }

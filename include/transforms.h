@@ -32,6 +32,30 @@ struct InverseTransform : public Transform {
     inline double reverse(double x) const override { return 1 / x; }
 };
 
+struct JanskyToABMagTransform : public Transform {
+    static inline const double f_nu_0 = 3630.780547701002879554236770479;
+
+    std::string description() const override { return "jansky to AB magnitude transform"; }
+    std::string repr(bool name_keywords = false) const override { return "JanskyToABMagTransform()"; }
+    std::string str() const override { return "JanskyToABMagTransform()"; }
+
+    inline double derivative(double x) const override {
+        return -1.08573620475812959718098227313021197915 / x;
+    }
+    inline double forward(double x) const override { return -2.5 * log10(x / f_nu_0); }
+    inline double reverse(double x) const override { return f_nu_0 * pow10(-0.4 * x); }
+};
+
+struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
+    std::string description() const override { return "nanojansky to AB magnitude transform"; }
+    std::string repr(bool name_keywords = false) const override { return "NanojanskyToABMagTransform()"; }
+    std::string str() const override { return "NanojanskyToABMagTransform()"; }
+
+    inline double derivative(double x) const override { return JanskyToABMagTransform::derivative(x); }
+    inline double forward(double x) const override { return JanskyToABMagTransform::forward(x * 1e-9); }
+    inline double reverse(double x) const override { return 1e9 * JanskyToABMagTransform::reverse(x); }
+};
+
 struct LogTransform : public Transform {
     std::string description() const override { return "Natural (base e) logarithmic transform"; }
     std::string repr(bool name_keywords = false) const override { return "LogTransform()"; }
@@ -108,6 +132,13 @@ public:
         _set_range();
     }
 };
+
+template <class T>
+std::shared_ptr<T> get_transform_default() {
+    static T transform_default{};
+    static std::shared_ptr<T> ptr{std::shared_ptr<T>{}, &transform_default};
+    return ptr;
+}
 #pragma GCC diagnostic pop
 }  // namespace gauss2d::fit
 

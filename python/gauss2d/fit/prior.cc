@@ -21,16 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <memory>
-#include <string>
 
-#include "gauss2d/ellipse.h"
-#include "gauss2d/fit/ellipticalcomponent.h"
-#include "gauss2d/fit/parametric.h"
+#include "gauss2d/object.h"
+#include "gauss2d/fit/param_defs.h"
+#include "gauss2d/fit/prior.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -38,10 +36,14 @@ using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_ellipticalcomponent(py::module &m) {
-    auto _e = py::class_<g2f::EllipticalComponent, std::shared_ptr<g2f::EllipticalComponent>, g2f::Component>(
-                      m, "EllipticalComponent")
-                      .def_property_readonly("centroid", &g2f::EllipticalComponent::get_centroid)
-                      .def_property_readonly("ellipse", &g2f::EllipticalComponent::get_ellipse)
-                      .def_property_readonly("integralmodel", &g2f::EllipticalComponent::get_integralmodel);
+void bind_prior(py::module &m) {
+    auto _e = py::class_<g2f::PriorEvaluation, std::shared_ptr<g2f::PriorEvaluation>>(m, "PriorEvaluation")
+                      .def(py::init<double, std::map<g2f::ParamBaseCRef, std::vector<double>>,
+                                    std::vector<double>>(),
+                           "loglike"_a, "jacobians"_a = std::map<g2f::ParamBaseCRef, std::vector<double>>{},
+                           "residuals"_a = std::vector<double>{})
+                      .def_readwrite("loglike", &g2f::PriorEvaluation::loglike)
+                      .def_readwrite("jacobians", &g2f::PriorEvaluation::jacobians)
+                      .def_readwrite("residuals", &g2f::PriorEvaluation::residuals);
+    auto _p = py::class_<g2f::Prior, std::shared_ptr<g2f::Prior>, gauss2d::Object>(m, "Prior");
 }

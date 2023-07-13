@@ -75,7 +75,7 @@ public:
         for (auto exp_it = this->cbegin(); exp_it != this->cend(); ++exp_it) {
             str += (*exp_it).get().str() + ",";
         }
-        str += "]);";
+        str += "])";
         return str;
     }
 

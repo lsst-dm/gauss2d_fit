@@ -64,7 +64,7 @@ FractionalIntegralModel::get_integral_derivative_factors(const Channel &channel)
     const auto &frac = *(this->_data.at(channel));
     /*
         For a model with no parent:
-        gauss2d will compute dmodel/dweight_comp
+        gauss2d will evaluate dmodel/dweight_comp
         Fitters will want dmodel/dfrac
 
         frac = weight_comp/weight_total

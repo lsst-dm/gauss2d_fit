@@ -407,7 +407,7 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
         } else {
             const auto deriv = param.get_transform_derivative();
             if (deriv == 0)
-                throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "=" + param.str()
+                throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "]=" + param.str()
                                          + " get_transform_derivative=0 (will result in divide by 0)");
             values_base[order_param] /= deriv;
         }
@@ -429,11 +429,11 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
 
 std::string SersicMixComponent::repr(bool name_keywords) const {
     return "SersicMixComponent(" + EllipticalComponent::repr(name_keywords) + ", "
-           + (name_keywords ? "photo=" : "") + _integralmodel->repr(name_keywords) + ")";
+           + (name_keywords ? "sersicindex=" : "") + _sersicindex->repr(name_keywords) + ")";
 }
 
 std::string SersicMixComponent::str() const {
-    return "SersicMixComponent(" + EllipticalComponent::str() + ", photo=" + _integralmodel->str() + ")";
+    return "SersicMixComponent(" + EllipticalComponent::str() + ", sersicindex=" + _sersicindex->str() + ")";
 }
 
 SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse,

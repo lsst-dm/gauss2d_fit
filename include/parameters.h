@@ -63,6 +63,12 @@ public:
     using Param<IntegralParameter>::Parameter;
 };
 
+struct MeanParameter : public Param<MeanParameter> {
+    static inline const std::string _desc = "Gaussian (1D normal) mean";
+    static inline const std::string _name = "mean";
+    using Param<MeanParameter>::Parameter;
+};
+
 struct MoffatConcentrationParameter : public Param<MoffatConcentrationParameter> {
     static inline constexpr double _min = 1.;
     static inline constexpr double _default = 2.5;
@@ -144,6 +150,14 @@ struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter {
     static inline const std::string _desc = "Gaussian sigma (y)";
     static inline const std::string _name = "sigma_y";
     using Param<SigmaYParameter>::Parameter;
+};
+
+struct StdDevParameter : public Param<StdDevParameter> {
+    static inline constexpr double _min = 0.;
+    static inline constexpr double _default = 1.0;
+    static inline const std::string _desc = "Gaussian (1D normal) standard deviation (sigma)";
+    static inline const std::string _name = "stddev";
+    using Param<StdDevParameter>::Parameter;
 };
 
 }  // namespace gauss2d::fit

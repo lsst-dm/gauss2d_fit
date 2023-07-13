@@ -2,6 +2,7 @@ import gauss2d.fit as g2f
 
 import pytest
 
+
 def test_channel():
     assert(len(g2f.Channel.all) == 1)
 

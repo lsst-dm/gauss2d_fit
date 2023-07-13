@@ -114,7 +114,7 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
             //    .def(py::self == py::self)
             //    .def(py::self != py::self)
             //    .def(hash(py::self))
-            .def("__repr__", [](const Class &self) { return self.repr(true); })
+            .def("__repr__", [](const C &self) { return self.repr(true); })
             .def("__str__", &Class::str);
 }
 

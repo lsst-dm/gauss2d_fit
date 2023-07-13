@@ -38,8 +38,8 @@ using namespace pybind11::literals;
 namespace g2f = gauss2d::fit;
 
 void bind_gaussiancomponent(py::module &m) {
-    auto _e = py::class_<g2f::GaussianComponent, std::shared_ptr<g2f::GaussianComponent>, g2f::Component>(
-                      m, "GaussianComponent")
+    auto _e = py::class_<g2f::GaussianComponent, std::shared_ptr<g2f::GaussianComponent>,
+                         g2f::EllipticalComponent>(m, "GaussianComponent")
                       .def(py::init<std::shared_ptr<g2f::GaussianParametricEllipse>,
                                     std::shared_ptr<g2f::CentroidParameters>,
                                     std::shared_ptr<g2f::IntegralModel>>(),

@@ -49,11 +49,12 @@ void bind_parameters(py::module &m) {
             .def_property_readonly("name", &g2f::UnitNone::get_name);
     declare_limits<double>(m);
     using Parameter = parameters::ParameterBase<double>;
-    auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "Parameter");
+    auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "ParameterD");
     auto integral = declare_parameter<double, g2f::IntegralParameter>(m, "Integral");
     integral.def_property("label", &g2f::IntegralParameter::get_label, &g2f::IntegralParameter::set_label);
     declare_parameter<double, g2f::CentroidXParameter>(m, "CentroidX");
     declare_parameter<double, g2f::CentroidYParameter>(m, "CentroidY");
+    declare_parameter<double, g2f::MeanParameter>(m, "Mean");
     declare_parameter<double, g2f::MoffatConcentrationParameter>(m, "MoffatConcentration");
     auto propfrac = declare_parameter<double, g2f::ProperFractionParameter>(m, "ProperFraction");
     propfrac.def_property("label", &g2f::ProperFractionParameter::get_label,
@@ -66,9 +67,12 @@ void bind_parameters(py::module &m) {
     declare_parameter<double, g2f::SersicIndexParameter>(m, "SersicIndex");
     declare_sizeparameter<double, g2f::SigmaXParameter, g2f::SizeXParameter>(m, "SigmaX");
     declare_sizeparameter<double, g2f::SigmaYParameter, g2f::SizeYParameter>(m, "SigmaY");
+    declare_parameter<double, g2f::StdDevParameter>(m, "StdDev");
     declare_transform_base<double>(m);
     declare_transform<double, parameters::UnitTransform<double>>(m, "Unit");
     declare_transform<double, g2f::InverseTransform>(m, "Inverse");
+    declare_transform<double, g2f::JanskyToABMagTransform>(m, "JanskyToABMag");
+    declare_transform<double, g2f::NanojanskyToABMagTransform>(m, "NanojanskyToABMag");
     declare_transform<double, g2f::LogTransform>(m, "Log");
     declare_transform<double, g2f::Log10Transform>(m, "Log10");
     declare_transform<double, g2f::LogitTransform>(m, "Logit");

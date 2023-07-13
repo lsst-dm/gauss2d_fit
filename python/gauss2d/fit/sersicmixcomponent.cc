@@ -64,8 +64,8 @@ void bind_sersicmixcomponent(py::module &m) {
                  "transform"_a = nullptr, "unit"_a = gauss2d::fit::unit_none, "fixed"_a = false,
                  "label"_a = "", "interpolator"_a = nullptr);
 
-    auto _e = py::class_<g2f::SersicMixComponent, std::shared_ptr<g2f::SersicMixComponent>, g2f::Component>(
-                      m, "SersicMixComponent")
+    auto _e = py::class_<g2f::SersicMixComponent, std::shared_ptr<g2f::SersicMixComponent>,
+                         g2f::EllipticalComponent>(m, "SersicMixComponent")
                       .def(py::init<std::shared_ptr<g2f::SersicParametricEllipse>,
                                     std::shared_ptr<g2f::CentroidParameters>,
                                     std::shared_ptr<g2f::IntegralModel>,

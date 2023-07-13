@@ -5,13 +5,16 @@ test_names = [
     'fractionalintegralmodel',
     'gaussiancomponent',
     'gaussianparametricellipse',
+    'gaussianprior',
     'linearintegralmodel',
     'linearsersicmixinterpolator',
     'model',
     'observation',
+    'parametricgaussian1d',
     'psfmodel',
     'sersicmix',
     'sersicmixcomponent',
+    'shapeprior',
     'source',
 ]
 foreach test_name : test_names
