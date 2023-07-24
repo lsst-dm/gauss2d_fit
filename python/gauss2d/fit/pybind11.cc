@@ -36,6 +36,7 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
     py::module::import("gauss2d");
 
     // Abstract types MUST go first
+    bind_chromatic(m);
     bind_parametric(m);
     bind_parametricellipse(m);
     bind_parametricmodel(m);

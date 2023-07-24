@@ -1,6 +1,7 @@
 sources = [
     'centroidparameters.cc',
     'channel.cc',
+    'chromatic.cc',
     'component.cc',
     'componentmixture.cc',
     'data.cc',
