@@ -31,7 +31,7 @@ def psfmodels(data):
                 g2f.GaussianParametricEllipse(1., 1., 0.),
                 None,
                 g2f.LinearIntegralModel(
-                    {g2f.Channel.NONE: g2f.IntegralParameterD(1.)}
+                    [(g2f.Channel.NONE, g2f.IntegralParameterD(1.))]
                 ),
             )
         ])
@@ -54,17 +54,17 @@ def sources(channels):
         for c in range(n_components):
             is_last = c == n_comp_max
             last = g2f.FractionalIntegralModel(
-                {
-                    channel: g2f.ProperFractionParameterD(
+                [
+                    (channel, g2f.ProperFractionParameterD(
                         (is_last == 1) or (0.5 + 0.5*(c > 0)),
                         fixed=is_last
-                    )
+                    ))
                     for channel in channels
-                },
-                g2f.LinearIntegralModel({
-                    channel: g2f.IntegralParameterD(0.5 + 0.5*(i + 1))
+                ],
+                g2f.LinearIntegralModel([
+                    (channel, g2f.IntegralParameterD(0.5 + 0.5*(i + 1)))
                     for channel in channels
-                }) if (c == 0) else last,
+                ]) if (c == 0) else last,
                 is_last,
             )
             components[c] = g2f.GaussianComponent(

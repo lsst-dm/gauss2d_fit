@@ -29,12 +29,15 @@ namespace gauss2d::fit {
  */
 class FractionalIntegralModel : public IntegralModel {
 public:
-    typedef std::map<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameter>,
-                     std::less<const Channel>>
-            Data;
+    typedef std::pair<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameter>>
+            ChannelIntegralParameter;
+    typedef std::vector<ChannelIntegralParameter> Data;
 
 private:
     Data _data = {};
+    // This could be unordered, but std::hash<std::string> won't take const strings
+    // (see also linearintegralmodel.h)
+    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameter>> _map = {};
 
     // TODO: See if all raw pointers can be changed to reference_wrappers or weak_ptrs
     std::shared_ptr<const FractionalIntegralModel> _find_parent(std::shared_ptr<const IntegralModel> model);
@@ -76,7 +79,7 @@ public:
         return (found == _registry_rev.end()) ? nullptr : (*found).second.lock();
     }
 
-    std::set<std::reference_wrapper<const Channel>> get_channels() const override;
+    std::vector<std::reference_wrapper<const Channel>> get_channels() const override;
     const IntegralModel& get_parent_model() const;
     double get_integral(const Channel& channel) const override;
     std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(

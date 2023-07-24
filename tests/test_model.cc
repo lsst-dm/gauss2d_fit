@@ -68,7 +68,7 @@ g2f::LinearIntegralModel::Data make_integrals(
         auto param = std::make_shared<g2f::IntegralParameter>(
                 value, nullptr, g2f::get_transform_default<g2f::Log10Transform>(), nullptr, fixed,
                 (*channel).name);
-        integrals[*channel] = std::move(param);
+        integrals.emplace_back(*channel, std::move(param));
     }
     return integrals;
 }

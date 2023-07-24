@@ -32,7 +32,7 @@
 #include "gauss2d/fit/centroidparameters.h"
 #include "pybind11.h"
 
-//#include "utils.h"
+// #include "utils.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;

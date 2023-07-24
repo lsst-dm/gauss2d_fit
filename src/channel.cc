@@ -61,10 +61,13 @@ const std::shared_ptr<const Channel> Channel::get_channel(std::string name) {
     return channel;
 }
 
-std::set<std::shared_ptr<const Channel>> Channel::get_channels() {
-    auto set = map_values_shared_ptr_const(_registry);
-    set.insert(NONE_PTR());
-    return set;
+std::vector<std::shared_ptr<const Channel>> Channel::get_channels() {
+    std::vector<std::shared_ptr<const Channel>> vec = {};
+    for (const auto &[key, value] : _registry) {
+        vec.emplace_back(value);
+    }
+    vec.emplace_back(NONE_PTR());
+    return vec;
 }
 
 std::shared_ptr<Channel> Channel::make(std::string name) {

@@ -16,10 +16,10 @@
 namespace gauss2d::fit {
 
 std::shared_ptr<ProperFractionParameter> FractionalIntegralModel::at(const Channel &channel) {
-    return _data.at(channel);
+    return _map.at(channel);
 }
 std::shared_ptr<const ProperFractionParameter> FractionalIntegralModel::at(const Channel &channel) const {
-    return _data.at(channel);
+    return _map.at(channel);
 }
 
 // https://stackoverflow.com/questions/8147027/
@@ -44,8 +44,10 @@ typename FractionalIntegralModel::Data::const_iterator FractionalIntegralModel::
     return _data.cend();
 }
 
-std::set<std::reference_wrapper<const Channel>> FractionalIntegralModel::get_channels() const {
-    return map_keys_ref_const(_data);
+std::vector<std::reference_wrapper<const Channel>> FractionalIntegralModel::get_channels() const {
+    std::vector<std::reference_wrapper<const Channel>> rval = {};
+    for (auto &datum : _data) rval.emplace_back(datum.first);
+    return rval;
 }
 
 const IntegralModel &FractionalIntegralModel::get_parent_model() const { return *_model; }
@@ -56,12 +58,12 @@ inline double _get_integral_remainder(const FractionalIntegralModel *frac, const
 }
 
 double FractionalIntegralModel::get_integral(const Channel &channel) const {
-    return _data.at(channel)->get_value() * (_get_integral_remainder(_parent.get(), *_model, channel));
+    return _map.at(channel)->get_value() * (_get_integral_remainder(_parent.get(), *_model, channel));
 }
 
 std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>>
 FractionalIntegralModel::get_integral_derivative_factors(const Channel &channel) const {
-    const auto &frac = *(this->_data.at(channel));
+    const auto &frac = *(this->_map.at(channel));
     /*
         For a model with no parent:
         gauss2d will evaluate dmodel/dweight_comp
@@ -100,11 +102,11 @@ FractionalIntegralModel::get_integral_derivative_factors(const Channel &channel)
 }
 
 double FractionalIntegralModel::get_integral_remainder(const Channel &channel) const {
-    return (1. - _data.at(channel)->get_value()) * _get_integral_remainder(_parent.get(), *_model, channel);
+    return (1. - this->at(channel)->get_value()) * _get_integral_remainder(_parent.get(), *_model, channel);
 }
 
 ProperFractionParameter &FractionalIntegralModel::get_parameter_frac(const Channel &channel) const {
-    return *(_data.at(channel));
+    return *(_map.at(channel));
 }
 
 ParamRefs &FractionalIntegralModel::get_parameters(ParamRefs &params, ParamFilter *filter) const {
@@ -136,15 +138,17 @@ size_t FractionalIntegralModel::size() const { return _data.size(); }
 
 std::string FractionalIntegralModel::repr(bool name_keywords) const {
     std::string s = std::string("FractionalIntegralModel(") + (name_keywords ? "data={" : "{");
-    for (const auto &[channel, integral] : _data) {
-        s += channel.get().repr(name_keywords) + ": " + integral->repr(name_keywords) + ",";
+    for (const auto &datum : _data) {
+        s += datum.first.get().repr(name_keywords) + ": " + datum.second->repr(name_keywords) + ",";
     }
     return s + "})";
 }
 
 std::string FractionalIntegralModel::str() const {
     std::string s = "FractionalIntegralModel(data={";
-    for (const auto &[channel, integral] : _data) s += channel.get().str() + ": " + integral->str() + ",";
+    for (const auto &datum : _data) {
+        s += datum.first.get().str() + ": " + datum.second->str() + ",";
+    }
     s += "}, model=" + _model->str() + ", is_final=" + std::to_string(_is_final) + ")";
     return s;
 }
@@ -187,29 +191,39 @@ FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
                                     + " already referenced by " + found->str());
     }
     if (data) {
-        for (const auto &[channel, datum] : *data) {
-            if (datum == nullptr) {
+        size_t idx = 0;
+        for (const auto &datum : *data) {
+            const auto &channel = datum.first;
+            const auto &param = datum.second;
+            if (param == nullptr) {
                 throw std::runtime_error("FractionalIntegralModel data[" + channel.get().str()
                                          + "] can't be null");
             } else if (_is_final) {
-                bool is_fixed = datum->get_fixed();
-                bool is_one = datum->get_value() == 1;
+                bool is_fixed = param->get_fixed();
+                bool is_one = param->get_value() == 1;
                 std::string errmsg = "";
                 if (!is_fixed) errmsg += " is_fixed != true;";
-                if (!is_one) errmsg += " get_value()=" + std::to_string(datum->get_value()) + "!=1;";
+                if (!is_one) errmsg += " get_value()=" + std::to_string(param->get_value()) + "!=1;";
                 if (errmsg.size() > 0) {
-                    throw std::runtime_error("FractionalIntegralModel data[" + channel.get().str()
+                    throw std::runtime_error("FractionalIntegralModel data[" + std::to_string(idx)
                                              + "] is_final==true but" + errmsg);
                 }
             }
-            _data[channel] = datum;
+            if (_map.find(channel) != _map.end()) {
+                throw std::runtime_error("FractionalIntegralModel data[" + std::to_string(idx)
+                                         + "] channel=" + channel.get().str() + " duplicated");
+            }
+            _data.emplace_back(datum.first, datum.second);
+            _map.insert(_data.back());
+            idx++;
         }
     } else {
         auto param = std::make_shared<ProperFractionParameter>();
         param->set_fixed(_is_final);
-        _data[Channel::NONE()] = param;
+        _data.emplace_back(Channel::NONE(), param);
+        _map.insert(_data.back());
     }
-    auto data_keys = map_keys_ref_const(_data);
+    auto data_keys = this->get_channels();
     auto model_keys = _model.get()->get_channels();
     if (data_keys != model_keys) {
         throw std::invalid_argument("FractionalIntegralModel data channels=" + str_iter_refw(data_keys)
