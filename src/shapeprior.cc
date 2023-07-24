@@ -130,7 +130,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
                                      + ", _prior_size=" + _prior_size->str());
         }
         result.residuals.emplace_back(residual);
-        result.loglike += logpdf_norm(residual, sigma);
+        result.loglike += logpdf_norm(residual, 1.0);
     }
 
     if (this->_prior_axrat != nullptr) {
@@ -145,8 +145,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         const auto& transform_param = _prior_axrat->get_mean_parameter().get_transform();
         axrat = transform_param.forward(axrat);
         double sigma = _prior_axrat->get_stddev();
-        double residual
-                = (axrat - transform_param.forward(_prior_axrat->get_mean_parameter().get_value())) / sigma;
+        double residual = (axrat - _prior_axrat->get_mean_parameter().get_value_transformed()) / sigma;
         if (!std::isfinite(residual)) {
             auto str = this->str();
             throw std::runtime_error(str + ".evaluate() got non-finite axrat residual="
@@ -156,7 +155,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         // RuntimeError('Infinite axis ratio prior residual from q={axrat} and mean, std, f
         // 'logit stretch divisor = {self.axrat_params}')
         result.residuals.emplace_back(residual);
-        result.loglike += logpdf_norm(residual, sigma);
+        result.loglike += logpdf_norm(residual, 1.0);
     }
 
     if (calc_jacobians) {
