@@ -267,7 +267,7 @@ TEST_CASE("Model") {
     CHECK(model->str() != "");
     CHECK(model->get_priors().size() == priors.size());
 
-    auto params = model->get_parameters_const_new();
+    auto params = model->get_parameters_new();
     // 2 sources x (2 comps x (3 integral, 2 centroid, 3 ellipse)) = 32
     // + 1 source x (2 comps x 1 sersic_n) = 34
     const size_t n_params_src = 34;
@@ -282,7 +282,7 @@ TEST_CASE("Model") {
     CHECK(paramset.size() == n_params_src + n_params_psf_uniq);
 
     g2f::ParamFilter filter_free{false, true, true, true};
-    params = model->get_parameters_const_new(&filter_free);
+    params = model->get_parameters_new(&filter_free);
     params = g2f::nonconsecutive_unique(params);
     CHECK(params.size() == n_params_src);
 
@@ -349,28 +349,40 @@ TEST_CASE("Model") {
     std::vector<double> values_transformed;
     for (const auto& param : params) values_transformed.push_back(param.get().get_value_transformed());
 
-    for (unsigned int transformed = 0; transformed <= 1; ++transformed) {
-        auto hessian = model->compute_hessian(transformed);
-        size_t idx_param = 0;
-        for (const auto& paramref : params) {
-            const auto& param = paramref.get();
-            double value_new = param.get_value_transformed();
-            double value_old = values_transformed[idx_param++];
-            CHECK_MESSAGE(g2f::isclose(value_old, value_new).isclose, param.str(),
-                          " value_transformed changed from ", g2f::to_string_float(value_old), " to ",
-                          g2f::to_string_float(value_new),
-                          " with compute_hessian(transformed=", std::to_string(transformed), ")");
+    for (unsigned int offset = 0; offset <= 1; ++offset) {
+        if (offset) {
+            size_t idx_param = 0;
+            for (auto& paramref : params) {
+                auto& param = paramref.get();
+                double diff = 1e-4 * (1.0 - 2 * (idx_param % 2));
+                diff = g2f::finite_difference_param(param, diff);
+                values_transformed[idx_param++] = param.get_value_transformed();
+            }
         }
-        auto hessian2 = model->compute_hessian(transformed);
-        const auto n_cols = hessian->get_n_cols();
-        const auto n_rows = hessian->get_n_rows();
-        for (size_t row = 0; row < n_rows; ++row) {
-            for (size_t col = 0; col < n_cols; ++col) {
-                auto value = hessian->get_value(row, col);
-                CHECK_MESSAGE(value != 0, "hessian[", row, ",", col, "] == 0 (", value, ")");
-                auto value2 = hessian2->get_value(row, col);
-                CHECK_MESSAGE(g2f::isclose(value, value2).isclose, "hessian[", row, ",", col, "]=(", value,
-                              ")!= hessian2 value=(", value2, ")");
+        for (unsigned int transformed = 0; transformed <= 1; ++transformed) {
+            auto hessian = model->compute_hessian(transformed);
+            size_t idx_param = 0;
+            for (const auto& paramref : params) {
+                const auto& param = paramref.get();
+                double value_new = param.get_value_transformed();
+                double value_old = values_transformed[idx_param++];
+                CHECK_MESSAGE(g2f::isclose(value_old, value_new, 1e-10, 1e-12).isclose, param.str(),
+                              " value_transformed changed from ", g2f::to_string_float(value_old), " to ",
+                              g2f::to_string_float(value_new),
+                              " with compute_hessian(transformed=", std::to_string(transformed), ")");
+            }
+            auto hessian2 = model->compute_hessian(transformed);
+            const auto n_cols = hessian->get_n_cols();
+            const auto n_rows = hessian->get_n_rows();
+            for (size_t row = 0; row < n_rows; ++row) {
+                for (size_t col = 0; col < n_cols; ++col) {
+                    auto value = hessian->get_value(row, col);
+                    CHECK_MESSAGE(value <= 0, "hessian[", row, ",", col, "] == 0 (", value, ")");
+                    auto value2 = hessian2->get_value(row, col);
+                    CHECK_MESSAGE(g2f::isclose(value, value2, 1e-10, 1e-12).isclose, "hessian[", row, ",",
+                                  col, "]=(", value, ")!= hessian2 value=(", value2, ")");
+                }
+                params[row].get().set_value_transformed(values_transformed[row]);
             }
         }
     }

@@ -726,12 +726,14 @@ public:
      *
      * @param transformed Whether the matrix should be computed for transformed parameters or not
      *                    If not, parameter transforms are temporarily removed.
+     * @param return_negative Whether the matrix should have all negative terms.
+     *                        Should be set to true if the inverse Hessian is being used to estimate errors.
      * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
      * @param findiff_add The minimum of the finite difference increment (added to the fraction).
      * @return The Hessian matrix for all free parameters.
      */
-    std::unique_ptr<Image> compute_hessian(bool transformed = false, double findiff_frac = 1e-4,
-                                           double findiff_add = 1e-4) {
+    std::unique_ptr<Image> compute_hessian(bool transformed = false, bool return_negative = true,
+                                           double findiff_frac = 1e-4, double findiff_add = 1e-4) {
         this->setup_evaluators(EvaluatorMode::loglike_grad);
 
         auto filter_free = g2f::ParamFilter{false, true, true, true};
@@ -774,10 +776,12 @@ public:
         for (auto& paramref : params_free) {
             auto& param = paramref.get();
             const double value = param.get_value_transformed();
+            // Make the finite differencing go away from the possible peak likelihood
+            // This is probably a good idea even if return_negative isn't necessary
             double diff
-                    = std::copysign(std::abs(value * findiff_frac) + findiff_add, loglike_grad[idx_param]);
+                    = std::copysign(std::abs(value * findiff_frac) + findiff_add, -loglike_grad[idx_param]);
             diff = finite_difference_param(param, diff);
-            param.set_value_transformed(value + diff);
+            double diffabs = std::abs(diff);
             this->evaluate();
 
             for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
@@ -786,8 +790,9 @@ public:
             for (size_t idx_obs = 0; idx_obs < n_obs; ++idx_obs) {
                 const auto& loglike_grads = this->_grads.at(idx_obs)->at(0);
                 for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
-                    hessian->add_value_unchecked(idx_param, idx_col,
-                                                 loglike_grads.get_value(0, param_idx[idx_col]) / diff);
+                    double dll_dx = loglike_grads.get_value(0, param_idx[idx_col]);
+                    dll_dx *= return_negative ? (1 - 2 * (loglike_grad[idx_col] > 0)) / diffabs : 1 / diff;
+                    hessian->add_value_unchecked(idx_param, idx_col, dll_dx);
                 }
             }
             param.set_value_transformed(value);

@@ -58,10 +58,13 @@ void bind_model(py::module &m) {
                  "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4, "rtol"_a = 1e-3, "atol"_a = 1e-3)
             .def(
                     "compute_hessian",
-                    [](Model &m, bool transformed, double findiff_frac, double findiff_add) {
-                        return std::shared_ptr(m.compute_hessian(transformed, findiff_frac, findiff_add));
+                    [](Model &m, bool transformed, bool return_negative, double findiff_frac,
+                       double findiff_add) {
+                        return std::shared_ptr(
+                                m.compute_hessian(transformed, return_negative, findiff_frac, findiff_add));
                     },
-                    "transformed"_a = false, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4)
+                    "transformed"_a = false, "return_negative"_a = true, "findiff_frac"_a = 1e-4,
+                    "findiff_add"_a = 1e-4)
             .def_property_readonly("data", &Model::get_data)
             .def("evaluate", &Model::evaluate, "print"_a = false)
             .def(

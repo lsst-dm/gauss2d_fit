@@ -122,6 +122,9 @@ def test_model_eval_loglike_grad(model):
 def test_model_hessian(model):
     hessians = {is_transformed: model.compute_hessian(is_transformed)
                 for is_transformed in (False, True)}
+    # Note that since there is no noise in the image and none of the param values have changed,
+    # the Hessian terms are not all negative - the sign corrections are based on the sign of loglike_grad,
+    # and those are all exactly zero
     assert all(np.isfinite(hessian.data).all() for hessian in hessians.values())
     for is_transformed in (False, True):
         assert np.all(np.isclose(hessians[is_transformed].data, model.compute_hessian(is_transformed).data))
