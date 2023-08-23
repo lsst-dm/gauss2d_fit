@@ -83,6 +83,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                   double findiff_frac = 1e-4, double findiff_add = 1e-4, double rtol = 1e-3,
                   double atol = 1e-3) {
     const size_t n_channels = channels.size();
+    auto grads = model.compute_loglike_grad(false, true);
     model.setup_evaluators(Model::EvaluatorMode::loglike);
     auto loglike = model.evaluate();
     size_t n_loglike = loglike.size();

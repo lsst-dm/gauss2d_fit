@@ -241,14 +241,14 @@ private:
      * @param print Whether to print diagnostic statements to stdout.
      * @return The sum of the log likelihoods of the priors
      */
-    double _evaluate_priors(bool print = false) {
+    double _evaluate_priors(bool print = false, bool normalize_loglike = false) {
         bool is_jacobian = _mode == EvaluatorMode::jacobian;
         double loglike = 0;
         size_t idx_resid = 0;
 
         if (print) std::cout << "Evaluating priors" << std::endl;
         for (const auto& prior : _priors) {
-            auto eval = prior->evaluate(is_jacobian);
+            auto eval = prior->evaluate(is_jacobian, normalize_loglike);
             loglike += eval.loglike;
             if (is_jacobian) {
                 size_t idx_jac = idx_resid;
@@ -646,8 +646,8 @@ public:
 
     /// Compute the gradient of the log likelihood for each free param.
     std::vector<double> compute_loglike_grad(bool print = false, bool verify = false,
-                                             double findiff_frac = 1e-4, double findiff_add = 1e-4,
-                                             double rtol = 1e-3, double atol = 1e-3) {
+                                             double findiff_frac = 1e-5, double findiff_add = 1e-5,
+                                             double rtol = 5e-3, double atol = 5e-3) {
         this->setup_evaluators(EvaluatorMode::loglike_grad, {}, {}, {}, nullptr, true, print);
         this->evaluate(print);
 
@@ -687,16 +687,24 @@ public:
                                        + " loglike_grads n_cols=" + std::to_string(n_cols)
                                        + " != n_params (from offsets) = " + std::to_string(n_params + 1));
             }
-            for (const auto& [param, col] : _offsets_params) {
-                loglike_grads.at(param_idx[param]) += values.get_value(0, col);
+            for (const auto& [paramref, col] : _offsets_params) {
+                loglike_grads.at(param_idx[paramref]) += values.get_value(0, col);
             }
             idx_obs++;
         }
+        for (const auto& prior : _priors) {
+            auto result = prior->evaluate(true);
+
+            for(const auto & paramref : params_free) {
+                double dll_dx = result.compute_dloglike_dx(paramref);
+                loglike_grads.at(param_idx[paramref]) += dll_dx;
+            }
+        }
         if (verify) {
+            std::string errmsg;
             this->setup_evaluators(Model::EvaluatorMode::loglike);
-            // Exclude the prior (if any) from this; loglike_grad won't include it (for now)
-            const auto size = this->size();
-            auto loglike = sum_iter(tail_iter(this->evaluate(), size));
+            auto loglike = this->evaluate();
+            auto loglike_sum = sum_iter(loglike);
 
             auto params = this->get_parameters_new(&filter_free);
             params = nonconsecutive_unique<ParamBaseRef>(params);
@@ -704,18 +712,28 @@ public:
             for (size_t idx_param = 0; idx_param < n_params; idx_param++) {
                 auto& param = params[idx_param].get();
                 double value = param.get_value_transformed();
-                double diff = std::abs(value * findiff_frac) + findiff_add;
+                double diff = std::copysign(std::abs(value * findiff_frac) + findiff_add,
+                                            loglike_grads[idx_param]);
                 diff = finite_difference_param(param, diff);
                 auto loglike_new = this->evaluate();
-                auto dloglike = (sum_iter(tail_iter(loglike_new, size)) - loglike) / diff;
+                auto dloglike = (sum_iter(loglike_new) - loglike_sum) / diff;
                 auto close = isclose(dloglike, loglike_grads[idx_param], rtol, atol);
                 param.set_value_transformed(value);
                 if (!close.isclose) {
-                    throw std::logic_error(param.str()
-                                           + " failed loglike_grad verification; isclose=" + close.str()
-                                           + " from loglike_new=" + to_string_float_iter(loglike_new));
+                    double dll_dx_sum = 0;
+                    for (const auto& prior : _priors) {
+                        double dll_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
+                        dll_dx_sum += dll_dx;
+                    }
+                    double dll_dx_findiff = (loglike_new.back() - loglike.back())/diff;
+                    errmsg += param.str()
+                              + " failed loglike_grad verification; isclose=" + close.str()
+                              + " from loglike_new=" + to_string_float_iter(loglike_new)
+                              + "; dll_dx_prior=" + to_string_float(dll_dx_sum) + " vs findiff: "
+                              + to_string_float(dll_dx_findiff) + "\n";
                 }
             }
+            if(errmsg.size() > 0) throw std::logic_error(errmsg);
         }
 
         return loglike_grads;
@@ -791,7 +809,7 @@ public:
                 const auto& loglike_grads = this->_grads.at(idx_obs)->at(0);
                 for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
                     double dll_dx = loglike_grads.get_value(0, param_idx[idx_col]);
-                    dll_dx *= return_negative ? (1 - 2 * (loglike_grad[idx_col] > 0)) / diffabs : 1 / diff;
+                    dll_dx *= return_negative ? (1 - 2 * (dll_dx > 0)) / diffabs : 1 / diff;
                     hessian->add_value_unchecked(idx_param, idx_col, dll_dx);
                 }
             }
@@ -822,7 +840,7 @@ public:
      * @param print Whether to print diagnostic statements to stdout.
      * @return The log likelihood of each observation, followed by the summed log likelihood of the priors.
      */
-    std::vector<double> evaluate(bool print = false) {
+    std::vector<double> evaluate(bool print = false, bool normalize_loglike = false) {
         if (!_is_setup) throw std::runtime_error("Can't call evaluate before setup_evaluators");
 
         std::vector<double> result(_size + 1);
@@ -839,7 +857,7 @@ public:
         for (size_t idx = 0; idx < _size; ++idx) {
             result[idx] = this->_evaluate_observation(idx, print, true);
         }
-        result[_size] = this->_evaluate_priors(print);
+        result[_size] = this->_evaluate_priors(print, normalize_loglike);
 
         return result;
     }

@@ -147,11 +147,11 @@ void stream_iter_ref(const T& container, std::ostream& stream) {
 
 template <typename T>
 std::string str_map_refw(const T& container) {
-    std::string str = "[";
+    std::string str = "{";
     for (const auto& [obj, value] : container) {
-        str += obj.get().str() + " : " + std::to_string(value) + ", ";
+        str += obj.get().str() + ": " + std::to_string(value) + ", ";
     }
-    return str.substr(0, str.size() - 2 * (container.size() > 0)) + "]";
+    return str.substr(0, str.size() - 2 * (container.size() > 0)) + "}";
 }
 
 template <template <typename...> class Container, class Value>
@@ -162,8 +162,13 @@ Value sum_iter(const Container<Value>& container) {
 }
 
 template <template <typename...> class Container, class Value>
-Container<Value> tail_iter(const Container<Value>& container, size_t n) {
+Container<Value> head_iter(const Container<Value>& container, size_t n) {
     return Container<Value>(container.begin(), container.begin() + n);
+}
+
+template <template <typename...> class Container, class Value>
+Container<Value> tail_iter(const Container<Value>& container, size_t n) {
+    return Container<Value>(container.end() - n, container.end());
 }
 
 template <typename T>

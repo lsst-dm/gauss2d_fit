@@ -7,9 +7,9 @@ double ParametricGaussian1D::get_mean() const { return this->_mean->get_value();
 
 double ParametricGaussian1D::get_stddev() const { return this->_stddev->get_value(); }
 
-const MeanParameter &ParametricGaussian1D::get_mean_parameter() const { return *this->_mean; }
+MeanParameter &ParametricGaussian1D::get_mean_parameter() const { return *this->_mean; }
 
-const StdDevParameter &ParametricGaussian1D::get_stddev_parameter() const { return *this->_stddev; }
+StdDevParameter &ParametricGaussian1D::get_stddev_parameter() const { return *this->_stddev; }
 
 void ParametricGaussian1D::set_mean(double value) { this->_mean->set_value(value); }
 

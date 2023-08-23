@@ -66,7 +66,7 @@ void bind_model(py::module &m) {
                     "transformed"_a = false, "return_negative"_a = true, "findiff_frac"_a = 1e-4,
                     "findiff_add"_a = 1e-4)
             .def_property_readonly("data", &Model::get_data)
-            .def("evaluate", &Model::evaluate, "print"_a = false)
+            .def("evaluate", &Model::evaluate, "print"_a = false, "normalize_loglike"_a = false)
             .def(
                     "gaussians",
                     [](const Model &m, const g2f::Channel &c) {
