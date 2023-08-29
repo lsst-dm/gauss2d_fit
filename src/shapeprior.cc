@@ -120,7 +120,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
 
     if (this->_prior_size != nullptr) {
         double size_maj_floor = this->_options->get_size_maj_floor();
-        size_maj = sqrt(size_maj*size_maj*axrat + size_maj_floor*size_maj_floor);
+        size_maj = sqrt(size_maj * size_maj * axrat + size_maj_floor * size_maj_floor);
         size_maj = _prior_size->get_mean_parameter().get_transform().forward(size_maj);
         double sigma = _prior_size->get_stddev();
         double residual = (size_maj - _prior_size->get_mean_parameter().get_value_transformed()) / sigma;
@@ -130,7 +130,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
                                      + ", _prior_size=" + _prior_size->str());
         }
         result.residuals.emplace_back(residual);
-        result.loglike += normalize ? logpdf_norm(residual, 1.0) : -residual*residual/2.;
+        result.loglike += normalize ? logpdf_norm(residual, 1.0) : -residual * residual / 2.;
     }
 
     if (this->_prior_axrat != nullptr) {
@@ -155,7 +155,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         // RuntimeError('Infinite axis ratio prior residual from q={axrat} and mean, std, f
         // 'logit stretch divisor = {self.axrat_params}')
         result.residuals.emplace_back(residual);
-        result.loglike += normalize ? logpdf_norm(residual, 1.0) : -residual*residual/2.;
+        result.loglike += normalize ? logpdf_norm(residual, 1.0) : -residual * residual / 2.;
     }
 
     if (calc_jacobians) {
@@ -170,11 +170,11 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
             std::vector<double> residuals_old;
             std::vector<double> residuals_new;
             try {
-                param.set_value_transformed(value_trans + delta/2.);
+                param.set_value_transformed(value_trans + delta / 2.);
                 residuals_new = this->evaluate(false, normalize).residuals;
-                param.set_value_transformed(value_trans - delta/2.);
+                param.set_value_transformed(value_trans - delta / 2.);
                 residuals_old = this->evaluate(false, normalize).residuals;
-            } catch (std::exception & e) {
+            } catch (std::exception& e) {
                 param.set_value_transformed(value_new);
                 residuals_new = this->evaluate(false, normalize).residuals;
                 residuals_old = result.residuals;
@@ -183,11 +183,9 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
             param.set_value(value_init);
             value_new = param.get_value();
             if (value_new != value_init) {
-                throw std::runtime_error(
-                    this->str() + " could not return " + param.str() + " to original value="
-                        + to_string_float(value_init) + " (stuck at " + to_string_float(value_new)
-                        + "); check limits"
-                );
+                throw std::runtime_error(this->str() + " could not return " + param.str()
+                                         + " to original value=" + to_string_float(value_init) + " (stuck at "
+                                         + to_string_float(value_new) + "); check limits");
             }
             std::vector<double> jacobians(result.residuals.size());
             for (size_t idx = 0; idx < result.residuals.size(); ++idx) {

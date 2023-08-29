@@ -29,10 +29,8 @@
 
 namespace gauss2d::fit {
 
-std::string str_jacobians(
-    const std::map<ParamBaseCRef, std::vector<double>> & jacobians,
-    bool python_style=true
-) {
+std::string str_jacobians(const std::map<ParamBaseCRef, std::vector<double>>& jacobians,
+                          bool python_style = true) {
     std::string str = "{";
     const std::string prefix = python_style ? "" : "{ ";
     const std::string separator = python_style ? ": " : ", ";
@@ -42,58 +40,52 @@ std::string str_jacobians(
     return str.substr(0, str.size() - 2 * (jacobians.size() > 0)) + "}";
 }
 
-PriorEvaluation::PriorEvaluation(
-    double loglike_,
-    std::vector<double> residuals_,
-    PriorEvaluation::Jacobians jacobians_,
-    bool check_size
- ) : loglike(loglike_), residuals(residuals_), jacobians(jacobians_) {
+PriorEvaluation::PriorEvaluation(double loglike_, std::vector<double> residuals_,
+                                 PriorEvaluation::Jacobians jacobians_, bool check_size)
+        : loglike(loglike_), residuals(residuals_), jacobians(jacobians_) {
     const auto n_resid = residuals.size();
-    if(!((n_resid > 0) || (jacobians.size() == 0))) {
+    if (!((n_resid > 0) || (jacobians.size() == 0))) {
         throw std::invalid_argument("residuals cannot be empty unless jacobians are too");
     }
-    if(check_size) {
-        for(const auto & [paramref, values]: jacobians) {
-            if(values.size() != n_resid) {
-                throw std::invalid_argument(
-                    paramref.get().str() + " jacobian size=" + std::to_string(values.size())
-                        + " != n_resid=" + std::to_string(n_resid)
-                );
+    if (check_size) {
+        for (const auto& [paramref, values] : jacobians) {
+            if (values.size() != n_resid) {
+                throw std::invalid_argument(paramref.get().str()
+                                            + " jacobian size=" + std::to_string(values.size())
+                                            + " != n_resid=" + std::to_string(n_resid));
             }
         }
     } else {
-
     }
 }
 
-PriorEvaluation::~PriorEvaluation() {};
+PriorEvaluation::~PriorEvaluation(){};
 
-double PriorEvaluation::compute_dloglike_dx(const ParamBase & param, bool transformed) const {
+double PriorEvaluation::compute_dloglike_dx(const ParamBase& param, bool transformed) const {
     double dll_dx = 0;
     auto jacobian = this->jacobians.find(param);
-    if(jacobian != this->jacobians.end()) {
+    if (jacobian != this->jacobians.end()) {
         // jacobian is dresidual/dx
         // loglike is -residual^2/2
         // dloglike/dx = -residual*dresidual/dx
-        const auto & jacobian_values = (*jacobian).second;
-        for(size_t idx = 0; idx < jacobian_values.size(); ++idx) {
+        const auto& jacobian_values = (*jacobian).second;
+        for (size_t idx = 0; idx < jacobian_values.size(); ++idx) {
             dll_dx -= jacobian_values[idx] * residuals.at(idx);
         }
     }
-    if(!transformed) dll_dx /= param.get_transform_derivative();
+    if (!transformed) dll_dx /= param.get_transform_derivative();
     return dll_dx;
 }
 
 std::string PriorEvaluation::repr(bool name_keywords) const {
     return std::string("PriorEvaluation(") + (name_keywords ? "loglike=" : "") + to_string_float(loglike)
-           + ", " + (name_keywords ? "residuals=" : "") + to_string_float_iter(residuals)
-           + ", " + (name_keywords ? "jacobians=" : "") + str_jacobians(jacobians) + ")";
+           + ", " + (name_keywords ? "residuals=" : "") + to_string_float_iter(residuals) + ", "
+           + (name_keywords ? "jacobians=" : "") + str_jacobians(jacobians) + ")";
 }
 
 std::string PriorEvaluation::str() const {
-    return "PriorEvaluation(loglike=" + to_string_float(loglike)
-           + ", residuals=" + to_string_float_iter(residuals)
-           + ", jacobians=" + str_jacobians(jacobians) + ")";
+    return "PriorEvaluation(loglike=" + to_string_float(loglike) + ", residuals="
+           + to_string_float_iter(residuals) + ", jacobians=" + str_jacobians(jacobians) + ")";
 }
 
 }  // namespace gauss2d::fit

@@ -695,7 +695,7 @@ public:
         for (const auto& prior : _priors) {
             auto result = prior->evaluate(true);
 
-            for(const auto & paramref : params_free) {
+            for (const auto& paramref : params_free) {
                 double dll_dx = result.compute_dloglike_dx(paramref);
                 loglike_grads.at(param_idx[paramref]) += dll_dx;
             }
@@ -725,15 +725,14 @@ public:
                         double dll_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
                         dll_dx_sum += dll_dx;
                     }
-                    double dll_dx_findiff = (loglike_new.back() - loglike.back())/diff;
-                    errmsg += param.str()
-                              + " failed loglike_grad verification; isclose=" + close.str()
+                    double dll_dx_findiff = (loglike_new.back() - loglike.back()) / diff;
+                    errmsg += param.str() + " failed loglike_grad verification; isclose=" + close.str()
                               + " from loglike_new=" + to_string_float_iter(loglike_new)
-                              + "; dll_dx_prior=" + to_string_float(dll_dx_sum) + " vs findiff: "
-                              + to_string_float(dll_dx_findiff) + "\n";
+                              + "; dll_dx_prior=" + to_string_float(dll_dx_sum)
+                              + " vs findiff: " + to_string_float(dll_dx_findiff) + "\n";
                 }
             }
-            if(errmsg.size() > 0) throw std::logic_error(errmsg);
+            if (errmsg.size() > 0) throw std::logic_error(errmsg);
         }
 
         return loglike_grads;

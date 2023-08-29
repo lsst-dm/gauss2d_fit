@@ -21,13 +21,13 @@ public:
     std::vector<double> residuals;
     Jacobians jacobians;
 
-    double compute_dloglike_dx(const ParamBase & param, bool transformed=true) const;
+    double compute_dloglike_dx(const ParamBase& param, bool transformed = true) const;
 
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
     PriorEvaluation(double loglike, std::vector<double> residuals = {}, Jacobians jacobians = {},
-                    bool check_size=true);
+                    bool check_size = true);
     ~PriorEvaluation();
 };
 

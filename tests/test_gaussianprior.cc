@@ -41,15 +41,15 @@ TEST_CASE("GaussianPrior") {
     CHECK(prior.get_transformed() == true);
     auto eval = prior.evaluate(true);
     CHECK(eval.residuals[0] == 0);
-    CHECK(eval.jacobians.at(*param)[0] == 1.0/stddev);
+    CHECK(eval.jacobians.at(*param)[0] == 1.0 / stddev);
 
     const double delta = 1e-6;
-    std::vector<double> test_x {-0.34, 0., 1.21};
-    for(double x: test_x) {
-        param->set_value_transformed(x - delta/2.);
+    std::vector<double> test_x{-0.34, 0., 1.21};
+    for (double x : test_x) {
+        param->set_value_transformed(x - delta / 2.);
         auto eval = prior.evaluate(true);
-        param->set_value_transformed(x + delta/2.);
-        const double dll_dx = (prior.evaluate().loglike - eval.loglike)/delta;
+        param->set_value_transformed(x + delta / 2.);
+        const double dll_dx = (prior.evaluate().loglike - eval.loglike) / delta;
         param->set_value_transformed(x);
         CHECK(g2f::isclose(dll_dx, eval.compute_dloglike_dx(*param), delta, delta).isclose);
     }
