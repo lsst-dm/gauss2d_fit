@@ -11,6 +11,8 @@
 
 #include "data.h"
 #include "gauss2d/image.h"
+// TODO: Remove when DM-40674 fixed
+#include "parameters.h"
 #include "parametricmodel.h"
 #include "param_filter.h"
 #include "prior.h"
@@ -23,6 +25,18 @@ namespace gauss2d::fit {
 static const std::string ERRMSG_PARAMS
         = "Were params fixed/freed since calling compute_*/evaluate?"
           "Or does your PSF model have free parameters?";
+
+struct HessianOptions {
+    /*
+     * @param return_negative Whether the matrix should have all negative terms.
+     *                        Should be set to true if the inverse Hessian is being used to estimate errors.
+     * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
+     * @param findiff_add The minimum of the finite difference increment (added to the fraction).
+     */
+    bool return_negative = true;
+    double findiff_frac = 1e-4;
+    double findiff_add = 1e-4;
+};
 
 /*
     A Model is a collection of Sources used to represent a model of the
@@ -644,10 +658,22 @@ public:
         for (auto& source : _sources) source->add_grad_param_factors(channel, factors);
     }
 
-    /// Compute the gradient of the log likelihood for each free param.
-    std::vector<double> compute_loglike_grad(bool print = false, bool verify = false,
-                                             double findiff_frac = 1e-5, double findiff_add = 1e-5,
-                                             double rtol = 5e-3, double atol = 5e-3) {
+    /**
+     * Compute the gradient (partial first derivative) of the log-likelihood for each free parameter.
+     *
+     * @param include_prior Whether to include the prior likelihood(s) in the gradients.
+     * @param print Whether to print diagnostic/debugging information.
+     * @param verify Whether to verify the values by comparing to finite differences.
+     * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
+     * @param findiff_add The minimum value of the finite difference increment.
+     * @param rtol The allowed relative tolerance in the Jacobian as compared to the finite difference.
+     * @param atol The allowed absolute tolerance in the Jacobian as compared to the finite difference.
+     * @return
+     */
+    std::vector<double> compute_loglike_grad(bool include_prior = true, bool print = false,
+                                             bool verify = false, double findiff_frac = 1e-5,
+                                             double findiff_add = 1e-5, double rtol = 5e-3,
+                                             double atol = 5e-3) {
         this->setup_evaluators(EvaluatorMode::loglike_grad, {}, {}, {}, nullptr, true, print);
         this->evaluate(print);
 
@@ -692,12 +718,14 @@ public:
             }
             idx_obs++;
         }
-        for (const auto& prior : _priors) {
-            auto result = prior->evaluate(true);
+        if (include_prior) {
+            for (const auto& prior : _priors) {
+                auto result = prior->evaluate(true);
 
-            for (const auto& paramref : params_free) {
-                double dll_dx = result.compute_dloglike_dx(paramref);
-                loglike_grads.at(param_idx[paramref]) += dll_dx;
+                for (const auto& paramref : params_free) {
+                    double dll_dx = result.compute_dloglike_dx(paramref);
+                    loglike_grads.at(param_idx[paramref]) += dll_dx;
+                }
             }
         }
         if (verify) {
@@ -720,16 +748,20 @@ public:
                 auto close = isclose(dloglike, loglike_grads[idx_param], rtol, atol);
                 param.set_value_transformed(value);
                 if (!close.isclose) {
-                    double dll_dx_sum = 0;
+                    double dll_dx_exact = loglike_grads[idx_param];
+                    double dlp_dx_sum = 0;
                     for (const auto& prior : _priors) {
-                        double dll_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
-                        dll_dx_sum += dll_dx;
+                        double dlp_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
+                        dlp_dx_sum += dlp_dx;
                     }
-                    double dll_dx_findiff = (loglike_new.back() - loglike.back()) / diff;
+                    double dlp_dx_findiff = (loglike_new.back() - loglike.back()) / diff;
                     errmsg += param.str() + " failed loglike_grad verification; isclose=" + close.str()
-                              + " from loglike_new=" + to_string_float_iter(loglike_new)
-                              + "; dll_dx_prior=" + to_string_float(dll_dx_sum)
-                              + " vs findiff: " + to_string_float(dll_dx_findiff) + "\n";
+                              + " from findiff=" + to_string_float(dloglike) + " vs "
+                              + to_string_float(dll_dx_exact)
+                              + " (ratio = " + to_string_float(dll_dx_exact / dloglike)
+                              + ") from loglike_new=" + to_string_float_iter(loglike_new)
+                              + "; dll_dx_prior=" + to_string_float(dlp_dx_sum)
+                              + " vs findiff: " + to_string_float(dlp_dx_findiff) + "\n";
                 }
             }
             if (errmsg.size() > 0) throw std::logic_error(errmsg);
@@ -743,14 +775,14 @@ public:
      *
      * @param transformed Whether the matrix should be computed for transformed parameters or not
      *                    If not, parameter transforms are temporarily removed.
-     * @param return_negative Whether the matrix should have all negative terms.
-     *                        Should be set to true if the inverse Hessian is being used to estimate errors.
-     * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
-     * @param findiff_add The minimum of the finite difference increment (added to the fraction).
+     * @param include_prior Whether to include the prior likelihood(s) in the Hessian.
+     * @param options Options for computing the Hessian via finite differencing of loglikelihood gradients.
+     *                If null, the Hessian is estimated as J^T J (where J is the Jacobian).
      * @return The Hessian matrix for all free parameters.
      */
-    std::unique_ptr<Image> compute_hessian(bool transformed = false, bool return_negative = true,
-                                           double findiff_frac = 1e-4, double findiff_add = 1e-4) {
+    std::unique_ptr<Image> compute_hessian(bool transformed = false, bool include_prior = true,
+                                           std::optional<HessianOptions> options = std::nullopt,
+                                           bool print = false) {
         this->setup_evaluators(EvaluatorMode::loglike_grad);
 
         auto filter_free = g2f::ParamFilter{false, true, true, true};
@@ -774,11 +806,12 @@ public:
         }
 
         auto hessian = std::make_unique<Image>(n_params_free, n_params_free);
-
         const auto n_obs = this->size();
-
-        auto loglike_grad = this->compute_loglike_grad(false, false, findiff_frac, findiff_add);
         std::vector<size_t> param_idx(n_params_free);
+
+        size_t n_integral = 0;
+        size_t n_frac = 0;
+
         for (size_t idx_param = 0; idx_param < n_params_free; idx_param++) {
             const auto param = params_free[idx_param];
             const auto found = _offsets_params.find(param);
@@ -787,33 +820,132 @@ public:
                                          + ERRMSG_PARAMS);
             }
             param_idx[idx_param] = (*found).second;
+            if (not options) {
+                const auto name = param.get().get_name();
+                n_integral += name == IntegralParameter::_name;
+                n_frac += name == ProperFractionParameter::_name;
+            }
         }
 
-        size_t idx_param = 0;
-        for (auto& paramref : params_free) {
-            auto& param = paramref.get();
-            const double value = param.get_value_transformed();
-            // Make the finite differencing go away from the possible peak likelihood
-            // This is probably a good idea even if return_negative isn't necessary
-            double diff
-                    = std::copysign(std::abs(value * findiff_frac) + findiff_add, -loglike_grad[idx_param]);
-            diff = finite_difference_param(param, diff);
-            double diffabs = std::abs(diff);
+        if (options) {
+            const HessianOptions& opt = *options;
+
+            auto loglike_grad = this->compute_loglike_grad(include_prior, false, false);
+
+            size_t idx_param = 0;
+            for (auto& paramref : params_free) {
+                auto& param = paramref.get();
+                const double value = param.get_value_transformed();
+                // Make the finite differencing go away from the possible peak likelihood
+                // This is probably a good idea even if return_negative isn't necessary
+                double diff = std::copysign(std::abs(value * opt.findiff_frac) + opt.findiff_add,
+                                            -loglike_grad[idx_param]);
+                diff = finite_difference_param(param, diff);
+                double diffabs = std::abs(diff);
+                this->evaluate();
+
+                auto loglike_grad2 = this->compute_loglike_grad(include_prior, false, false);
+                for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
+                    double dll_dx = loglike_grad2[idx_col] - loglike_grad[idx_col];
+                    dll_dx *= opt.return_negative ? (1 - 2 * (dll_dx > 0)) / diffabs : 1 / diff;
+                    hessian->set_value_unchecked(idx_param, idx_col, dll_dx);
+                }
+                param.set_value_transformed(value);
+                idx_param++;
+            }
+        } else {
+            if ((n_integral > 0) && (n_frac > 0)) {
+                throw std::runtime_error(
+                        "Cannot compute_hessian without options for model with free Integral and "
+                        "ProperFraction "
+                        "parameters (this is a bug); please supply options to use finite differencing.");
+            }
+
+            this->setup_evaluators(EvaluatorMode::jacobian);
             this->evaluate();
 
-            for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
-                hessian->set_value_unchecked(idx_param, idx_col, 0);
-            }
+            hessian->fill(0);
+
             for (size_t idx_obs = 0; idx_obs < n_obs; ++idx_obs) {
-                const auto& loglike_grads = this->_grads.at(idx_obs)->at(0);
-                for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
-                    double dll_dx = loglike_grads.get_value(0, param_idx[idx_col]);
-                    dll_dx *= return_negative ? (1 - 2 * (dll_dx > 0)) / diffabs : 1 / diff;
-                    hessian->add_value_unchecked(idx_param, idx_col, dll_dx);
+                const auto& jacs = this->_grads.at(idx_obs);
+                for (size_t idx_param1 = 0; idx_param1 < n_params_free; ++idx_param1) {
+                    const auto& jac1 = jacs->at(param_idx[idx_param1]);
+                    const size_t n_rows = jac1.get_n_rows();
+                    const size_t n_cols = jac1.get_n_cols();
+
+                    for (size_t idx_param2 = 0; idx_param2 < n_params_free; ++idx_param2) {
+                        const auto& jac2 = jacs->at(param_idx[idx_param2]);
+                        const size_t n_rows2 = jac2.get_n_rows();
+                        const size_t n_cols2 = jac2.get_n_cols();
+
+                        if ((n_rows != n_rows2) || (n_cols != n_cols2)) {
+                            throw std::logic_error("n_rows,n_cols=" + to_string_float(n_rows) + ","
+                                                   + to_string_float(n_cols)
+                                                   + "!= n_rows2,n_cols2=" + to_string_float(n_rows2) + ","
+                                                   + to_string_float(n_cols2));
+                        }
+                        double dx = 0;
+                        for (size_t row = 0; row < n_rows; ++row) {
+                            for (size_t col = 0; col < n_cols; ++col) {
+                                // Note the sign convention of negative diagonal values
+                                // at maximum likelihood
+                                dx -= jac1.get_value(row, col) * jac2.get_value(row, col);
+                            }
+                        }
+                        if (print) {
+                            std::cout << "calling hessian->add_value(" << idx_param1 << "," << idx_param2
+                                      << "," << dx << ")" << std::endl;
+                        }
+                        hessian->add_value(idx_param1, idx_param2, dx);
+                    }
                 }
             }
-            param.set_value_transformed(value);
-            idx_param++;
+            if (include_prior && (_priors.size() > 0)) {
+                std::map<ParamBaseCRef, size_t> param_idx_map = {};
+                for (size_t idx_param = 0; idx_param < n_params_free; idx_param++) {
+                    const auto param = params_free[idx_param];
+                    if (_offsets_params.find(param) == _offsets_params.end()) {
+                        throw std::runtime_error(param.get().str() + " not found in _offsets_params\n"
+                                                 + ERRMSG_PARAMS);
+                    }
+                    param_idx_map[param] = idx_param;
+                }
+
+                size_t prior_size = 0;
+                for (const auto& prior : _priors) {
+                    prior_size += prior->size();
+                }
+                auto dll_prior = std::make_unique<Image>(n_params_free, prior_size);
+                dll_prior->fill(0);
+
+                size_t idx_prior = 0;
+                for (const auto& prior : _priors) {
+                    auto result = prior->evaluate(true);
+
+                    for (const auto& [param_cref, values_base] : result.jacobians) {
+                        size_t idx_residual = 0;
+                        size_t idx_param = param_idx_map[param_cref];
+                        for (const auto& value_base : values_base) {
+                            dll_prior->add_value(idx_param, idx_prior + idx_residual++, value_base);
+                        }
+                    }
+                    idx_prior += prior->size();
+                }
+
+                for (size_t row = 0; row < n_params_free; ++row) {
+                    for (size_t row2 = 0; row2 < n_params_free; ++row2) {
+                        double dll_dx = 0;
+                        for (size_t col = 0; col < prior_size; ++col) {
+                            dll_dx -= dll_prior->get_value(row, col) * dll_prior->get_value(row2, col);
+                        }
+                        hessian->add_value(row, row2, dll_dx);
+                        if (print) {
+                            std::cout << "calling hessian->add_value(" << row << "," << row2 << "," << dll_dx
+                                      << ") for prior" << std::endl;
+                        }
+                    }
+                }
+            }
         }
 
         if (!transformed) {
@@ -837,14 +969,17 @@ public:
      * Evaluate the model for every Observation in _data.
      *
      * @param print Whether to print diagnostic statements to stdout.
+     * @param normalize_loglike Whether to include the normalizing (variance-dependent) term in the log
+     *                          likelihood. If false, the log likelihood for a model with no residuals is 0.
      * @return The log likelihood of each observation, followed by the summed log likelihood of the priors.
      */
     std::vector<double> evaluate(bool print = false, bool normalize_loglike = false) {
         if (!_is_setup) throw std::runtime_error("Can't call evaluate before setup_evaluators");
 
         std::vector<double> result(_size + 1);
+        bool is_loglike_grad = this->_mode == EvaluatorMode::loglike_grad;
 
-        if (this->_mode == EvaluatorMode::loglike_grad) {
+        if (is_loglike_grad) {
             // loglike_grad adds values, and they have to be reset to zero first
             // This must be done for all observations in this case, because
             // most parameters change grads in all observations
@@ -854,7 +989,7 @@ public:
         }
 
         for (size_t idx = 0; idx < _size; ++idx) {
-            result[idx] = this->_evaluate_observation(idx, print, true);
+            result[idx] = this->_evaluate_observation(idx, print, is_loglike_grad);
         }
         result[_size] = this->_evaluate_priors(print, normalize_loglike);
 
@@ -890,6 +1025,11 @@ public:
         return std::make_unique<gauss2d::Gaussians>(in);
     }
 
+    /**
+     * Get the constant (variance-dependent) terms of the log likelihood for each observation.
+     *
+     * @return A vector with the constant terms for each observation, and a final term for the priors.
+     */
     std::vector<double> get_loglike_const_terms() {
         const size_t n_data = this->size();
         if (this->_likelihood_const_terms.empty()) {
@@ -990,7 +1130,9 @@ public:
      *
      * @param mode The EvaluatorMode to use for all Evaluator instances.
      * @param outputs A vector of vectors of Image outputs for each Evaluator (created if empty and needed).
-     * @param residuals An array of residual
+     * @param residuals A vector of residual Images for each Evaluator (created if empty and needed).
+     * @param outputs_prior A vector of prior residual Images for each Evaluator
+     *                      (created if empty and needed).
      * @param force Whether to force setting up even if already set up in the same mode
      * @param print Whether to print diagnostic statements to stdout.
      *

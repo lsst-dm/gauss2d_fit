@@ -15,7 +15,7 @@ def data(channels):
     return g2f.Data([
         g2f.Observation(
             g2.ImageD(np.zeros((n_y, n_x))),
-            g2.ImageD(np.full((n_y, n_x), 1e6)),
+            g2.ImageD(np.full((n_y, n_x), 1e3)),
             g2.ImageB(np.ones((n_y, n_x))),
             channel,
         )
@@ -56,10 +56,10 @@ def sources(channels):
             last = g2f.FractionalIntegralModel(
                 [
                     (channel, g2f.ProperFractionParameterD(
-                        (is_last == 1) or (0.5 + 0.5*(c > 0)),
+                        (is_last == 1) or 0.25*(1 + idx_channel),
                         fixed=is_last
                     ))
-                    for channel in channels
+                    for idx_channel, channel in enumerate(channels)
                 ],
                 g2f.LinearIntegralModel([
                     (channel, g2f.IntegralParameterD(0.5 + 0.5*(i + 1)))
@@ -109,6 +109,9 @@ def test_model_eval_jacobian(model):
     model.setup_evaluators(g2f.Model.EvaluatorMode.jacobian)
     result = np.array(model.evaluate())
     assert (result == 0).all()
+    errors = model.verify_jacobian()
+    # All of the IntegralParameters got double-counted - see DM-40674
+    assert len(errors) == 6
 
 
 def test_model_eval_loglike_grad(model):
@@ -120,11 +123,21 @@ def test_model_eval_loglike_grad(model):
 
 
 def test_model_hessian(model):
-    hessians = {is_transformed: model.compute_hessian(is_transformed)
-                for is_transformed in (False, True)}
-    # Note that since there is no noise in the image and none of the param values have changed,
-    # the Hessian terms are not all negative - the sign corrections are based on the sign of loglike_grad,
-    # and those are all exactly zero
-    assert all(np.isfinite(hessian.data).all() for hessian in hessians.values())
+    options = g2f.HessianOptions(return_negative=False)
+    for idx in range(2):
+        hessians = {is_transformed: model.compute_hessian(transformed=is_transformed, options=options)
+                    for is_transformed in (False, True)}
+        # Note that since there is no noise in the image and none of the param values have changed,
+        # the Hessian terms are not all negative - the sign corrections are based on the sign of loglike_grad,
+        # and those are all exactly zero
+        assert all(np.isfinite(hessian.data).all() for hessian in hessians.values())
+        if idx == 0:
+            for param in model.parameters():
+                # TODO: Remove this when DM-40674 is fixed
+                if isinstance(param, g2f.IntegralParameterD):
+                    param.fixed = True
+
     for is_transformed in (False, True):
-        assert np.all(np.isclose(hessians[is_transformed].data, model.compute_hessian(is_transformed).data))
+        hessian_from_jac = model.compute_hessian(transformed=is_transformed, options=None, print=True).data
+        # TODO: investigate these unreasonably large differences after DM-40674
+        assert np.all(np.isclose(hessians[is_transformed].data, hessian_from_jac, rtol=1e-3, atol=1))

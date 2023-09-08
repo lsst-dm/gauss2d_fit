@@ -26,6 +26,7 @@
 #include <pybind11/stl.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "gauss2d/gaussian.h"
@@ -43,6 +44,12 @@ typedef g2p::PyImage<double> Image;
 typedef g2f::Model<double, Image, g2p::PyImage<size_t>, g2p::PyImage<bool>> Model;
 
 void bind_model(py::module &m) {
+    auto _h = py::class_<g2f::HessianOptions, std::shared_ptr<g2f::HessianOptions>>(m, "HessianOptions")
+                      .def(py::init<bool, double, double>(), "return_negative"_a = true,
+                           "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4)
+                      .def_readwrite("return_negative", &g2f::HessianOptions::return_negative)
+                      .def_readwrite("findiff_frac", &g2f::HessianOptions::return_negative)
+                      .def_readwrite("findiff_add", &g2f::HessianOptions::return_negative);
     auto model = py::class_<Model, std::shared_ptr<Model>, g2f::ParametricModel>(m, "Model");
     auto _e = py::enum_<Model::EvaluatorMode>(model, "EvaluatorMode")
                       .value("image", Model::EvaluatorMode::image)
@@ -54,17 +61,17 @@ void bind_model(py::module &m) {
     model.def(py::init<std::shared_ptr<const Model::ModelData>, Model::PsfModels &, Model::Sources &,
                        Model::Priors &>(),
               "data"_a, "psfmodels"_a, "sources"_a, "priors"_a = Model::Priors{})
-            .def("compute_loglike_grad", &Model::compute_loglike_grad, "print"_a = false, "verify"_a = false,
-                 "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4, "rtol"_a = 1e-3, "atol"_a = 1e-3)
+            .def("compute_loglike_grad", &Model::compute_loglike_grad, "include_prior"_a = false,
+                 "print"_a = false, "verify"_a = false, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4,
+                 "rtol"_a = 1e-3, "atol"_a = 1e-3)
             .def(
                     "compute_hessian",
-                    [](Model &m, bool transformed, bool return_negative, double findiff_frac,
-                       double findiff_add) {
-                        return std::shared_ptr(
-                                m.compute_hessian(transformed, return_negative, findiff_frac, findiff_add));
+                    [](Model &m, bool transformed, bool include_prior,
+                       std::optional<g2f::HessianOptions> options, bool print) {
+                        return std::shared_ptr(m.compute_hessian(transformed, include_prior, options, print));
                     },
-                    "transformed"_a = false, "return_negative"_a = true, "findiff_frac"_a = 1e-4,
-                    "findiff_add"_a = 1e-4)
+                    "transformed"_a = false, "include_prior"_a = true, "options"_a = std::nullopt,
+                    "print"_a = false)
             .def_property_readonly("data", &Model::get_data)
             .def("evaluate", &Model::evaluate, "print"_a = false, "normalize_loglike"_a = false)
             .def(
