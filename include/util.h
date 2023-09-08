@@ -139,19 +139,19 @@ std::string str_iter_refw(const T& container) {
 }
 
 template <typename T>
-void stream_iter_ref(const T& container, std::ostream& stream) {
-    stream << "[";
-    for (const auto& obj : container) stream << obj << ",";
-    stream << "]";
-}
-
-template <typename T>
 std::string str_map_refw(const T& container) {
     std::string str = "{";
     for (const auto& [obj, value] : container) {
         str += obj.get().str() + ": " + std::to_string(value) + ", ";
     }
     return str.substr(0, str.size() - 2 * (container.size() > 0)) + "}";
+}
+
+template <typename T>
+void stream_iter_ref(const T& container, std::ostream& stream) {
+    stream << "[";
+    for (const auto& obj : container) stream << obj << ",";
+    stream << "]";
 }
 
 template <template <typename...> class Container, class Value>
