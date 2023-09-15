@@ -11,6 +11,8 @@
 
 #include "data.h"
 #include "gauss2d/image.h"
+// TODO: Remove when DM-40674 fixed
+#include "parameters.h"
 #include "parametricmodel.h"
 #include "param_filter.h"
 #include "prior.h"
@@ -20,7 +22,21 @@
 
 namespace gauss2d::fit {
 
-// enum class Renderer { gauss2d };
+static const std::string ERRMSG_PARAMS
+        = "Were params fixed/freed since calling compute_*/evaluate?"
+          "Or does your PSF model have free parameters?";
+
+struct HessianOptions {
+    /*
+     * @param return_negative Whether the matrix should have all negative terms.
+     *                        Should be set to true if the inverse Hessian is being used to estimate errors.
+     * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
+     * @param findiff_add The minimum of the finite difference increment (added to the fraction).
+     */
+    bool return_negative = true;
+    double findiff_frac = 1e-4;
+    double findiff_add = 1e-4;
+};
 
 /*
     A Model is a collection of Sources used to represent a model of the
@@ -182,9 +198,9 @@ private:
      * @param print Whether to print diagnostic statements to stdout.
      * @return The log likelihood of the model for this observation
      */
-    double _evaluate_observation(size_t idx, bool print = false) {
+    double _evaluate_observation(size_t idx, bool print = false, bool skip_zeroing = false) {
         if (print) std::cout << "Evaluating observation[" << idx << "]" << std::endl;
-        if (_mode == EvaluatorMode::jacobian) {
+        if (_mode == EvaluatorMode::jacobian || _mode == EvaluatorMode::loglike_grad) {
             const auto& channel = _data->at(idx).get().get_channel();
             const size_t n_gaussians_psf = _psfcomps[idx]->size();
             const auto& gaussians_src = _gaussians_srcs.at(channel);
@@ -196,10 +212,10 @@ private:
             for (size_t i_psf = 0; i_psf < n_gaussians_psf; ++i_psf) {
                 size_t i_src = 0;
                 for (const auto& src : this->get_sources()) {
-                    const size_t n_gauss_src = gaussians_src[i_src++]->size();
                     if (print)
                         std::cout << "Setting factors for psf[" << i_psf << "], src[" << i_src << "]"
                                   << std::endl;
+                    const size_t n_gauss_src = gaussians_src[i_src++]->size();
                     if (n_gauss_src != src->get_n_gaussians(channel)) {
                         throw std::logic_error(
                                 this->str() + "._data[" + channel.str() + "].get_n_gaussians(channel)="
@@ -211,8 +227,12 @@ private:
                     // Copy values to the actual input arrays used by the evaluator
                     const size_t row_max = offset + n_gauss_src;
                     for (size_t row = offset; row < row_max; ++row) {
+                        if (print) {
+                            std::cout << "factors_extra[" << row << "]=[";
+                        }
                         for (size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
                             factors_extra_in->set_value_unchecked(row, col, _factors_extra[row][col]);
+                            if (print) std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
                         }
                         for (size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
                             factors_grad_in->set_value_unchecked(row, col, _factors_grad[row][col]);
@@ -220,6 +240,10 @@ private:
                     }
                     offset = row_max;
                 }
+            }
+            if (!skip_zeroing) {
+                auto& grads = *(this->_grads[idx]);
+                for (auto& grad : grads) grad->fill(0);
             }
         }
         return _evaluators[idx]->loglike_pixel();
@@ -231,14 +255,14 @@ private:
      * @param print Whether to print diagnostic statements to stdout.
      * @return The sum of the log likelihoods of the priors
      */
-    double _evaluate_priors(bool print = false) {
+    double _evaluate_priors(bool print = false, bool normalize_loglike = false) {
         bool is_jacobian = _mode == EvaluatorMode::jacobian;
         double loglike = 0;
         size_t idx_resid = 0;
 
         if (print) std::cout << "Evaluating priors" << std::endl;
         for (const auto& prior : _priors) {
-            auto eval = prior->evaluate(is_jacobian);
+            auto eval = prior->evaluate(is_jacobian, normalize_loglike);
             loglike += eval.loglike;
             if (is_jacobian) {
                 size_t idx_jac = idx_resid;
@@ -278,42 +302,55 @@ private:
      * @param outputs The list of Image instances to output to, ordered as Data.
      * @param residual The residual Image for the Evaluator to use.
      * @param print Whether to print diagnostic information to stdout.
-     * @return A pair of Evaluator instances, along with the associated output Image
+     * @return A pair of the Evaluator instance, along with the associated output Image
      *         and gradient ImageArray.
      *
-     * @note Different modes require different lengths of outputs.
-     * @note Not all EvaluatorMode options are currently implemented.
+     * @note Different modes require different lengths of outputs. See setup_evaluators for details.
      */
     std::pair<std::unique_ptr<Evaluator>,
               std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<double, Image>>>>
     _make_evaluator(const size_t idx_obs, EvaluatorMode mode = EvaluatorMode::image,
-                    std::vector<std::shared_ptr<Image>> outputs = {},
+                    std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                     std::shared_ptr<Image> residual = nullptr, bool print = false) {
         _check_obs_idx(idx_obs);
-        // TODO: implement
-        if (mode == EvaluatorMode::loglike_grad)
-            throw std::runtime_error("loglike_grad mode not implemented yet");
+
         const Observation& observation = _data->at(idx_obs).get();
         const Channel& channel = observation.get_channel();
-        const auto& psfcomps = _psfcomps[idx_obs];
+        const auto& psfcomps = _psfcomps.at(idx_obs);
         const size_t n_c = observation.get_n_cols();
         const size_t n_r = observation.get_n_rows();
 
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;
-        if (has_outputs) {
-            // TODO: Enable for image and loglike_image
-            if (mode != EvaluatorMode::jacobian) {
-                throw std::invalid_argument("outputs not implemented for non-jacobian modes");
-            }
-        }
+        const auto* outputs_obs = has_outputs ? &(outputs.at(idx_obs)) : nullptr;
 
         const bool is_mode_image = mode == EvaluatorMode::image;
+        const bool is_mode_loglike_grad = mode == EvaluatorMode::loglike_grad;
         const bool is_mode_jacobian = mode == EvaluatorMode::jacobian;
         const bool do_output = is_mode_image || (mode == EvaluatorMode::loglike_image);
 
+        if (has_outputs) {
+            if (is_mode_jacobian || is_mode_loglike_grad) {
+                const size_t size_out = outputs_obs->size();
+                size_t n_obsect = is_mode_jacobian ? (_n_params_free + 1) : this->size();
+                if (size_out != n_obsect) {
+                    throw std::invalid_argument("outputs[" + std::to_string(idx_obs)
+                                                + "].size()=" + std::to_string(size_out) + "!=n_"
+                                                + (is_mode_jacobian ? "free+1" : "obs") + "="
+                                                + std::to_string(n_obsect));
+                }
+            }
+            if (!(n_outputs > idx_obs)) {
+                throw std::invalid_argument("outputs.size()=" + std::to_string(n_outputs)
+                                            + " !> idx_obs=" + std::to_string(idx_obs));
+            }
+        }
+
         std::shared_ptr<const CoordinateSystem> coordsys = observation.get_image().get_coordsys_ptr_const();
-        std::shared_ptr<Image> output = !do_output ? nullptr : std::make_shared<Image>(n_r, n_c, coordsys);
+        std::shared_ptr<Image> output
+                = !do_output
+                          ? nullptr
+                          : (has_outputs ? outputs_obs->at(0) : std::make_shared<Image>(n_r, n_c, coordsys));
 
         auto data_eval = !is_mode_image ? observation.get_image_ptr_const() : nullptr;
         auto sigma_inv = !is_mode_image ? observation.get_sigma_inverse_ptr_const() : nullptr;
@@ -356,7 +393,7 @@ private:
         std::shared_ptr<const Indices> map_extra_in, map_grad_in;
         std::shared_ptr<const Image> factors_extra_in, factors_grad_in;
 
-        if (is_mode_jacobian) {
+        if (is_mode_jacobian || is_mode_loglike_grad) {
             std::weak_ptr<Image> factors_extra_weak = _factors_extra_in[idx_obs];
             std::weak_ptr<Image> factors_grad_weak = _factors_grad_in[idx_obs];
             std::weak_ptr<Indices> map_extra_weak = _map_extra_in[idx_obs];
@@ -380,19 +417,10 @@ private:
             typename ImageArray<double, Image>::Data arrays{};
             const size_t n_free = _n_params_free + 1;
 
-            if (has_outputs) {
-                const size_t size_jac = outputs.size();
-                if (size_jac != n_free) {
-                    throw std::invalid_argument("outputs[" + std::to_string(idx_obs)
-                                                + "].size()=" + std::to_string(size_jac)
-                                                + "!=n_free=" + std::to_string(n_free));
-                }
-            }
-
             for (size_t idx_img = 0; idx_img < n_free; ++idx_img) {
                 std::shared_ptr<Image> image;
                 if (has_outputs) {
-                    image = outputs[idx_img];
+                    image = (*outputs_obs)[idx_img];
                     if (image == nullptr) {
                         throw std::invalid_argument("output[" + std::to_string(idx_img)
                                                     + "] can't be null for obs #" + std::to_string(idx_obs));
@@ -410,6 +438,17 @@ private:
                 arrays.emplace_back(image);
             }
             grads = std::make_shared<ImageArray<double, Image>>(&arrays);
+        } else if (is_mode_loglike_grad) {
+            typename ImageArray<double, Image>::Data arrays{};
+            if (print) {
+                std::cout << "Setting grads[" << idx_obs
+                          << "] to image of n_cols=_n_params_free + 1=" << _n_params_free + 1
+                          << "; _offsets_params.size()=" << _offsets_params.size() << std::endl;
+            }
+            auto image = has_outputs ? outputs_obs->at(0)
+                                     : std::make_shared<Image>(1, _n_params_free + 1, coordsys);
+            arrays.emplace_back(image);
+            grads = std::make_shared<ImageArray<double, Image>>(&arrays);
         } else {
             grads = nullptr;
         }
@@ -418,6 +457,7 @@ private:
             std::cout << gaussians->str() << std::endl;
         }
 
+        // Ensure grads & output aren't nullptr after move
         auto grads2 = grads;
         auto output2 = output;
         std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<double, Image>>> second
@@ -441,11 +481,11 @@ private:
                           std::shared_ptr<const Indices>& map_grad_in,
                           std::shared_ptr<const Image>& factors_extra_in,
                           std::shared_ptr<const Image>& factors_grad_in) {
-        unsigned int n_expired = map_extra_weak.expired() + map_grad_weak.expired()
+        unsigned int n_obsired = map_extra_weak.expired() + map_grad_weak.expired()
                                  + factors_grad_weak.expired() + factors_extra_weak.expired();
-        const bool expired = n_expired == 4;
-        if (!((n_expired == 0) || expired)) {
-            throw std::logic_error("jacobian n_expired=" + std::to_string(n_expired) + " not in (0,4)");
+        const bool expired = n_obsired == 4;
+        if (!((n_obsired == 0) || expired)) {
+            throw std::logic_error("jacobian n_obsired=" + std::to_string(n_obsired) + " not in (0,4)");
         }
         auto map_extra_mut
                 = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, coordsys) : map_extra_weak.lock();
@@ -484,6 +524,10 @@ private:
                 src->add_grad_param_factors(channel, factors_grad);
                 src->add_extra_param_factors(channel, factors_extra);
             }
+            if constexpr (print) {
+                std::cout << "_offsets_params set to:" << std::endl;
+                std::cout << str_map_refw(_offsets_params) << std::endl;
+            }
         }
         if (map_grad.size() != n_gaussians_conv) {
             throw std::logic_error("map_grad.size()=" + std::to_string(map_grad.size())
@@ -504,11 +548,12 @@ private:
                                 + std::to_string(factors_extra.size()) + ","
                                 + std::to_string(factors_grad.size());
 
-            if (sizes != sizes_mut)
+            if (sizes != sizes_mut) {
                 throw std::runtime_error(
-                "make_evaluator Jacobian map_extra,map_grad,factors_extra,factors_grad sizes_new="
-                + sizes + "!=sizes_mut=" + sizes_mut + "; did you make a new evaluator with different"
-                "free parameters from an old one?");
+                    "make_evaluator Jacobian map_extra,map_grad,factors_extra,factors_grad sizes_new="
+                    + sizes + "!=sizes_mut=" + sizes_mut + "; did you make a new evaluator with different"
+                                                           "free parameters from an old one?");
+            }
 
             std::array<std::string, 4> errmsgs = {"", "", "", ""};
 
@@ -614,20 +659,339 @@ public:
     }
 
     /**
+     * Compute the gradient (partial first derivative) of the log-likelihood for each free parameter.
+     *
+     * @param include_prior Whether to include the prior likelihood(s) in the gradients.
+     * @param print Whether to print diagnostic/debugging information.
+     * @param verify Whether to verify the values by comparing to finite differences.
+     * @param findiff_frac The value of the finite difference increment, as a fraction of the parameter value.
+     * @param findiff_add The minimum value of the finite difference increment.
+     * @param rtol The allowed relative tolerance in the Jacobian as compared to the finite difference.
+     * @param atol The allowed absolute tolerance in the Jacobian as compared to the finite difference.
+     * @return
+     */
+    std::vector<double> compute_loglike_grad(bool include_prior = true, bool print = false,
+                                             bool verify = false, double findiff_frac = 1e-5,
+                                             double findiff_add = 1e-5, double rtol = 5e-3,
+                                             double atol = 5e-3) {
+        this->setup_evaluators(EvaluatorMode::loglike_grad, {}, {}, {}, nullptr, true, print);
+        this->evaluate(print);
+
+        auto filter_free = g2f::ParamFilter{false, true, true, true};
+        auto params_free = this->get_parameters_const_new(&filter_free);
+        params_free = nonconsecutive_unique<ParamBaseCRef>(params_free);
+
+        const size_t n_params = this->_offsets_params.size();
+        if (n_params != params_free.size()) {
+            throw std::runtime_error("_offsets_params=" + str_map_refw(_offsets_params)
+                                     + ".size() = " + std::to_string(n_params)
+                                     + " != params_free=" + str_iter_refw(params_free) + ".size() + 1 ="
+                                     + std::to_string(params_free.size()) + "; " + ERRMSG_PARAMS);
+        }
+        std::map<ParamBaseCRef, size_t> param_idx = {};
+        for (size_t idx_param = 0; idx_param < n_params; idx_param++) {
+            const auto param = params_free[idx_param];
+            if (_offsets_params.find(param) == _offsets_params.end()) {
+                throw std::runtime_error(param.get().str() + " not found in _offsets_params\n"
+                                         + ERRMSG_PARAMS);
+            }
+            param_idx[param] = idx_param;
+        }
+        if (print) {
+            std::cout << "params_free=" << str_iter_refw(params_free) << std::endl;
+            std::cout << "_offsets_params=" << str_map_refw(_offsets_params) << std::endl;
+            std::cout << "param_idx=" << str_map_refw(param_idx) << std::endl;
+        }
+        std::vector<double> loglike_grads(n_params, 0.);
+
+        size_t idx_obs = 0;
+        for (const auto& grads_obs : _grads) {
+            const auto& values = grads_obs->at(0);
+            const size_t n_cols = values.get_n_cols();
+            if (n_cols != n_params + 1) {
+                throw std::logic_error(this->_data->at(idx_obs).get().str()
+                                       + " loglike_grads n_cols=" + std::to_string(n_cols)
+                                       + " != n_params (from offsets) = " + std::to_string(n_params + 1));
+            }
+            for (const auto& [paramref, col] : _offsets_params) {
+                loglike_grads.at(param_idx[paramref]) += values.get_value(0, col);
+            }
+            idx_obs++;
+        }
+        if (include_prior) {
+            for (const auto& prior : _priors) {
+                auto result = prior->evaluate(true);
+
+                for (const auto& paramref : params_free) {
+                    double dll_dx = result.compute_dloglike_dx(paramref);
+                    loglike_grads.at(param_idx[paramref]) += dll_dx;
+                }
+            }
+        }
+        if (verify) {
+            std::string errmsg;
+            this->setup_evaluators(Model::EvaluatorMode::loglike);
+            auto loglike = this->evaluate();
+            auto loglike_sum = sum_iter(loglike);
+
+            auto params = this->get_parameters_new(&filter_free);
+            params = nonconsecutive_unique<ParamBaseRef>(params);
+
+            for (size_t idx_param = 0; idx_param < n_params; idx_param++) {
+                auto& param = params[idx_param].get();
+                double value = param.get_value_transformed();
+                double diff = std::copysign(std::abs(value * findiff_frac) + findiff_add,
+                                            loglike_grads[idx_param]);
+                diff = finite_difference_param(param, diff);
+                auto loglike_new = this->evaluate();
+                auto dloglike = (sum_iter(loglike_new) - loglike_sum) / diff;
+                auto close = isclose(dloglike, loglike_grads[idx_param], rtol, atol);
+                param.set_value_transformed(value);
+                if (!close.isclose) {
+                    double dll_dx_exact = loglike_grads[idx_param];
+                    double dlp_dx_sum = 0;
+                    for (const auto& prior : _priors) {
+                        double dlp_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
+                        dlp_dx_sum += dlp_dx;
+                    }
+                    double dlp_dx_findiff = (loglike_new.back() - loglike.back()) / diff;
+                    errmsg += param.str() + " failed loglike_grad verification; isclose=" + close.str()
+                              + " from findiff=" + to_string_float(dloglike) + " vs "
+                              + to_string_float(dll_dx_exact)
+                              + " (ratio = " + to_string_float(dll_dx_exact / dloglike)
+                              + ") from loglike_new=" + to_string_float_iter(loglike_new)
+                              + "; dll_dx_prior=" + to_string_float(dlp_dx_sum)
+                              + " vs findiff: " + to_string_float(dlp_dx_findiff) + "\n";
+                }
+            }
+            if (errmsg.size() > 0) throw std::logic_error(errmsg);
+        }
+
+        return loglike_grads;
+    }
+
+    /**
+     * Compute the Hessian matrix (second order partial derivatives) of the log likehood.
+     *
+     * @param transformed Whether the matrix should be computed for transformed parameters or not
+     *                    If not, parameter transforms are temporarily removed.
+     * @param include_prior Whether to include the prior likelihood(s) in the Hessian.
+     * @param options Options for computing the Hessian via finite differencing of loglikelihood gradients.
+     *                If null, the Hessian is estimated as J^T J (where J is the Jacobian).
+     * @return The Hessian matrix for all free parameters.
+     */
+    std::unique_ptr<Image> compute_hessian(bool transformed = false, bool include_prior = true,
+                                           std::optional<HessianOptions> options = std::nullopt,
+                                           bool print = false) {
+        this->setup_evaluators(EvaluatorMode::loglike_grad);
+
+        auto filter_free = g2f::ParamFilter{false, true, true, true};
+        auto params_free = this->get_parameters_new(&filter_free);
+        params_free = nonconsecutive_unique<ParamBaseRef>(params_free);
+        const size_t n_params_free = params_free.size();
+
+        std::vector<std::shared_ptr<const parameters::Transform<T>>> transforms = {};
+        transforms.reserve(n_params_free);
+        if (!transformed) {
+            for (auto& paramref : params_free) {
+                auto& param = paramref.get();
+                transforms.emplace_back(param.get_transform_ptr());
+                T value = param.get_value();
+                param.set_transform(nullptr);
+                if (param.get_value() != value) {
+                    throw std::logic_error("Param " + param.str() + " changed value from "
+                                           + std::to_string(value) + " after dropping transform");
+                }
+            }
+        }
+
+        auto hessian = std::make_unique<Image>(n_params_free, n_params_free);
+        const auto n_obs = this->size();
+        std::vector<size_t> param_idx(n_params_free);
+
+        size_t n_integral = 0;
+        size_t n_frac = 0;
+
+        for (size_t idx_param = 0; idx_param < n_params_free; idx_param++) {
+            const auto param = params_free[idx_param];
+            const auto found = _offsets_params.find(param);
+            if (found == _offsets_params.end()) {
+                throw std::runtime_error(param.get().str() + " not found in _offsets_params\n"
+                                         + ERRMSG_PARAMS);
+            }
+            param_idx[idx_param] = (*found).second;
+            if (not options) {
+                const auto name = param.get().get_name();
+                n_integral += name == IntegralParameter::_name;
+                n_frac += name == ProperFractionParameter::_name;
+            }
+        }
+
+        if (options) {
+            const HessianOptions& opt = *options;
+
+            auto loglike_grad = this->compute_loglike_grad(include_prior, false, false);
+
+            size_t idx_param = 0;
+            for (auto& paramref : params_free) {
+                auto& param = paramref.get();
+                const double value = param.get_value_transformed();
+                // Make the finite differencing go away from the possible peak likelihood
+                // This is probably a good idea even if return_negative isn't necessary
+                double diff = std::copysign(std::abs(value * opt.findiff_frac) + opt.findiff_add,
+                                            -loglike_grad[idx_param]);
+                diff = finite_difference_param(param, diff);
+                double diffabs = std::abs(diff);
+                this->evaluate();
+
+                auto loglike_grad2 = this->compute_loglike_grad(include_prior, false, false);
+                for (size_t idx_col = 0; idx_col < n_params_free; ++idx_col) {
+                    double dll_dx = loglike_grad2[idx_col] - loglike_grad[idx_col];
+                    dll_dx *= opt.return_negative ? (1 - 2 * (dll_dx > 0)) / diffabs : 1 / diff;
+                    hessian->set_value_unchecked(idx_param, idx_col, dll_dx);
+                }
+                param.set_value_transformed(value);
+                idx_param++;
+            }
+        } else {
+            if ((n_integral > 0) && (n_frac > 0)) {
+                throw std::runtime_error(
+                        "Cannot compute_hessian without options for model with free Integral and "
+                        "ProperFraction "
+                        "parameters (this is a bug); please supply options to use finite differencing.");
+            }
+
+            this->setup_evaluators(EvaluatorMode::jacobian);
+            this->evaluate();
+
+            hessian->fill(0);
+
+            for (size_t idx_obs = 0; idx_obs < n_obs; ++idx_obs) {
+                const auto& jacs = this->_grads.at(idx_obs);
+                for (size_t idx_param1 = 0; idx_param1 < n_params_free; ++idx_param1) {
+                    const auto& jac1 = jacs->at(param_idx[idx_param1]);
+                    const size_t n_rows = jac1.get_n_rows();
+                    const size_t n_cols = jac1.get_n_cols();
+
+                    for (size_t idx_param2 = 0; idx_param2 < n_params_free; ++idx_param2) {
+                        const auto& jac2 = jacs->at(param_idx[idx_param2]);
+                        const size_t n_rows2 = jac2.get_n_rows();
+                        const size_t n_cols2 = jac2.get_n_cols();
+
+                        if ((n_rows != n_rows2) || (n_cols != n_cols2)) {
+                            throw std::logic_error("n_rows,n_cols=" + to_string_float(n_rows) + ","
+                                                   + to_string_float(n_cols)
+                                                   + "!= n_rows2,n_cols2=" + to_string_float(n_rows2) + ","
+                                                   + to_string_float(n_cols2));
+                        }
+                        double dx = 0;
+                        for (size_t row = 0; row < n_rows; ++row) {
+                            for (size_t col = 0; col < n_cols; ++col) {
+                                // Note the sign convention of negative diagonal values
+                                // at maximum likelihood
+                                dx -= jac1.get_value(row, col) * jac2.get_value(row, col);
+                            }
+                        }
+                        if (print) {
+                            std::cout << "calling hessian->add_value(" << idx_param1 << "," << idx_param2
+                                      << "," << dx << ")" << std::endl;
+                        }
+                        hessian->add_value(idx_param1, idx_param2, dx);
+                    }
+                }
+            }
+            if (include_prior && (_priors.size() > 0)) {
+                std::map<ParamBaseCRef, size_t> param_idx_map = {};
+                for (size_t idx_param = 0; idx_param < n_params_free; idx_param++) {
+                    const auto param = params_free[idx_param];
+                    if (_offsets_params.find(param) == _offsets_params.end()) {
+                        throw std::runtime_error(param.get().str() + " not found in _offsets_params\n"
+                                                 + ERRMSG_PARAMS);
+                    }
+                    param_idx_map[param] = idx_param;
+                }
+
+                size_t prior_size = 0;
+                for (const auto& prior : _priors) {
+                    prior_size += prior->size();
+                }
+                auto dll_prior = std::make_unique<Image>(n_params_free, prior_size);
+                dll_prior->fill(0);
+
+                size_t idx_prior = 0;
+                for (const auto& prior : _priors) {
+                    auto result = prior->evaluate(true);
+
+                    for (const auto& [param_cref, values_base] : result.jacobians) {
+                        size_t idx_residual = 0;
+                        size_t idx_param = param_idx_map[param_cref];
+                        for (const auto& value_base : values_base) {
+                            dll_prior->add_value(idx_param, idx_prior + idx_residual++, value_base);
+                        }
+                    }
+                    idx_prior += prior->size();
+                }
+
+                for (size_t row = 0; row < n_params_free; ++row) {
+                    for (size_t row2 = 0; row2 < n_params_free; ++row2) {
+                        double dll_dx = 0;
+                        for (size_t col = 0; col < prior_size; ++col) {
+                            dll_dx -= dll_prior->get_value(row, col) * dll_prior->get_value(row2, col);
+                        }
+                        hessian->add_value(row, row2, dll_dx);
+                        if (print) {
+                            std::cout << "calling hessian->add_value(" << row << "," << row2 << "," << dll_dx
+                                      << ") for prior" << std::endl;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!transformed) {
+            size_t idx_param = 0;
+            for (auto& paramref : params_free) {
+                auto& param = paramref.get();
+                T value = param.get_value();
+                param.set_transform(transforms[idx_param]);
+                if (param.get_value() != value) {
+                    throw std::logic_error("Param " + param.str() + " changed value from "
+                                           + std::to_string(value) + " after dropping transform");
+                }
+                idx_param++;
+            }
+        }
+
+        return hessian;
+    }
+
+    /**
      * Evaluate the model for every Observation in _data.
      *
-     * * @param print Whether to print diagnostic statements to stdout.
+     * @param print Whether to print diagnostic statements to stdout.
+     * @param normalize_loglike Whether to include the normalizing (variance-dependent) term in the log
+     *                          likelihood. If false, the log likelihood for a model with no residuals is 0.
      * @return The log likelihood of each observation, followed by the summed log likelihood of the priors.
      */
-    std::vector<double> evaluate(bool print = false) {
+    std::vector<double> evaluate(bool print = false, bool normalize_loglike = false) {
         if (!_is_setup) throw std::runtime_error("Can't call evaluate before setup_evaluators");
 
         std::vector<double> result(_size + 1);
+        bool is_loglike_grad = this->_mode == EvaluatorMode::loglike_grad;
+
+        if (is_loglike_grad) {
+            // loglike_grad adds values, and they have to be reset to zero first
+            // This must be done for all observations in this case, because
+            // most parameters change grads in all observations
+            for (size_t idx = 0; idx < _size; ++idx) {
+                this->_grads[idx]->at(0).fill(0);
+            }
+        }
 
         for (size_t idx = 0; idx < _size; ++idx) {
-            result[idx] = this->_evaluate_observation(idx, print);
+            result[idx] = this->_evaluate_observation(idx, print, is_loglike_grad);
         }
-        result[_size] = this->_evaluate_priors(print);
+        result[_size] = this->_evaluate_priors(print, normalize_loglike);
 
         return result;
     }
@@ -661,6 +1025,11 @@ public:
         return std::make_unique<gauss2d::Gaussians>(in);
     }
 
+    /**
+     * Get the constant (variance-dependent) terms of the log likelihood for each observation.
+     *
+     * @return A vector with the constant terms for each observation, and a final term for the priors.
+     */
     std::vector<double> get_loglike_const_terms() {
         const size_t n_data = this->size();
         if (this->_likelihood_const_terms.empty()) {
@@ -761,12 +1130,15 @@ public:
      *
      * @param mode The EvaluatorMode to use for all Evaluator instances.
      * @param outputs A vector of vectors of Image outputs for each Evaluator (created if empty and needed).
-     * @param residuals An array of residual
+     * @param residuals A vector of residual Images for each Evaluator (created if empty and needed).
+     * @param outputs_prior A vector of prior residual Images for each Evaluator
+     *                      (created if empty and needed).
      * @param force Whether to force setting up even if already set up in the same mode
      * @param print Whether to print diagnostic statements to stdout.
      *
      * @note Different modes require different sized vectors for outputs
      *       EvaluatorMode::jacobian requires one Image per free parameter per Observation.
+     *       EvaluatorMode::loglike_grad requires only one Image(n_rows=1, n_cols=n_params_free)
      */
     void setup_evaluators(EvaluatorMode mode = EvaluatorMode::image,
                           std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
@@ -797,20 +1169,27 @@ public:
             _outputs_prior.clear();
             _residuals_prior = nullptr;
             _evaluators.reserve(size());
+            _is_setup = false;
 
             const bool is_jacobian = mode == EvaluatorMode::jacobian;
+            const bool is_loglike_grad = mode == EvaluatorMode::loglike_grad;
 
-            if (is_jacobian) {
-                _grads.reserve(size());
-                _offsets_params.clear();
-                // Only currently needed to verify sizes
-                // ... but unavoidable to do this check before _offsets_params is regenerated?
-                std::vector<ParamBaseCRef> params_free = {};
+            std::vector<ParamBaseCRef> params_free = {};
+            if (is_jacobian || is_loglike_grad) {
                 auto filter_free = g2f::ParamFilter{false, true, true, true};
                 this->get_parameters_const(params_free, &filter_free);
                 params_free = nonconsecutive_unique<ParamBaseCRef>(params_free);
                 _n_params_free = params_free.size();
+                if (print) {
+                    std::cout << "n_params_free=" << _n_params_free << " from params_free:" << std::endl;
+                    std::cout << str_iter_refw(params_free) << std::endl;
+                }
 
+                _grads.reserve(size());
+                _offsets_params.clear();
+            }
+
+            if (is_jacobian) {
                 if (print) {
                     std::cout << "setup_evaluators jacobian called for model:" << std::endl;
                     std::cout << this->str() << std::endl;
@@ -865,29 +1244,20 @@ public:
                     }
                     if (print) std::cout << "outputs_prior validated" << std::endl;
                 }
-            } else if (mode == EvaluatorMode::loglike_grad) {
-                // TODO: implement
-                throw std::runtime_error("loglike_grad mode not implemented yet");
             } else {
                 _outputs.reserve(size());
             }
 
             const auto& channels = _data->get_channels();
 
-            // Apparently this can't go directly in a ternary statement, so here it is
-            std::vector<std::shared_ptr<Image>> outputs_obs{};
-
             if (print) std::cout << "making evaluators" << std::endl;
 
             for (size_t idx = 0; idx < _size; ++idx) {
-                auto result = this->_make_evaluator(idx, mode, has_outputs ? outputs[idx] : outputs_obs,
+                auto result = this->_make_evaluator(idx, mode, outputs,
                                                     has_residuals ? residuals[idx] : nullptr, print);
                 _evaluators.emplace_back(std::move(result.first));
-                if (mode == EvaluatorMode::jacobian) {
+                if (is_jacobian || is_loglike_grad) {
                     _grads.emplace_back(std::move(result.second.second));
-                } else if (mode == EvaluatorMode::loglike_grad) {
-                    // TODO: implement
-                    throw std::runtime_error("loglike_grad mode not implemented yet");
                 } else {
                     _outputs.emplace_back(std::move(result.second.first));
                 }
@@ -977,15 +1347,13 @@ public:
                                              double rtol = 1e-3, double atol = 1e-3) {
         if (_mode != EvaluatorMode::jacobian) {
             this->setup_evaluators(EvaluatorMode::jacobian);
-            this->evaluate();
         }
 
-        const size_t n_exp = _size;
+        const size_t n_obs = this->size();
         ParamFilter filter{false, true};
         std::vector<std::string> errors;
 
-        for (size_t idx = 0; idx < n_exp; ++idx) {
-            auto& evaluator = *(_evaluators.at(idx));
+        for (size_t idx = 0; idx < n_obs; ++idx) {
             const auto& grads = *(_grads.at(idx));
             const auto& observation = _data->at(idx).get();
             const auto& sigma_inv = observation.get_sigma_inverse();
@@ -1018,7 +1386,7 @@ public:
                                          + "; is the jacobian array large enough?");
             }
 
-            double loglike_jac = evaluator.loglike_pixel();
+            double loglike_jac = this->_evaluate_observation(idx);
             const auto& grad = grads[0];
             size_t n_nonzero = 0;
             for (unsigned int i = 0; i < n_cols; ++i) {
@@ -1032,9 +1400,10 @@ public:
 
             auto result = _make_evaluator(idx, EvaluatorMode::loglike_image);
             double loglike_img = result.first->loglike_pixel();
-            if (loglike_jac != loglike_img)
+            if (loglike_jac != loglike_img) {
                 errors.push_back("loglike_jac=" + to_string_float(loglike_jac) + "loglike_img="
-                                 + to_string_float(loglike_img) + "for exp[" + std::to_string(idx) + "]:");
+                                 + to_string_float(loglike_img) + "for obs[" + std::to_string(idx) + "]:");
+            }
 
             const auto& image_current = *(result.second.first);
 
@@ -1078,7 +1447,7 @@ public:
                     std::sort(ratios.begin(), ratios.end());
                     double median = ratios[ratios.size() / 2];
                     errors.push_back("Param[" + std::to_string(idx_param) + "]=" + param.str()
-                                     + " failed for exp[" + std::to_string(idx)
+                                     + " failed for obs[" + std::to_string(idx)
                                      + "]: n_failed=" + std::to_string(n_failed)
                                      + "; median evaluated/expected=" + std::to_string(median));
                 }

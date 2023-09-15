@@ -92,7 +92,7 @@ private:
     unsigned short _index;
 
 public:
-    std::set<std::reference_wrapper<const Channel>> get_channels() const override { return {_channel}; }
+    std::vector<std::reference_wrapper<const Channel>> get_channels() const override { return {_channel}; }
 
     double get_integral(const Channel& channel) const override {
         if (channel != _channel) {

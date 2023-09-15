@@ -3,7 +3,7 @@
 #include "doctest.h"
 
 #include "gaussianparametricellipse.h"
-//#include "parameters.h"
+// #include "parameters.h"
 
 namespace g2f = gauss2d::fit;
 

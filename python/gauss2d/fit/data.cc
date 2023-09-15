@@ -44,7 +44,7 @@ typedef g2f::Data<double, g2p::PyImage<double>, g2p::PyImage<bool>> Data;
 typedef g2f::Observation<double, g2p::PyImage<double>, g2p::PyImage<bool>> Observation;
 
 void bind_data(py::module &m) {
-    auto _o = py::class_<Data, std::shared_ptr<Data>, g2f::Parametric>(m, "Data")
+    auto _o = py::class_<Data, std::shared_ptr<Data>, g2f::Chromatic, g2f::Parametric>(m, "Data")
                       .def(py::init<std::vector<std::shared_ptr<const Observation>>>(), "data"_a)
                       .def_property_readonly("channels", &Data::get_channels)
                       .def("parameters", &Data::get_parameters, "parameters"_a = g2f::ParamRefs(),

@@ -1,6 +1,7 @@
 headers = [
     'centroidparameters.h',
     'channel.h',
+    'chromatic.h',
     'component.h',
     'componentmixture.h',
     'data.h',

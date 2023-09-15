@@ -70,7 +70,7 @@ public:
      */
     static const std::shared_ptr<const Channel> get_channel(std::string name);
 
-    static std::set<std::shared_ptr<const Channel>> get_channels();
+    static std::vector<std::shared_ptr<const Channel>> get_channels();
 
     inline static const std::string NAME_NONE = "None";
 

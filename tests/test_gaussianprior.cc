@@ -7,6 +7,8 @@
 
 #include "gaussianprior.h"
 #include "parameters.h"
+#include "transforms.h"
+#include "util.h"
 
 namespace g2 = gauss2d;
 namespace g2f = gauss2d::fit;
@@ -33,6 +35,22 @@ TEST_CASE("GaussianPrior") {
     prior.set_stddev(stddev);
     CHECK(prior.get_stddev() == stddev);
     CHECK(prior.get_transformed() == false);
-    prior.set_transformed(true);
+
+    param = std::make_shared<g2f::IntegralParameter>(1.0, nullptr, std::make_shared<g2f::Log10Transform>());
+    prior = g2f::GaussianPrior(param, param->get_value_transformed(), stddev, true);
     CHECK(prior.get_transformed() == true);
+    auto eval = prior.evaluate(true);
+    CHECK(eval.residuals[0] == 0);
+    CHECK(eval.jacobians.at(*param)[0] == 1.0 / stddev);
+
+    const double delta = 1e-6;
+    std::vector<double> test_x{-0.34, 0., 1.21};
+    for (double x : test_x) {
+        param->set_value_transformed(x - delta / 2.);
+        auto eval = prior.evaluate(true);
+        param->set_value_transformed(x + delta / 2.);
+        const double dll_dx = (prior.evaluate().loglike - eval.loglike) / delta;
+        param->set_value_transformed(x);
+        CHECK(g2f::isclose(dll_dx, eval.compute_dloglike_dx(*param), delta, delta).isclose);
+    }
 }

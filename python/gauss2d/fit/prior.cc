@@ -37,13 +37,16 @@ using namespace pybind11::literals;
 namespace g2f = gauss2d::fit;
 
 void bind_prior(py::module &m) {
-    auto _e = py::class_<g2f::PriorEvaluation, std::shared_ptr<g2f::PriorEvaluation>>(m, "PriorEvaluation")
-                      .def(py::init<double, std::map<g2f::ParamBaseCRef, std::vector<double>>,
-                                    std::vector<double>>(),
-                           "loglike"_a, "jacobians"_a = std::map<g2f::ParamBaseCRef, std::vector<double>>{},
-                           "residuals"_a = std::vector<double>{})
-                      .def_readwrite("loglike", &g2f::PriorEvaluation::loglike)
-                      .def_readwrite("jacobians", &g2f::PriorEvaluation::jacobians)
-                      .def_readwrite("residuals", &g2f::PriorEvaluation::residuals);
+    auto _e = py::class_<g2f::PriorEvaluation, std::shared_ptr<g2f::PriorEvaluation>, gauss2d::Object>(
+                      m, "PriorEvaluation")
+                      .def(py::init<double, std::vector<double>,
+                                    std::map<g2f::ParamBaseCRef, std::vector<double>>>(),
+                           "loglike"_a, "residuals"_a = std::vector<double>{},
+                           "jacobians"_a = std::map<g2f::ParamBaseCRef, std::vector<double>>{})
+                      .def_readonly("loglike", &g2f::PriorEvaluation::loglike)
+                      .def_readonly("jacobians", &g2f::PriorEvaluation::jacobians)
+                      .def_readonly("residuals", &g2f::PriorEvaluation::residuals)
+                      .def("__repr__", [](const g2f::PriorEvaluation &self) { return self.repr(true); })
+                      .def("__str__", &g2f::PriorEvaluation::str);
     auto _p = py::class_<g2f::Prior, std::shared_ptr<g2f::Prior>, gauss2d::Object>(m, "Prior");
 }

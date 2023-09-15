@@ -42,11 +42,11 @@ PriorEvaluation GaussianPrior::evaluate(bool calc_jacobians, bool normalize) con
         jacobians[*_param] = {1.0 / _stddev};
     }
 
-    return PriorEvaluation{prior, jacobians, {residual}};
+    return PriorEvaluation{prior, {residual}, jacobians};
 }
 
 std::vector<double> GaussianPrior::get_loglike_const_terms() const {
-    return {LOG_1 - log(_stddev * SQRT_2_PI)};
+    return {LOG_1_M_LOG_SQRT_2_PI - log(_stddev)};
 }
 
 double GaussianPrior::get_mean() const { return _mean; };

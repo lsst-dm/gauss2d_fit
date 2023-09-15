@@ -116,11 +116,11 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         throw std::runtime_error(this->str() + " got invalid axrat=" + std::to_string(axrat));
     }
 
-    auto result = PriorEvaluation();
+    auto result = PriorEvaluation(0, {}, {}, false);
 
     if (this->_prior_size != nullptr) {
         double size_maj_floor = this->_options->get_size_maj_floor();
-        size_maj = sqrt(size_maj_floor * size_maj_floor + size_maj * size_maj);
+        size_maj = sqrt(size_maj * size_maj * axrat + size_maj_floor * size_maj_floor);
         size_maj = _prior_size->get_mean_parameter().get_transform().forward(size_maj);
         double sigma = _prior_size->get_stddev();
         double residual = (size_maj - _prior_size->get_mean_parameter().get_value_transformed()) / sigma;
@@ -130,7 +130,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
                                      + ", _prior_size=" + _prior_size->str());
         }
         result.residuals.emplace_back(residual);
-        result.loglike += logpdf_norm(residual, sigma);
+        result.loglike += normalize ? logpdf_norm(residual, 1.0) : -residual * residual / 2.;
     }
 
     if (this->_prior_axrat != nullptr) {
@@ -145,8 +145,7 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         const auto& transform_param = _prior_axrat->get_mean_parameter().get_transform();
         axrat = transform_param.forward(axrat);
         double sigma = _prior_axrat->get_stddev();
-        double residual
-                = (axrat - transform_param.forward(_prior_axrat->get_mean_parameter().get_value())) / sigma;
+        double residual = (axrat - _prior_axrat->get_mean_parameter().get_value_transformed()) / sigma;
         if (!std::isfinite(residual)) {
             auto str = this->str();
             throw std::runtime_error(str + ".evaluate() got non-finite axrat residual="
@@ -156,28 +155,41 @@ PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const 
         // RuntimeError('Infinite axis ratio prior residual from q={axrat} and mean, std, f
         // 'logit stretch divisor = {self.axrat_params}')
         result.residuals.emplace_back(residual);
-        result.loglike += logpdf_norm(residual, sigma);
+        result.loglike += normalize ? logpdf_norm(residual, 1.0) : -residual * residual / 2.;
     }
 
     if (calc_jacobians) {
         ParamRefs params = nonconsecutive_unique(_ellipse->get_parameters_new());
         for (auto& paramref : params) {
             auto& param = paramref.get();
-            double value = param.get_value();
+            double value_init = param.get_value();
+            double value_trans = param.get_value_transformed();
             double delta = finite_difference_param(param, _options->get_delta_jacobian());
+            double value_new = param.get_value_transformed();
 
-            auto result_new = this->evaluate(false, normalize);
+            std::vector<double> residuals_old;
+            std::vector<double> residuals_new;
+            try {
+                param.set_value_transformed(value_trans + delta / 2.);
+                residuals_new = this->evaluate(false, normalize).residuals;
+                param.set_value_transformed(value_trans - delta / 2.);
+                residuals_old = this->evaluate(false, normalize).residuals;
+            } catch (std::exception& e) {
+                param.set_value_transformed(value_new);
+                residuals_new = this->evaluate(false, normalize).residuals;
+                residuals_old = result.residuals;
+            }
             // Return to the old value
-            param.set_value(value);
-            double value_new = param.get_value();
-            if (value_new != value) {
+            param.set_value(value_init);
+            value_new = param.get_value();
+            if (value_new != value_init) {
                 throw std::runtime_error(this->str() + " could not return " + param.str()
-                                         + " to original value=" + to_string_float(value) + " (stuck at "
+                                         + " to original value=" + to_string_float(value_init) + " (stuck at "
                                          + to_string_float(value_new) + "); check limits");
             }
             std::vector<double> jacobians(result.residuals.size());
             for (size_t idx = 0; idx < result.residuals.size(); ++idx) {
-                jacobians[idx] = (result_new.residuals[idx] - result.residuals[idx]) / delta;
+                jacobians[idx] = (residuals_new[idx] - residuals_old[idx]) / delta;
             }
             result.jacobians[paramref] = jacobians;
         }
@@ -191,8 +203,8 @@ std::shared_ptr<ParametricGaussian1D> ShapePrior::get_prior_size() const { retur
 std::shared_ptr<ParametricGaussian1D> ShapePrior::get_prior_axrat() const { return _prior_axrat; }
 
 std::vector<double> ShapePrior::get_loglike_const_terms() const {
-    return {this->_prior_size == nullptr ? 0 : (LOG_1 - log(this->_prior_size->get_mean() * SQRT_2_PI)),
-            this->_prior_axrat == nullptr ? 0 : (LOG_1 - log(this->_prior_axrat->get_mean() * SQRT_2_PI))};
+    return {this->_prior_size == nullptr ? 0 : (LOG_1 - log(this->_prior_size->get_stddev() * SQRT_2_PI)),
+            this->_prior_axrat == nullptr ? 0 : (LOG_1 - log(this->_prior_axrat->get_stddev() * SQRT_2_PI))};
 }
 
 void ShapePrior::set_prior_size(std::shared_ptr<ParametricGaussian1D> prior_size) {

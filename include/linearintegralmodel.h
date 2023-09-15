@@ -15,12 +15,15 @@ namespace gauss2d::fit {
  */
 class LinearIntegralModel : public IntegralModel {
 public:
-    typedef std::map<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameter>,
-                     std::less<const Channel>>
-            Data;
+    typedef std::pair<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameter>>
+            ChannelIntegralParameter;
+    typedef std::vector<ChannelIntegralParameter> Data;
 
 private:
     Data _data = {};
+    // This could be unordered, but std::hash<std::string> won't take const strings
+    // ... and it doesn't seem to be worth the effort to work around
+    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameter>> _map = {};
     struct Shared_enabler;
 
 public:
@@ -35,7 +38,7 @@ public:
     typename Data::iterator end() noexcept;
     typename Data::const_iterator cend() const noexcept;
 
-    std::set<std::reference_wrapper<const Channel>> get_channels() const override;
+    std::vector<std::reference_wrapper<const Channel>> get_channels() const override;
     double get_integral(const Channel &channel) const override;
     std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(
             const Channel &channel) const override;

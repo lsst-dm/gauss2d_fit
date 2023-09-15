@@ -20,8 +20,8 @@ public:
     double get_mean() const;
     double get_stddev() const;
 
-    const MeanParameter& get_mean_parameter() const;
-    const StdDevParameter& get_stddev_parameter() const;
+    MeanParameter& get_mean_parameter() const;
+    StdDevParameter& get_stddev_parameter() const;
 
     void set_mean(double value);
     void set_stddev(double value);

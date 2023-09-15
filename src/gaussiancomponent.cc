@@ -159,7 +159,7 @@ void GaussianComponent::set_grad_param_factors(const Channel& channel, GradParam
     for (size_t idx_param = 0; idx_param < N_PARAMS_GAUSS2D; ++idx_param) {
         const size_t& order_param = IDX_ORDER[idx_param];
         // The parameters must be in the same order as returned by get_parameters(_const)
-        const auto& param = params.at(idx_param).get();
+        const auto& param = params[idx_param].get();
         if (param.get_fixed()) {
             values[order_param] = 0;
         } else {
@@ -168,7 +168,7 @@ void GaussianComponent::set_grad_param_factors(const Channel& channel, GradParam
                 throw std::runtime_error("Param[idx=" + std::to_string(idx_param) + "]=" + param.str()
                                          + " get_transform_derivative=0 (will result in divide by 0)");
             }
-            values[order_param] /= deriv;
+            values[order_param] = 1.0 / deriv;
         }
     }
 }

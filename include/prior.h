@@ -13,11 +13,22 @@ namespace gauss2d::fit {
 /**
  * Results from the evaluation of a prior probability function.
  */
-struct PriorEvaluation {
+class PriorEvaluation : public Object {
 public:
+    typedef std::map<ParamBaseCRef, std::vector<double>> Jacobians;
+
     double loglike;
-    std::map<ParamBaseCRef, std::vector<double>> jacobians = {};
-    std::vector<double> residuals = {};
+    std::vector<double> residuals;
+    Jacobians jacobians;
+
+    double compute_dloglike_dx(const ParamBase& param, bool transformed = true) const;
+
+    std::string repr(bool name_keywords = false) const override;
+    std::string str() const override;
+
+    PriorEvaluation(double loglike, std::vector<double> residuals = {}, Jacobians jacobians = {},
+                    bool check_size = true);
+    ~PriorEvaluation();
 };
 
 /**
@@ -34,7 +45,7 @@ public:
      * @param normalize_loglike Whether to add the constant (sigma-dependent) factors to the log likehood.
      * @return The result of the evaluation.
      */
-    virtual PriorEvaluation evaluate(bool calc_jacobians = false, bool normalize_loglike = false) const = 0;
+    virtual PriorEvaluation evaluate(bool calc_jacobians = false, bool normalize_loglike = true) const = 0;
 
     virtual size_t size() const = 0;
 

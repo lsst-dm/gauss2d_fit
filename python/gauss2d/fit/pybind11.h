@@ -30,6 +30,7 @@ namespace py = pybind11;
 
 void bind_centroidparameters(py::module &m);
 void bind_channel(py::module &m);
+void bind_chromatic(py::module &m);
 void bind_component(py::module &m);
 void bind_componentmixture(py::module &m);
 void bind_data(py::module &m);

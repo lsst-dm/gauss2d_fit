@@ -5,6 +5,7 @@
 #include <set>
 
 #include "channel.h"
+#include "chromatic.h"
 #include "parametric.h"
 #include "parametricmodel.h"
 
@@ -15,11 +16,12 @@ namespace gauss2d::fit {
  * IntegralModel implementations can use as many Parameter classes as needed.
  * The model should be efficiently differentiable in the first order, via
  * finite differencing if analytical evaluation is not possible.
+ *
+ * IntegralModels may have meaningful ordering of channels but must enforce
+ * uniqueness constraints where relevant.
  */
-class IntegralModel : public Parametric {
+class IntegralModel : public Chromatic, public Parametric {
 public:
-    /// Get the channels this instance is applicable for
-    virtual std::set<std::reference_wrapper<const Channel>> get_channels() const = 0;
     /// Get the value of the integral in a single Channel
     virtual double get_integral(const Channel &channel) const = 0;
     /**

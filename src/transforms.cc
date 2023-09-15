@@ -15,6 +15,7 @@ double LogitLimitedTransform::derivative(double x) const {
         return -INF;
     return (1 / y + 1 / (1 - y)) * _factor / _range;
 }
+
 double LogitLimitedTransform::forward(double x) const {
     double min = _limits->get_min();
     double max = _limits->get_max();
@@ -26,6 +27,7 @@ double LogitLimitedTransform::forward(double x) const {
     if (!(y < 1) || !(y > 0)) return nan("");
     return log(y / (1 - y)) * _factor;
 }
+
 double LogitLimitedTransform::reverse(double x) const {
     double y = -x * _factor;
     // math.log(np.finfo(np.float64) = 709.782712893384
