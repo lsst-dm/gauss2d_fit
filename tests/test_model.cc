@@ -89,14 +89,22 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
     params_free = g2f::nonconsecutive_unique(params_free);
     CHECK(grads.size() == params_free.size());
 
+    model.setup_evaluators(Model::EvaluatorMode::image);
+    auto loglike_img = model.evaluate();
+    size_t n_loglike = loglike_img.size();
+    for (size_t idx_like = 0; idx_like < n_loglike; ++idx_like) {
+        CHECK(loglike_img[idx_like] == 0);
+    }
+
     model.setup_evaluators(Model::EvaluatorMode::loglike);
     auto loglike = model.evaluate();
-    size_t n_loglike = loglike.size();
 
     for (size_t i = 0; i < 2; ++i) {
         for (unsigned short do_jacobian = false; do_jacobian <= true; do_jacobian++) {
-            model.setup_evaluators(do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::image,
-                                   {}, {}, {}, {}, print);
+            model.setup_evaluators(
+                do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::loglike_image,
+                {}, {}, {}, {}, print
+            );
 
             auto result = model.evaluate();
             for (size_t idx_like; idx_like < n_loglike; ++idx_like) {
@@ -118,10 +126,8 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                 CHECK(errormsg == "");
             } else {
                 CHECK(outputs.size() == n_channels);
-                CHECK(result[0] == 0);
                 for (size_t idx_channel = 1; idx_channel < n_channels; ++idx_channel) {
-                    CHECK(result[idx_channel] == 0);
-                    bool values_equal = outputs[0]->get_value(0, 0) == outputs[1]->get_value(0, 0);
+                    bool values_equal = outputs[0]->get_value(0, 0) == outputs[idx_channel]->get_value(0, 0);
                     CHECK(values_equal != check_outputs_differ);
                 }
             }

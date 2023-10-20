@@ -25,6 +25,9 @@
 
 #include "pybind11.h"
 
+#define STRINGIFY(x) #x
+#define MACRO_STRINGIFY(x) STRINGIFY(x)
+
 /*
  * This structure generates a single module. The only major downside is that
  * abstract types need to be declared in the correct order, so the ordering
@@ -67,4 +70,9 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
     bind_sersicparametricellipse(m);
     bind_shapeprior(m);
     bind_source(m);
+#ifdef VERSION
+    m.attr("__version__") = MACRO_STRINGIFY(VERSION);
+#else
+    m.attr("__version__") = "dev";
+#endif
 }

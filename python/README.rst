@@ -8,7 +8,7 @@ Gauss2DFit
    .. todo   :target: https://pypi.python.org/pypi/gauss2dfit
 
 *gauss2dfit* provides python bindings for the C++ libgauss2dfit library.
-Python 3.7+, `pybind11 <https://github.com/pybind/pybind11>`_, and numpy are 
+Python 3.8+, `pybind11 <https://github.com/pybind/pybind11>`_, and numpy are 
 requirements, as numpy arrays are used to store images for tests.
 
 With libgauss2dfit installed, these bindings can be built using meson:

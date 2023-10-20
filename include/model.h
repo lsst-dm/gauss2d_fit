@@ -991,7 +991,12 @@ public:
         for (size_t idx = 0; idx < _size; ++idx) {
             result[idx] = this->_evaluate_observation(idx, print, is_loglike_grad);
         }
-        result[_size] = this->_evaluate_priors(print, normalize_loglike);
+        if(
+            (this->_mode == EvaluatorMode::loglike) || is_loglike_grad
+            || (this->_mode == EvaluatorMode::loglike_image) || (this->_mode == EvaluatorMode::jacobian)
+        ) {
+            result[_size] = this->_evaluate_priors(print, normalize_loglike);
+        }
 
         return result;
     }
