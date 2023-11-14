@@ -12,7 +12,7 @@ if use_eups
 	use_eups = run_command('eups', 'list', 'gauss2dfit', check: false).returncode() == 0
 endif
 
-gsl_dep = dependency('GSL', required: false)
+gsl_dep = dependency('gsl', required: false)
 
 if use_eups
     gauss2d_eupsdir = run_command('eups', 'list', '-d', 'gauss2d', check: true).stdout().strip()
