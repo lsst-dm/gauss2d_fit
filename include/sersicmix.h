@@ -2,6 +2,7 @@
 #define GAUSS2D_FIT_SERSICMIX_H
 
 #include <array>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
@@ -9,7 +10,7 @@
 
 namespace gauss2d::fit {
 
-static const short SERSICMIX_ORDER_DEFAULT = 4;
+static const unsigned short SERSICMIX_ORDER_DEFAULT = 4;
 
 /**
  * A pair of integral - size values for a Gaussian (sub)Component.
@@ -40,6 +41,9 @@ public:
 
     virtual unsigned short get_order() const = 0;
 };
+
+const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(
+        unsigned short order=SERSICMIX_ORDER_DEFAULT);
 
 /**
  * A vector of IntegralSize values for a given Sersic index.

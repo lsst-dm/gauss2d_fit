@@ -11,6 +11,8 @@ sources = [
     'gaussianmodelintegral.cc',
     'gaussianparametricellipse.cc',
     'gaussianprior.cc',
+    'gsl.cc',
+    'gslsersicmixinterpolator.cc',
     'integralmodel.cc',
     'linearintegralmodel.cc',
     'linearsersicmixinterpolator.cc',

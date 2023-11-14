@@ -1,9 +1,11 @@
-#include "sersicmix.h"
-
-#include <array>
 #include <stdexcept>
 #include <vector>
 
+#ifdef GAUSS2D_FIT_HAS_GSL
+#include "gslsersicmixinterpolator.h"
+#endif
+#include "linearsersicmixinterpolator.h"
+#include "sersicmix.h"
 #include "util.h"
 
 namespace gauss2d::fit {
@@ -28,6 +30,15 @@ std::string SersicMixValues::repr(bool name_keywords) const {
 std::string SersicMixValues::str() const {
     return "SersicMixValues(sersicindex=" + std::to_string(sersicindex) + ", values=" + str_iter_ref(values)
            + ")";
+}
+
+const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(unsigned short order) {
+#ifdef GAUSS2D_FIT_HAS_GSL
+    static auto interpolator = std::make_shared<GSLSersicMixInterpolator>(order);
+#else
+    static auto interpolator = std::make_shared<LinearSersicMixInterpolator>(order);
+#endif
+    return interpolator;
 }
 
 SersicMixValues::SersicMixValues(double sersicindex_, std::vector<IntegralSize> values_)

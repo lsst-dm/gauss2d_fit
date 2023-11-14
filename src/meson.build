@@ -10,6 +10,8 @@ gauss2dfit_sources = [
     'integralmodel.cc',
     'linearintegralmodel.cc',
     'linearsersicmixinterpolator.cc',
+    'gslinterpolator.cc',
+    'gslsersicmixinterpolator.cc',
     'param_defs.cc',
     'parametricgaussian1d.cc',
     'prior.cc',

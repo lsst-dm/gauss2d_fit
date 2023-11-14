@@ -14,6 +14,10 @@ endif
 
 gsl_dep = dependency('gsl', required: false)
 
+if gsl_dep.found()
+    add_project_arguments('-DGAUSS2D_FIT_HAS_GSL', language : 'cpp')
+endif
+
 if use_eups
     gauss2d_eupsdir = run_command('eups', 'list', '-d', 'gauss2d', check: true).stdout().strip()
     cpp = meson.get_compiler('cpp')

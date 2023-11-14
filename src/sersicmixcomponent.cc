@@ -178,9 +178,6 @@ public:
               _integralmodel(std::move(integralmodel)) {}
 };
 
-static const std::shared_ptr<const SersicMixInterpolator> INTERPOLATOR_DEFAULT
-        = std::make_shared<const LinearSersicMixInterpolator>(SERSICMIX_ORDER_DEFAULT);
-
 void SersicMixComponentIndexParameter::_set_ratios(double sersicindex) {
     _integralsizes = _interpolator->get_integralsizes(sersicindex);
     _integralsizes_derivs = _interpolator->get_integralsizes_derivs(sersicindex);
@@ -200,6 +197,11 @@ double SersicMixComponentIndexParameter::get_integralratio_deriv(unsigned short 
                                     + " >= max(order=" + std::to_string(order) + "))");
     }
     return _integralsizes_derivs[index].integral;
+}
+
+std::shared_ptr<const SersicMixInterpolator> SersicMixComponentIndexParameter::get_interpolator_default(
+        unsigned short order) {
+    return get_sersic_mix_interpolator_default(order);
 }
 
 double SersicMixComponentIndexParameter::get_sizeratio(unsigned short index) const {
@@ -234,7 +236,9 @@ SersicMixComponentIndexParameter::SersicMixComponentIndexParameter(
         std::shared_ptr<const parameters::Unit> unit, bool fixed, std::string label,
         const std::shared_ptr<const SersicMixInterpolator> interpolator)
         : SersicIndexParameter(value, nullptr, transform, unit, fixed, label),
-          _interpolator(std::move(interpolator == nullptr ? INTERPOLATOR_DEFAULT : interpolator)),
+          _interpolator(std::move(interpolator == nullptr ?
+                        SersicMixComponentIndexParameter::get_interpolator_default(SERSICMIX_ORDER_DEFAULT)
+                                                          : interpolator)),
           order(_interpolator->get_order()) {
     // TODO: determine if this can be avoided
     set_limits(std::move(limits));
