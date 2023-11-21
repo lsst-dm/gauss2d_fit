@@ -991,7 +991,12 @@ public:
         for (size_t idx = 0; idx < _size; ++idx) {
             result[idx] = this->_evaluate_observation(idx, print, is_loglike_grad);
         }
-        result[_size] = this->_evaluate_priors(print, normalize_loglike);
+        if(
+            (this->_mode == EvaluatorMode::loglike) || is_loglike_grad
+            || (this->_mode == EvaluatorMode::loglike_image) || (this->_mode == EvaluatorMode::jacobian)
+        ) {
+            result[_size] = this->_evaluate_priors(print, normalize_loglike);
+        }
 
         return result;
     }
@@ -1412,6 +1417,7 @@ public:
                 const size_t idx_param = _offsets_params.find(param_ref)->second;
                 const auto& grad = grads[idx_param];
 
+                const double value_init = param.get_value();
                 const double value = param.get_value_transformed();
                 double diff = value * findiff_frac;
                 if (std::abs(diff) < findiff_add) diff = findiff_add;
@@ -1438,10 +1444,12 @@ public:
                     }
                 }
 
-                param.set_value_transformed(value);
-                if (param.get_value_transformed() != value) {
+                param.set_value(value_init);
+                const double value_new = param.get_value();
+                if (value_new != value_init) {
                     throw std::logic_error("Could not return param=" + param.str()
-                                           + " to original value=" + std::to_string(value));
+                                           + to_string_float(value_new) + "; diff="
+                                           + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {
                     std::sort(ratios.begin(), ratios.end());
