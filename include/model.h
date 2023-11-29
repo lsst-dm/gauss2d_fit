@@ -1418,8 +1418,8 @@ public:
                 const auto& grad = grads[idx_param];
 
                 const double value_init = param.get_value();
-                const double value = param.get_value_transformed();
-                double diff = value * findiff_frac;
+                const double value_transformed = param.get_value_transformed();
+                double diff = value_transformed * findiff_frac;
                 if (std::abs(diff) < findiff_add) diff = findiff_add;
                 diff = finite_difference_param(param, diff);
 
@@ -1447,8 +1447,8 @@ public:
                 param.set_value(value_init);
                 const double value_new = param.get_value();
                 if (value_new != value_init) {
-                    throw std::logic_error("Could not return param=" + param.str()
-                                           + to_string_float(value_new) + "; diff="
+                    throw std::logic_error("Could not return param=" + param.str() + " to value_init="
+                                           + to_string_float(value_init) + "; diff="
                                            + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {
@@ -1486,8 +1486,9 @@ public:
                 }
                 auto& param = (*found).get();
 
-                const double value = param.get_value_transformed();
-                double delta = value * findiff_frac;
+                const double value_init = param.get_value();
+                const double value_transformed = param.get_value_transformed();
+                double delta = value_transformed * findiff_frac;
                 if (std::abs(delta) < findiff_add) delta = findiff_add;
                 delta = finite_difference_param(param, delta);
                 auto result_new = prior->evaluate(true);
@@ -1508,10 +1509,12 @@ public:
                     }
                     idx_value++;
                 }
-                param.set_value_transformed(value);
-                if (param.get_value_transformed() != value) {
-                    throw std::logic_error("Could not return param=" + param.str()
-                                           + " to original value=" + std::to_string(value));
+                param.set_value(value_init);
+                const double value_new = param.get_value();
+                if (value_new != value_init) {
+                    throw std::logic_error("Could not return param=" + param.str() + " to value_init="
+                                           + to_string_float(value_init) + "; diff="
+                                           + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {
                     std::sort(ratios.begin(), ratios.end());
