@@ -8,10 +8,9 @@
 #include <string>
 
 #include "gauss2d/evaluate.h"
+#include "gauss2d/image.h"
 
 #include "data.h"
-#include "gauss2d/image.h"
-// TODO: Remove when DM-40674 fixed
 #include "parameters.h"
 #include "parametricmodel.h"
 #include "param_filter.h"
