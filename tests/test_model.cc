@@ -307,6 +307,7 @@ TEST_CASE("Model") {
 
     auto limits_axrat_logit = std::make_shared<parameters::Limits<double>>(-1e-10, 1 + 1e-10);
     auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
+    auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
 
     Model::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
@@ -327,12 +328,11 @@ TEST_CASE("Model") {
                 ellipse = ellipse_g;
                 comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroids, integralmodel);
             } else {
-                auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(0.5 + 3.5 * c);
+                auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(
+                    0.5 + 3.5 * c, nullptr, transform_log10);
                 sersic_n->set_free(free_sersicindex);
-                auto reff_x = std::make_shared<g2f::ReffXParameter>(
-                        c + 0.5, nullptr, g2f::get_transform_default<g2f::Log10Transform>());
-                auto reff_y = std::make_shared<g2f::ReffYParameter>(
-                        c + 1.5, nullptr, g2f::get_transform_default<g2f::Log10Transform>());
+                auto reff_x = std::make_shared<g2f::ReffXParameter>(c + 0.5, nullptr, transform_log10);
+                auto reff_y = std::make_shared<g2f::ReffYParameter>(c + 1.5, nullptr, transform_log10);
                 auto ellipse_s = std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y);
                 ellipse = ellipse_s;
                 comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
