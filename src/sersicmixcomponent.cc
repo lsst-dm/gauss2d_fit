@@ -372,7 +372,7 @@ void SersicMixComponent::set_extra_param_factors(const Channel& channel, ExtraPa
                                                  size_t index) const {
     if (_sersicindex->get_free()) {
         const auto& integralmodel = this->get_integralmodel();
-        double dx = _sersicindex->get_transform_derivative();
+        double dx = 1./_sersicindex->get_transform_derivative();
         const double dintegral = dx * integralmodel.get_integral(channel);
         const double dreff_x = dx * _ellipse->get_size_x_param().get_size();
         const double dreff_y = dx * _ellipse->get_size_y_param().get_size();
