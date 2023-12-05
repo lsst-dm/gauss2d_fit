@@ -12,6 +12,7 @@ TEST_CASE("LinearSersicMixInterpolator") {
     std::vector<unsigned short> orders = {4, 8};
     for (const auto order : orders) {
         auto interpolator = g2f::LinearSersicMixInterpolator(order);
+        CHECK(interpolator.get_interptype() == g2f::InterpType::linear);
         CHECK(interpolator.sersicindex_max > interpolator.sersicindex_min);
         CHECK_THROWS_AS(interpolator.get_integralsizes(0.499), std::invalid_argument);
         CHECK_THROWS_AS(interpolator.get_integralsizes(interpolator.sersicindex_max + 1e-10),

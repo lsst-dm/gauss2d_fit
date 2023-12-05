@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "interpolation.h"
 #include "gauss2d/object.h"
 
 namespace gauss2d::fit {
@@ -39,6 +40,7 @@ public:
     virtual std::vector<IntegralSize> get_integralsizes(double sersicindex) const = 0;
     virtual std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const = 0;
 
+    virtual InterpType get_interptype() const = 0;
     virtual unsigned short get_order() const = 0;
 };
 

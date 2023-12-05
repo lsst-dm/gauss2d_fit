@@ -20,20 +20,24 @@ namespace gauss2d::fit {
 class GSLSersicMixInterpolator : public SersicMixInterpolator {
 private:
     mutable double _final_correction = 1.;
+    const InterpType _interp_type;
     const unsigned short _order;
     std::vector<std::pair<std::unique_ptr<GSLInterpolator>, std::unique_ptr<GSLInterpolator>>> _interps;
 
 public:
     bool correct_final_integral = true;
-    const GSLInterpType interp_type;
+    static constexpr InterpType INTERPTYPE_DEFAULT = InterpType::cspline;
     /// The knot positions and values.
     const std::vector<SersicMixValues>& knots;
 
+    /// Get the multiplicative factor required to adjust the integral for the final order
+    /// component such that the sum of all integral factors is unity (normalized).
     double get_final_correction() const;
 
     std::vector<IntegralSize> get_integralsizes(double sersicindex) const override;
     std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const override;
 
+    InterpType get_interptype() const override;
     unsigned short get_order() const override;
 
     const double sersicindex_min;
@@ -44,7 +48,7 @@ public:
 
     explicit GSLSersicMixInterpolator(
         unsigned short order = SERSICMIX_ORDER_DEFAULT,
-        const GSLInterpType interp_type=GSLInterpType::cspline);
+        InterpType interp_type=INTERPTYPE_DEFAULT);
     ~GSLSersicMixInterpolator();
 };
 

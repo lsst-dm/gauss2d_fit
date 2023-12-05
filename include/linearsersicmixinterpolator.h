@@ -19,6 +19,7 @@ public:
     std::vector<IntegralSize> get_integralsizes(double sersicindex) const override;
     std::vector<IntegralSize> get_integralsizes_derivs(double sersicindex) const override;
 
+    InterpType get_interptype() const override;
     unsigned short get_order() const override;
 
     const double sersicindex_min;

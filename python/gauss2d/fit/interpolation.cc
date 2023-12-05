@@ -21,23 +21,24 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifdef GAUSS2D_FIT_HAS_GSL
-
 #include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include "pybind11.h"
 
-#include "gauss2d/fit/gsl.h"
+#include "gauss2d/fit/interpolation.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
 
-void bind_gsl(py::module &m) {
-    // Placeholder for now - Python doesn't need to know about gsl_interp_type
+void bind_interpolation(py::module &m) {
+    auto _e = py::enum_<g2f::InterpType>(m, "InterpType")
+                      .value("linear", g2f::InterpType::linear)
+                      .value("polynomial", g2f::InterpType::polynomial)
+                      .value("cspline", g2f::InterpType::cspline)
+                      .value("akima", g2f::InterpType::akima)
+    ;
 }
-
-#endif  // GAUSS2D_FIT_HAS_GSL

@@ -4,6 +4,8 @@
 #ifdef GAUSS2D_FIT_HAS_GSL
 
 #include "gsl.h"
+#include "interpolation.h"
+
 #include "gauss2d/object.h"
 
 #include <gsl/gsl_errno.h>
@@ -23,13 +25,19 @@ private:
     std::vector<double> _y;
 
 public:
-    const GSLInterpType interp_type;
+    const InterpType interp_type;
+    static constexpr InterpType INTERPTYPE_DEFAULT = InterpType::cspline;
 
+    /// Get the interpolant value for a knot of the given index
     double get_knot_x(size_t idx) const;
+    /// Get the interpolated function value for a knot of the given index
     double get_knot_y(size_t idx) const;
 
+    /// Get the interpolated function value for a given interpolant value
     double eval(double x) const;
+    /// Get the derivative of the interpolated function value for a given interpolant value
     double eval_deriv(double x) const;
+    /// Get the number of knots
     size_t size() const;
 
     std::string repr(bool name_keywords = false) const override;
@@ -37,7 +45,7 @@ public:
 
     explicit GSLInterpolator(
         std::vector<double> x, std::vector<double> y,
-        const GSLInterpType interp_type = GSLInterpType::cspline);
+        InterpType interp_type = INTERPTYPE_DEFAULT);
     ~GSLInterpolator();
 };
 

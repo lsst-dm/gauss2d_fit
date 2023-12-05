@@ -44,7 +44,7 @@ size_t GSLInterpolator::size() const {
 }
 
 GSLInterpolator::GSLInterpolator(std::vector<double> x, std::vector<double> y,
-                                 const GSLInterpType interp_type_)
+                                 const InterpType interp_type_)
         : _n_knots(x.size()),
           _x(x),
           _y(y),

@@ -71,6 +71,8 @@ std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes_derivs(
     return result;
 }
 
+InterpType LinearSersicMixInterpolator::get_interptype() const { return InterpType::linear; }
+
 unsigned short LinearSersicMixInterpolator::get_order() const { return _order; }
 
 std::string LinearSersicMixInterpolator::repr(bool name_keywords) const {

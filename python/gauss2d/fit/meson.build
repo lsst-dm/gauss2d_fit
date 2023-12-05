@@ -14,6 +14,7 @@ sources = [
     'gsl.cc',
     'gslsersicmixinterpolator.cc',
     'integralmodel.cc',
+    'interpolation.cc',
     'linearintegralmodel.cc',
     'linearsersicmixinterpolator.cc',
     'model.cc',

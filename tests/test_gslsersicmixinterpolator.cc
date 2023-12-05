@@ -8,6 +8,11 @@
 namespace g2f = gauss2d::fit;
 
 TEST_CASE("GSLSersicMixInterpolator") {
+    auto interpolator_default = g2f::GSLSersicMixInterpolator();
+    CHECK(interpolator_default.get_order() == g2f::SERSICMIX_ORDER_DEFAULT);
+    CHECK(interpolator_default.get_interptype() == g2f::GSLInterpolator::INTERPTYPE_DEFAULT);
+    CHECK(interpolator_default.str().size() > 0);
+
     std::vector<unsigned short> orders = {4, 8};
     for (const auto order : orders) {
         auto interpolator = g2f::GSLSersicMixInterpolator(order);

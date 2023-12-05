@@ -15,6 +15,7 @@ headers = [
     'gslinterpolator.h',
     'gslsersicmixinterpolator.h',
     'integralmodel.h',
+    'interpolation.h',
     'linearintegralmodel.h',
     'linearsersicmixinterpolator.h',
     'math.h',

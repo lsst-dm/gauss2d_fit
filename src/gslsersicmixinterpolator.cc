@@ -70,13 +70,16 @@ std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes_derivs(dou
     }
     if(correct_final_integral) {
         const auto & interp = _interps[max_ord];
-        result.push_back({correct_final_integral*interp.first->eval_deriv(sersicindex), interp.second->eval_deriv(sersicindex)});
+        result.push_back({correct_final_integral*interp.first->eval_deriv(sersicindex),
+                          interp.second->eval_deriv(sersicindex)});
     } else {
         _final_correction = 1.;
     }
 
     return result;
 }
+
+InterpType GSLSersicMixInterpolator::get_interptype() const { return _interp_type; }
 
 unsigned short GSLSersicMixInterpolator::get_order() const { return _order; }
 
@@ -89,9 +92,9 @@ std::string GSLSersicMixInterpolator::str() const {
     return "GSLSersicMixInterpolator(order=" + std::to_string(_order) + ")";
 }
 
-GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const GSLInterpType interp_type_)
-    : _order(order),
-      interp_type(interp_type_),
+GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_)
+    : _interp_type(interp_type_),
+      _order(order),
       knots(get_sersic_mix_knots(order)),
       sersicindex_min(knots[0].sersicindex),
       sersicindex_max(knots.back().sersicindex) {
@@ -117,8 +120,8 @@ GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const G
     }
     for(size_t iord = 0; iord < _order; ++iord) {
         _interps.push_back({
-            std::make_unique<GSLInterpolator>(sersics, integrals[iord], interp_type),
-            std::make_unique<GSLInterpolator>(sersics, sigmas[iord], interp_type)
+            std::make_unique<GSLInterpolator>(sersics, integrals[iord], _interp_type),
+            std::make_unique<GSLInterpolator>(sersics, sigmas[iord], _interp_type)
         });
     }
 }

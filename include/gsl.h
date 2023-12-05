@@ -7,24 +7,19 @@
 
 #include <gsl/gsl_interp.h>
 
+#include "interpolation.h"
+
 namespace gauss2d::fit {
 
 /**
  * See GSL docs for 1D interpolation types, or (as of 2.7):
  * https://www.gnu.org/software/gsl/doc/html/interp.html#d-interpolation-types
  */
-enum class GSLInterpType {
-    linear,          ///< Linear interpolation.
-    polynomial,      ///< Polynomial interpolation.
-    cspline,         ///< Cubic spline with natural boundary conditions.
-    akima,           ///< Non-rounded Akima spline with natural boundary conditions.
-};
-
-static const std::unordered_map<GSLInterpType, const gsl_interp_type*> GSLInterpTypes {
-    {GSLInterpType::linear, gsl_interp_linear},
-    {GSLInterpType::polynomial, gsl_interp_polynomial},
-    {GSLInterpType::cspline, gsl_interp_cspline},
-    {GSLInterpType::akima, gsl_interp_akima}
+static const std::unordered_map<InterpType, const gsl_interp_type*> GSLInterpTypes {
+    {InterpType::linear, gsl_interp_linear},
+    {InterpType::polynomial, gsl_interp_polynomial},
+    {InterpType::cspline, gsl_interp_cspline},
+    {InterpType::akima, gsl_interp_akima}
 };
 }  // namespace gauss2d::fit
 

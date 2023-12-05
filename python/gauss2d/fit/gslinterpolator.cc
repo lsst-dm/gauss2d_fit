@@ -32,8 +32,7 @@
 #include "pybind11.h"
 
 #include "gauss2d/fit/gsl.h"
-#include "gauss2d/fit/gslsersicmixinterpolator.h"
-#include "gauss2d/fit/sersicmix.h"
+#include "gauss2d/fit/gslinterpolator.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -43,9 +42,9 @@ namespace g2f = gauss2d::fit;
 void bind_gslsersicmixinterpolator(py::module &m) {
     auto _e = py::class_<g2f::GSLSersicMixInterpolator, std::shared_ptr<g2f::GSLSersicMixInterpolator>,
                          g2f::SersicMixInterpolator>(m, "GSLSersicMixInterpolator")
-                      .def(py::init<short, const g2f::InterpType>(),
+                      .def(py::init<short, const g2f::GSLInterpType>(),
                            "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
-                           "interp_type"_a = g2f::GSLSersicMixInterpolator::INTERPTYPE_DEFAULT)
+                           "interp_type"_a = g2f::GSLInterpType::cspline)
                       .def_readwrite("correct_final_integral",
                                      &g2f::GSLSersicMixInterpolator::correct_final_integral)
                       .def_property_readonly("final_correction",
@@ -53,7 +52,7 @@ void bind_gslsersicmixinterpolator(py::module &m) {
                       .def("integralsizes", &g2f::GSLSersicMixInterpolator::get_integralsizes)
                       .def("integralsizes_derivs",
                            &g2f::GSLSersicMixInterpolator::get_integralsizes_derivs)
-                      .def_property_readonly("interptype", &g2f::GSLSersicMixInterpolator::get_interptype)
+                      .def_property_readonly("interp_type", &g2f::GSLSersicMixInterpolator::interp_type)
                       .def_property_readonly("order", &g2f::GSLSersicMixInterpolator::get_order)
                       .def("__repr__",
                            [](const g2f::GSLSersicMixInterpolator &self) { return self.repr(true); })

@@ -45,6 +45,7 @@ void bind_gsl(py::module &m);
 void bind_gslsersicmixinterpolator(py::module &m);
 #endif
 void bind_integralmodel(py::module &m);
+void bind_interpolation(py::module &m);
 void bind_linearintegralmodel(py::module &m);
 void bind_linearsersicmixinterpolator(py::module &m);
 void bind_model(py::module &m);
