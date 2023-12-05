@@ -102,9 +102,8 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
     for (size_t i = 0; i < 2; ++i) {
         for (unsigned short do_jacobian = false; do_jacobian <= true; do_jacobian++) {
             model.setup_evaluators(
-                do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::loglike_image,
-                {}, {}, {}, {}, print
-            );
+                    do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::loglike_image, {},
+                    {}, {}, {}, print);
 
             auto result = model.evaluate();
             for (size_t idx_like; idx_like < n_loglike; ++idx_like) {
@@ -329,7 +328,7 @@ TEST_CASE("Model") {
                 comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroids, integralmodel);
             } else {
                 auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(
-                    0.5 + 3.5 * c, nullptr, transform_log10);
+                        0.5 + 3.5 * c, nullptr, transform_log10);
                 sersic_n->set_free(free_sersicindex);
                 auto reff_x = std::make_shared<g2f::ReffXParameter>(c + 0.5, nullptr, transform_log10);
                 auto reff_y = std::make_shared<g2f::ReffYParameter>(c + 1.5, nullptr, transform_log10);

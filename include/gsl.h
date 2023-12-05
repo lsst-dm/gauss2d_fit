@@ -15,12 +15,11 @@ namespace gauss2d::fit {
  * See GSL docs for 1D interpolation types, or (as of 2.7):
  * https://www.gnu.org/software/gsl/doc/html/interp.html#d-interpolation-types
  */
-static const std::unordered_map<InterpType, const gsl_interp_type*> GSLInterpTypes {
-    {InterpType::linear, gsl_interp_linear},
-    {InterpType::polynomial, gsl_interp_polynomial},
-    {InterpType::cspline, gsl_interp_cspline},
-    {InterpType::akima, gsl_interp_akima}
-};
+static const std::unordered_map<InterpType, const gsl_interp_type*> GSLInterpTypes{
+        {InterpType::linear, gsl_interp_linear},
+        {InterpType::polynomial, gsl_interp_polynomial},
+        {InterpType::cspline, gsl_interp_cspline},
+        {InterpType::akima, gsl_interp_akima}};
 }  // namespace gauss2d::fit
 
 #endif  // GAUSS2D_FIT_HAS_GSL

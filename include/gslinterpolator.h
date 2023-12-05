@@ -18,8 +18,8 @@ namespace gauss2d::fit {
  */
 class GSLInterpolator : public Object {
 private:
-    gsl_interp_accel * _acc;
-    gsl_spline * _spline;
+    gsl_interp_accel* _acc;
+    gsl_spline* _spline;
     size_t _n_knots;
     std::vector<double> _x;
     std::vector<double> _y;
@@ -43,13 +43,12 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    explicit GSLInterpolator(
-        std::vector<double> x, std::vector<double> y,
-        InterpType interp_type = INTERPTYPE_DEFAULT);
+    explicit GSLInterpolator(std::vector<double> x, std::vector<double> y,
+                             InterpType interp_type = INTERPTYPE_DEFAULT);
     ~GSLInterpolator();
 };
 
 }  // namespace gauss2d::fit
 
-#endif // GAUSS2D_FIT_HAS_GSL
-#endif // GAUSS2D_FIT_GSLINTERPOLATOR_H
+#endif  // GAUSS2D_FIT_HAS_GSL
+#endif  // GAUSS2D_FIT_GSLINTERPOLATOR_H

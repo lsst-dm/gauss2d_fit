@@ -46,13 +46,12 @@ public:
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;
 
-    explicit GSLSersicMixInterpolator(
-        unsigned short order = SERSICMIX_ORDER_DEFAULT,
-        InterpType interp_type=INTERPTYPE_DEFAULT);
+    explicit GSLSersicMixInterpolator(unsigned short order = SERSICMIX_ORDER_DEFAULT,
+                                      InterpType interp_type = INTERPTYPE_DEFAULT);
     ~GSLSersicMixInterpolator();
 };
 
 }  // namespace gauss2d::fit
 
-#endif // GAUSS2D_FIT_HAS_GSL
-#endif // GAUSS2D_FIT_GSLSERSICMIXINTERPOLATOR_H
+#endif  // GAUSS2D_FIT_HAS_GSL
+#endif  // GAUSS2D_FIT_GSLSERSICMIXINTERPOLATOR_H

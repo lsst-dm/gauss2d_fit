@@ -45,7 +45,7 @@ public:
 };
 
 const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(
-        unsigned short order=SERSICMIX_ORDER_DEFAULT);
+        unsigned short order = SERSICMIX_ORDER_DEFAULT);
 
 /**
  * A vector of IntegralSize values for a given Sersic index.

@@ -990,10 +990,8 @@ public:
         for (size_t idx = 0; idx < _size; ++idx) {
             result[idx] = this->_evaluate_observation(idx, print, is_loglike_grad);
         }
-        if(
-            (this->_mode == EvaluatorMode::loglike) || is_loglike_grad
-            || (this->_mode == EvaluatorMode::loglike_image) || (this->_mode == EvaluatorMode::jacobian)
-        ) {
+        if ((this->_mode == EvaluatorMode::loglike) || is_loglike_grad
+            || (this->_mode == EvaluatorMode::loglike_image) || (this->_mode == EvaluatorMode::jacobian)) {
             result[_size] = this->_evaluate_priors(print, normalize_loglike);
         }
 
@@ -1446,8 +1444,8 @@ public:
                 param.set_value(value_init);
                 const double value_new = param.get_value();
                 if (value_new != value_init) {
-                    throw std::logic_error("Could not return param=" + param.str() + " to value_init="
-                                           + to_string_float(value_init) + "; diff="
+                    throw std::logic_error("Could not return param=" + param.str()
+                                           + " to value_init=" + to_string_float(value_init) + "; diff="
                                            + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {
@@ -1511,8 +1509,8 @@ public:
                 param.set_value(value_init);
                 const double value_new = param.get_value();
                 if (value_new != value_init) {
-                    throw std::logic_error("Could not return param=" + param.str() + " to value_init="
-                                           + to_string_float(value_init) + "; diff="
+                    throw std::logic_error("Could not return param=" + param.str()
+                                           + " to value_init=" + to_string_float(value_init) + "; diff="
                                            + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {

@@ -4,10 +4,10 @@
 namespace gauss2d::fit {
 
 enum class InterpType {
-    linear,          ///< Linear interpolation.
-    polynomial,      ///< Polynomial interpolation.
-    cspline,         ///< Cubic spline interpolation.
-    akima,           ///< Akima spline with natural boundary conditions.
+    linear,      ///< Linear interpolation.
+    polynomial,  ///< Polynomial interpolation.
+    cspline,     ///< Cubic spline interpolation.
+    akima,       ///< Akima spline with natural boundary conditions.
 };
 
 }  // namespace gauss2d::fit

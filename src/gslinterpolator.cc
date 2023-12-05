@@ -8,14 +8,14 @@
 namespace gauss2d::fit {
 
 void _check_idx(size_t idx, size_t size) {
-    if(!(idx < size)) {
+    if (!(idx < size)) {
         throw std::out_of_range("idx=" + std::to_string(idx) + " !< size=" + std::to_string(size));
     }
 }
 
 std::string GSLInterpolator::repr(bool name_keywords) const {
-    return std::string("GSLInterpolator(") + (name_keywords ? "n_knots=" : "")
-           + std::to_string(_n_knots) + ")";
+    return std::string("GSLInterpolator(") + (name_keywords ? "n_knots=" : "") + std::to_string(_n_knots)
+           + ")";
 }
 
 std::string GSLInterpolator::str() const {
@@ -31,28 +31,18 @@ double GSLInterpolator::get_knot_y(size_t idx) const {
     return _y[idx];
 }
 
-double GSLInterpolator::eval(double x) const {
-    return gsl_spline_eval(_spline, x, _acc);
-}
+double GSLInterpolator::eval(double x) const { return gsl_spline_eval(_spline, x, _acc); }
 
-double GSLInterpolator::eval_deriv(double x) const {
-    return gsl_spline_eval_deriv(_spline, x, _acc);
-}
+double GSLInterpolator::eval_deriv(double x) const { return gsl_spline_eval_deriv(_spline, x, _acc); }
 
-size_t GSLInterpolator::size() const {
-    return _n_knots;
-}
+size_t GSLInterpolator::size() const { return _n_knots; }
 
-GSLInterpolator::GSLInterpolator(std::vector<double> x, std::vector<double> y,
-                                 const InterpType interp_type_)
-        : _n_knots(x.size()),
-          _x(x),
-          _y(y),
-          interp_type(interp_type_) {
-    if(!(_n_knots > 0)) {
+GSLInterpolator::GSLInterpolator(std::vector<double> x, std::vector<double> y, const InterpType interp_type_)
+        : _n_knots(x.size()), _x(x), _y(y), interp_type(interp_type_) {
+    if (!(_n_knots > 0)) {
         throw std::invalid_argument("x.size()=" + std::to_string(_n_knots) + " !> 0");
     }
-    if(_y.size() != _n_knots) {
+    if (_y.size() != _n_knots) {
         throw std::invalid_argument("y.size()=" + std::to_string(y.size())
                                     + " != x.size()=" + std::to_string(_n_knots));
     }
@@ -62,8 +52,8 @@ GSLInterpolator::GSLInterpolator(std::vector<double> x, std::vector<double> y,
 }
 
 GSLInterpolator::~GSLInterpolator() {
-    gsl_spline_free (_spline);
-    gsl_interp_accel_free (_acc);
+    gsl_spline_free(_spline);
+    gsl_interp_accel_free(_acc);
 }
 
 }  // namespace gauss2d::fit

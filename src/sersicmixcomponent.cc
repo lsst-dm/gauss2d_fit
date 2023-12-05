@@ -238,9 +238,10 @@ SersicMixComponentIndexParameter::SersicMixComponentIndexParameter(
         std::shared_ptr<const parameters::Unit> unit, bool fixed, std::string label,
         const std::shared_ptr<const SersicMixInterpolator> interpolator)
         : SersicIndexParameter(value, nullptr, transform, unit, fixed, label),
-          _interpolator(std::move(interpolator == nullptr ?
-                        SersicMixComponentIndexParameter::get_interpolator_default(SERSICMIX_ORDER_DEFAULT)
-                                                          : interpolator)) {
+          _interpolator(std::move(interpolator == nullptr
+                                          ? SersicMixComponentIndexParameter::get_interpolator_default(
+                                                  SERSICMIX_ORDER_DEFAULT)
+                                          : interpolator)) {
     // TODO: determine if this can be avoided
     set_limits(std::move(limits));
     _set_ratios(value);
@@ -250,9 +251,7 @@ InterpType SersicMixComponentIndexParameter::get_interptype() const {
     return _interpolator->get_interptype();
 }
 
-unsigned short SersicMixComponentIndexParameter::get_order() const {
-    return _interpolator->get_order();
-}
+unsigned short SersicMixComponentIndexParameter::get_order() const { return _interpolator->get_order(); }
 
 void SersicMixComponentIndexParameter::set_value(double value) {
     SersicIndexParameter::set_value(value);
@@ -381,7 +380,7 @@ void SersicMixComponent::set_extra_param_factors(const Channel& channel, ExtraPa
                                                  size_t index) const {
     if (_sersicindex->get_free()) {
         const auto& integralmodel = this->get_integralmodel();
-        double dx = 1./_sersicindex->get_transform_derivative();
+        double dx = 1. / _sersicindex->get_transform_derivative();
         const double dintegral = dx * integralmodel.get_integral(channel);
         const double dreff_x = dx * _ellipse->get_size_x_param().get_size();
         const double dreff_y = dx * _ellipse->get_size_y_param().get_size();

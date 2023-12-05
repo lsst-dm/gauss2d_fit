@@ -55,6 +55,6 @@ void bind_sersicmix(py::module &m) {
                         .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true); })
                         .def("__str__", &g2f::SersicMixValues::str);
 
-    m.def("sersic_mix_knots", &g2f::get_sersic_mix_knots_copy, "order"_a=g2f::SERSICMIX_ORDER_DEFAULT,
+    m.def("sersic_mix_knots", &g2f::get_sersic_mix_knots_copy, "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
           py::return_value_policy::copy);
 }

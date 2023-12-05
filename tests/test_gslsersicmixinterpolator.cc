@@ -43,7 +43,7 @@ TEST_CASE("GSLSersicMixInterpolator") {
             auto result_new = interpolator.get_integralsizes(sersicindex_new);
             // This is finite differencing at (x + delta/2) +/- delta/2, which is more accurate
             // (the non-GSL linear interpolator should do this too)
-            auto result_derivs = interpolator.get_integralsizes_derivs((sersicindex + sersicindex_new)/2.);
+            auto result_derivs = interpolator.get_integralsizes_derivs((sersicindex + sersicindex_new) / 2.);
             for (size_t ord = 0; ord < order; ++ord) {
                 CHECK(result_new[ord].integral >= 0);
                 CHECK(result_new[ord].sigma >= 0);
@@ -73,9 +73,10 @@ TEST_CASE("GSLSersicMixInterpolator") {
             CHECK(knots.sersicindex == sersicindex);
             auto interp = interpolator.get_integralsizes(sersicindex);
             for (size_t ord = 0; ord < order; ++ord) {
-                if(interpolator.correct_final_integral && ((ord + 1) == order)) {
+                if (interpolator.correct_final_integral && ((ord + 1) == order)) {
                     double correction = interpolator.get_final_correction();
-                    CHECK(g2f::isclose(knots.values[ord].integral, correction*interp[ord].integral).isclose);
+                    CHECK(g2f::isclose(knots.values[ord].integral, correction * interp[ord].integral)
+                                  .isclose);
                 } else {
                     CHECK(knots.values[ord].integral == interp[ord].integral);
                 }
