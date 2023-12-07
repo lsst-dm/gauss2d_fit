@@ -18,8 +18,10 @@ TEST_CASE("GSLSersicMixInterpolator") {
         auto interpolator = g2f::GSLSersicMixInterpolator(order);
         CHECK(interpolator.sersicindex_max > interpolator.sersicindex_min);
         CHECK_THROWS_AS(interpolator.get_integralsizes(0.499), std::invalid_argument);
-        CHECK_THROWS_AS(interpolator.get_integralsizes(interpolator.sersicindex_max + 1e-10),
-                        std::invalid_argument);
+        CHECK_THROWS_AS(interpolator.get_integralsizes_derivs(0.499), std::invalid_argument);
+        double too_big = interpolator.sersicindex_max + 1e-10;
+        CHECK_THROWS_AS(interpolator.get_integralsizes(too_big), std::invalid_argument);
+        CHECK_THROWS_AS(interpolator.get_integralsizes_derivs(too_big), std::invalid_argument);
 
         double diff = interpolator.sersicindex_max - interpolator.sersicindex_min;
 

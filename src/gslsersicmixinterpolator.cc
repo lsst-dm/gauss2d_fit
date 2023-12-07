@@ -14,9 +14,9 @@ double GSLSersicMixInterpolator::get_final_correction() const { return _final_co
 
 std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double sersicindex) const {
     if (!((sersicindex >= sersicindex_min) && (sersicindex <= sersicindex_max))) {
-        throw std::invalid_argument("sersicindex=" + std::to_string(sersicindex)
-                                    + " !(>=" + std::to_string(sersicindex_min)
-                                    + "&& <=" + std::to_string(sersicindex_max));
+        throw std::invalid_argument("sersicindex=" + to_string_float(sersicindex)
+                                    + " not between min=" + to_string_float(sersicindex_min)
+                                    + " and max=" + to_string_float(sersicindex_max));
     }
 
     std::vector<IntegralSize> result;
@@ -38,7 +38,7 @@ std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double ser
         if (!(integral >= 0)) {
             throw std::logic_error(this->str() + ".get_integralsizes(" + to_string_float(sersicindex)
                                    + ") got correction=" + to_string_float(_final_correction)
-                                   + " from integral=" + to_string_float(integral) + " !>=0");
+                                   + " from integral=" + to_string_float(integral) + " !>=0)");
         }
         result.push_back({integral, interp.second->eval(sersicindex)});
     } else {
@@ -51,9 +51,9 @@ std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double ser
 
 std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes_derivs(double sersicindex) const {
     if (!((sersicindex >= sersicindex_min) && (sersicindex <= sersicindex_max))) {
-        throw std::invalid_argument("sersicindex=" + std::to_string(sersicindex)
-                                    + " !(>=" + std::to_string(sersicindex_min)
-                                    + "&& <=" + std::to_string(sersicindex_max));
+        throw std::invalid_argument("sersicindex=" + to_string_float(sersicindex)
+                                    + " not between min=" + to_string_float(sersicindex_min)
+                                    + " and max=" + to_string_float(sersicindex_max));
     }
 
     std::vector<IntegralSize> result;

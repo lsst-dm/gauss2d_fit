@@ -49,8 +49,10 @@ void bind_gslsersicmixinterpolator(py::module &m) {
                                      &g2f::GSLSersicMixInterpolator::correct_final_integral)
                       .def_property_readonly("final_correction",
                                              &g2f::GSLSersicMixInterpolator::get_final_correction)
-                      .def("integralsizes", &g2f::GSLSersicMixInterpolator::get_integralsizes)
-                      .def("integralsizes_derivs", &g2f::GSLSersicMixInterpolator::get_integralsizes_derivs)
+                      .def("integralsizes", &g2f::GSLSersicMixInterpolator::get_integralsizes,
+                           "sersicindex"_a)
+                      .def("integralsizes_derivs", &g2f::GSLSersicMixInterpolator::get_integralsizes_derivs,
+                           "sersicindex"_a)
                       .def_property_readonly("interptype", &g2f::GSLSersicMixInterpolator::get_interptype)
                       .def_property_readonly("order", &g2f::GSLSersicMixInterpolator::get_order)
                       .def("__repr__",
