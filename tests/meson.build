@@ -6,6 +6,8 @@ test_names = [
     'gaussiancomponent',
     'gaussianparametricellipse',
     'gaussianprior',
+    'gslinterpolator',
+    'gslsersicmixinterpolator',
     'linearintegralmodel',
     'linearsersicmixinterpolator',
     'model',

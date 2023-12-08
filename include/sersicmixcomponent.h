@@ -29,6 +29,8 @@ public:
     double get_integralratio(unsigned short index) const;
     /// Return the integral ratio derivative for a given Gaussian sub-component index
     double get_integralratio_deriv(unsigned short index) const;
+    static std::shared_ptr<const SersicMixInterpolator> get_interpolator_default(unsigned short order
+                                                                                 = SERSICMIX_ORDER_DEFAULT);
     const parameters::Limits<double>& get_limits_maximal() const override;
     double get_min() const override { return 0.5; }
     double get_max() const override { return 8.0; }
@@ -37,7 +39,8 @@ public:
     /// Return the size ratio derivative for a given Gaussian sub-component index
     double get_sizeratio_deriv(unsigned short index) const;
 
-    unsigned short order;
+    InterpType get_interptype() const;
+    unsigned short get_order() const;
 
     void set_value(double value) override;
     void set_value_transformed(double value_transformed) override;

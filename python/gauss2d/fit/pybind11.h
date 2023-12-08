@@ -40,7 +40,12 @@ void bind_gaussiancomponent(py::module &m);
 void bind_gaussianmodelintegral(py::module &m);
 void bind_gaussianparametricellipse(py::module &m);
 void bind_gaussianprior(py::module &m);
+#ifdef GAUSS2D_FIT_HAS_GSL
+void bind_gsl(py::module &m);
+void bind_gslsersicmixinterpolator(py::module &m);
+#endif
 void bind_integralmodel(py::module &m);
+void bind_interpolation(py::module &m);
 void bind_linearintegralmodel(py::module &m);
 void bind_linearsersicmixinterpolator(py::module &m);
 void bind_model(py::module &m);

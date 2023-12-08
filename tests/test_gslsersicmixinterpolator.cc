@@ -2,26 +2,31 @@
 
 #include "doctest.h"
 
-#include "linearsersicmixinterpolator.h"
-#include "sersicmix.h"
+#include "gslsersicmixinterpolator.h"
 #include "util.h"
 
 namespace g2f = gauss2d::fit;
 
-TEST_CASE("LinearSersicMixInterpolator") {
+TEST_CASE("GSLSersicMixInterpolator") {
+    auto interpolator_default = g2f::GSLSersicMixInterpolator();
+    CHECK(interpolator_default.get_order() == g2f::SERSICMIX_ORDER_DEFAULT);
+    CHECK(interpolator_default.get_interptype() == g2f::GSLInterpolator::INTERPTYPE_DEFAULT);
+    CHECK(interpolator_default.str().size() > 0);
+
     std::vector<unsigned short> orders = {4, 8};
     for (const auto order : orders) {
-        auto interpolator = g2f::LinearSersicMixInterpolator(order);
-        CHECK(interpolator.get_interptype() == g2f::InterpType::linear);
+        auto interpolator = g2f::GSLSersicMixInterpolator(order);
         CHECK(interpolator.sersicindex_max > interpolator.sersicindex_min);
         CHECK_THROWS_AS(interpolator.get_integralsizes(0.499), std::invalid_argument);
-        CHECK_THROWS_AS(interpolator.get_integralsizes(interpolator.sersicindex_max + 1e-10),
-                        std::invalid_argument);
+        CHECK_THROWS_AS(interpolator.get_integralsizes_derivs(0.499), std::invalid_argument);
+        double too_big = interpolator.sersicindex_max + 1e-10;
+        CHECK_THROWS_AS(interpolator.get_integralsizes(too_big), std::invalid_argument);
+        CHECK_THROWS_AS(interpolator.get_integralsizes_derivs(too_big), std::invalid_argument);
 
         double diff = interpolator.sersicindex_max - interpolator.sersicindex_min;
 
         for (const double factor : {0., 0.5, 1.}) {
-            double delta = 1e-6;
+            double delta = 1e-8;
             const double sersicindex = interpolator.sersicindex_min + diff * factor;
             auto result = interpolator.get_integralsizes(sersicindex);
             CHECK(result.size() == order);
@@ -38,8 +43,9 @@ TEST_CASE("LinearSersicMixInterpolator") {
             const double sersicindex_new = interpolator.sersicindex_min + diff * factor_new;
             const double dsersicindex = sersicindex_new - sersicindex;
             auto result_new = interpolator.get_integralsizes(sersicindex_new);
-
-            auto result_derivs = interpolator.get_integralsizes_derivs(sersicindex);
+            // This is finite differencing at (x + delta/2) +/- delta/2, which is more accurate
+            // (the non-GSL linear interpolator should do this too)
+            auto result_derivs = interpolator.get_integralsizes_derivs((sersicindex + sersicindex_new) / 2.);
             for (size_t ord = 0; ord < order; ++ord) {
                 CHECK(result_new[ord].integral >= 0);
                 CHECK(result_new[ord].sigma >= 0);
@@ -69,7 +75,13 @@ TEST_CASE("LinearSersicMixInterpolator") {
             CHECK(knots.sersicindex == sersicindex);
             auto interp = interpolator.get_integralsizes(sersicindex);
             for (size_t ord = 0; ord < order; ++ord) {
-                CHECK(knots.values[ord].integral == interp[ord].integral);
+                if (interpolator.correct_final_integral && ((ord + 1) == order)) {
+                    double correction = interpolator.get_final_correction();
+                    CHECK(g2f::isclose(knots.values[ord].integral, correction * interp[ord].integral)
+                                  .isclose);
+                } else {
+                    CHECK(knots.values[ord].integral == interp[ord].integral);
+                }
                 CHECK(knots.values[ord].sigma == interp[ord].sigma);
             }
         }

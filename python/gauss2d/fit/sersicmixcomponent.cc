@@ -53,7 +53,8 @@ void bind_sersicmixcomponent(py::module &m) {
             py::class_<C, std::shared_ptr<C>, Base>(m, pyclass_name.c_str()))
             // new properties
             .def_property_readonly("integralratio", &g2f::SersicMixComponentIndexParameter::get_integralratio)
-            .def_readonly("order", &g2f::SersicMixComponentIndexParameter::order)
+            .def_property_readonly("interptype", &g2f::SersicMixComponentIndexParameter::get_interptype)
+            .def_property_readonly("order", &g2f::SersicMixComponentIndexParameter::get_order)
             .def_property_readonly("sizeratio", &g2f::SersicMixComponentIndexParameter::get_sizeratio)
             // constructor with added arg
             .def(py::init<T, std::shared_ptr<const parameters::Limits<T>>,

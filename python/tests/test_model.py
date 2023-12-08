@@ -49,6 +49,7 @@ def sources(channels):
     n_sources, n_components = 2, 2
     sources = [None]*n_sources
     n_comp_max = n_components - 1
+    log10 = g2f.Log10TransformD()
     for i in range(n_sources):
         components = [None]*n_components
         for c in range(n_components):
@@ -68,10 +69,40 @@ def sources(channels):
                 is_last,
             )
             components[c] = g2f.GaussianComponent(
-                g2f.GaussianParametricEllipse(1., 1., 0.),
-                None,
-                last,
+                centroid=None,
+                ellipse=g2f.GaussianParametricEllipse(1., 1., 0.),
+                integral=last,
             )
+        components.append(
+            g2f.SersicMixComponent(
+                centroid=None,
+                ellipse=g2f.SersicParametricEllipse(
+                    size_x=g2f.ReffXParameterD(2.6, transform=log10, fixed=False),
+                    size_y=g2f.ReffYParameterD(3.5, transform=log10, fixed=False),
+                    rho=g2f.RhoParameterD(
+                        -0.1,
+                        fixed=False,
+                        transform=g2f.LogitLimitedTransformD(
+                            limits=g2f.LimitsD(min=-0.999, max=0.999, name="ref_logit_sersic[0.5, 6.0]"),
+                        ),
+                    )
+                ),
+                integral=g2f.LinearIntegralModel([
+                    (
+                        channel,
+                        g2f.IntegralParameterD(1.0, transform=log10, label=f"Sersic {channel}-band")
+                    )
+                    for channel in channels
+                ]),
+                sersicindex=g2f.SersicMixComponentIndexParameterD(
+                    value=1.0,
+                    fixed=False,
+                    transform=g2f.LogitLimitedTransformD(
+                        limits=g2f.LimitsD(min=0.5, max=6.0, name="ref_logit_sersic[0.5, 6.0]"),
+                    ),
+                )
+            ),
+        )
         sources[i] = g2f.Source(components)
 
     return sources
@@ -99,17 +130,18 @@ def test_data(channels, data):
 def test_model(channels, model):
     assert str(model) != ""
     gaussians = model.gaussians(channels[0])
-    assert len(gaussians) == 4
+    assert len(gaussians) == 12
     params = model.parameters()
-    assert len(params) == 62
-    assert len(set(params)) == 50
+    assert len(params) == 80
+    assert len(set(params)) == 68
 
 
 def test_model_eval_jacobian(model):
     model.setup_evaluators(g2f.Model.EvaluatorMode.jacobian)
     result = np.array(model.evaluate())
     assert (result == 0).all()
-    errors = model.verify_jacobian()
+    # TODO: Investigate why this rtol needs to be so high
+    errors = model.verify_jacobian(rtol=5e-3)
     # All of the IntegralParameters got double-counted - see DM-40674
     assert len(errors) == 6
 

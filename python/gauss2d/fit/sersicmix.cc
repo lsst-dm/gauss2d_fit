@@ -51,9 +51,10 @@ void bind_sersicmix(py::module &m) {
                         m, "SersicMixValues")
                         .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
                         .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
+                        .def_readonly("values", &g2f::SersicMixValues::values)
                         .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true); })
                         .def("__str__", &g2f::SersicMixValues::str);
 
-    // TODO: bind this function
-    // std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
+    m.def("sersic_mix_knots", &g2f::get_sersic_mix_knots_copy, "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
+          py::return_value_policy::copy);
 }

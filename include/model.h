@@ -8,10 +8,9 @@
 #include <string>
 
 #include "gauss2d/evaluate.h"
+#include "gauss2d/image.h"
 
 #include "data.h"
-#include "gauss2d/image.h"
-// TODO: Remove when DM-40674 fixed
 #include "parameters.h"
 #include "parametricmodel.h"
 #include "param_filter.h"
@@ -991,10 +990,8 @@ public:
         for (size_t idx = 0; idx < _size; ++idx) {
             result[idx] = this->_evaluate_observation(idx, print, is_loglike_grad);
         }
-        if(
-            (this->_mode == EvaluatorMode::loglike) || is_loglike_grad
-            || (this->_mode == EvaluatorMode::loglike_image) || (this->_mode == EvaluatorMode::jacobian)
-        ) {
+        if ((this->_mode == EvaluatorMode::loglike) || is_loglike_grad
+            || (this->_mode == EvaluatorMode::loglike_image) || (this->_mode == EvaluatorMode::jacobian)) {
             result[_size] = this->_evaluate_priors(print, normalize_loglike);
         }
 
@@ -1418,8 +1415,8 @@ public:
                 const auto& grad = grads[idx_param];
 
                 const double value_init = param.get_value();
-                const double value = param.get_value_transformed();
-                double diff = value * findiff_frac;
+                const double value_transformed = param.get_value_transformed();
+                double diff = value_transformed * findiff_frac;
                 if (std::abs(diff) < findiff_add) diff = findiff_add;
                 diff = finite_difference_param(param, diff);
 
@@ -1448,7 +1445,7 @@ public:
                 const double value_new = param.get_value();
                 if (value_new != value_init) {
                     throw std::logic_error("Could not return param=" + param.str()
-                                           + to_string_float(value_new) + "; diff="
+                                           + " to value_init=" + to_string_float(value_init) + "; diff="
                                            + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {
@@ -1486,8 +1483,9 @@ public:
                 }
                 auto& param = (*found).get();
 
-                const double value = param.get_value_transformed();
-                double delta = value * findiff_frac;
+                const double value_init = param.get_value();
+                const double value_transformed = param.get_value_transformed();
+                double delta = value_transformed * findiff_frac;
                 if (std::abs(delta) < findiff_add) delta = findiff_add;
                 delta = finite_difference_param(param, delta);
                 auto result_new = prior->evaluate(true);
@@ -1508,10 +1506,12 @@ public:
                     }
                     idx_value++;
                 }
-                param.set_value_transformed(value);
-                if (param.get_value_transformed() != value) {
+                param.set_value(value_init);
+                const double value_new = param.get_value();
+                if (value_new != value_init) {
                     throw std::logic_error("Could not return param=" + param.str()
-                                           + " to original value=" + std::to_string(value));
+                                           + " to value_init=" + to_string_float(value_init) + "; diff="
+                                           + to_string_float(value_new - value_init) + "); check limits");
                 }
                 if (n_failed > 0) {
                     std::sort(ratios.begin(), ratios.end());
