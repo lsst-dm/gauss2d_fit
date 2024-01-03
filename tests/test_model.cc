@@ -18,6 +18,7 @@
 #include "fractionalintegralmodel.h"
 #include "gaussiancomponent.h"
 #include "gaussianprior.h"
+#include "gslimage.h"
 #include "integralmodel.h"
 #include "linearintegralmodel.h"
 #include "model.h"
@@ -43,21 +44,22 @@ namespace g2f = gauss2d::fit;
 const auto CHANNEL_NONE = g2f::Channel::NONE_PTR();
 Channels CHANNELS_NONE = {CHANNEL_NONE};
 
-std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_t n_y,
-                                const double sigma_inv_value = 1.) {
-    std::vector<std::shared_ptr<const Observation>> observations;
+template <typename Obs, typename Img, typename D>
+std::shared_ptr<D> make_data(Channels channels, const size_t n_x, const size_t n_y,
+                             const double sigma_inv_value = 1.) {
+    std::vector<std::shared_ptr<const Obs>> observations;
+    double value = 0;
     for (const auto& channel_ptr : channels) {
-        auto img = std::make_unique<Image>(n_y, n_x);
-        img->fill(0);
-        auto err = std::make_unique<Image>(n_y, n_x);
+        auto img = std::make_unique<Img>(n_y, n_x, &value);
+        auto err = std::make_unique<Img>(n_y, n_x, nullptr);
         err->fill(sigma_inv_value);
-        auto mask = std::make_unique<Mask>(n_y, n_x);
+        auto mask = std::make_unique<Mask>(n_y, n_x, nullptr);
         mask->fill(1);
-        auto observation = std::make_shared<Observation>(std::move(img), std::move(err), std::move(mask),
-                                                         *channel_ptr);
+        auto observation
+                = std::make_shared<Obs>(std::move(img), std::move(err), std::move(mask), *channel_ptr);
         observations.emplace_back(observation);
     }
-    return std::make_shared<Data>(observations);
+    return std::make_shared<D>(observations);
 }
 
 g2f::LinearIntegralModel::Data make_integrals(
@@ -78,7 +80,8 @@ std::shared_ptr<t> make_shared_fixed(double value) {
     return std::make_shared<t>(value, nullptr, nullptr, nullptr, true);
 }
 
-void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
+template <typename M>
+void verify_model(M& model, const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
                   g2f::ParamRefs params_free, bool check_outputs_differ = true, bool skip_rho = false,
                   bool print = false, double findiff_frac = 1e-4, double findiff_add = 1e-4,
                   double rtol = 1e-3, double atol = 1e-3) {
@@ -89,21 +92,20 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
     params_free = g2f::nonconsecutive_unique(params_free);
     CHECK(grads.size() == params_free.size());
 
-    model.setup_evaluators(Model::EvaluatorMode::image);
+    model.setup_evaluators(M::EvaluatorMode::image);
     auto loglike_img = model.evaluate();
     size_t n_loglike = loglike_img.size();
     for (size_t idx_like = 0; idx_like < n_loglike; ++idx_like) {
         CHECK(loglike_img[idx_like] == 0);
     }
 
-    model.setup_evaluators(Model::EvaluatorMode::loglike);
+    model.setup_evaluators(M::EvaluatorMode::loglike);
     auto loglike = model.evaluate();
 
     for (size_t i = 0; i < 2; ++i) {
         for (unsigned short do_jacobian = false; do_jacobian <= true; do_jacobian++) {
-            model.setup_evaluators(
-                    do_jacobian ? Model::EvaluatorMode::jacobian : Model::EvaluatorMode::loglike_image, {},
-                    {}, {}, {}, print);
+            model.setup_evaluators(do_jacobian ? M::EvaluatorMode::jacobian : M::EvaluatorMode::loglike_image,
+                                   {}, {}, {}, {}, print);
 
             auto result = model.evaluate();
             for (size_t idx_like; idx_like < n_loglike; ++idx_like) {
@@ -146,7 +148,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 
     std::vector<double> values_transformed;
     for (const auto& param : params_free) values_transformed.push_back(param.get().get_value_transformed());
-    model.setup_evaluators(Model::EvaluatorMode::image);
+    model.setup_evaluators(M::EvaluatorMode::image);
     model.evaluate();
     auto outputs = model.get_outputs();
     for (size_t idx = 0; idx < model.size(); ++idx) {
@@ -222,17 +224,18 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
     }
 }
 
-TEST_CASE("Model") {
-    const std::vector<std::shared_ptr<const g2f::Channel>> channels
-            = {// TODO: Figure out how this works - auto const conversion?
-               g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")};
+template <typename Obs, typename Img, typename D, typename M>
+void test_model() {
+    const std::vector<std::shared_ptr<const g2f::Channel>> channels = {
+            // TODO: Figure out how this works - auto const conversion?
+            g2f::Channel::get_channel("r"), g2f::Channel::get_channel("g"), g2f::Channel::get_channel("b")};
 
-    auto data = make_data(channels, 11, 13);
+    auto data = make_data<Obs, Img, D>(channels, 11, 13);
     g2f::ParamCRefs params_data{};
     data->get_parameters_const(params_data);
     CHECK(params_data.size() == 0);
 
-    Model::PsfModels psfmodels{};
+    typename M::PsfModels psfmodels{};
     for (size_t i = 0; i < data->size(); ++i) {
         g2f::Components comps;
         const double integral_factor = 1.1;
@@ -308,7 +311,7 @@ TEST_CASE("Model") {
     auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
     auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
 
-    Model::Sources sources{};
+    typename M::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
     for (size_t i = 0; i < 2; ++i) {
         std::vector<std::shared_ptr<g2f::Component>> comps;
@@ -358,7 +361,7 @@ TEST_CASE("Model") {
         sources.push_back(source);
     }
     auto params_src = sources[0]->get_parameters_const_new();
-    auto model = std::make_shared<Model>(data, psfmodels, sources, priors);
+    auto model = std::make_shared<M>(data, psfmodels, sources, priors);
     CHECK(model->str() != "");
     CHECK(model->get_priors().size() == priors.size());
 
@@ -471,7 +474,7 @@ TEST_CASE("Model") {
         psfmodels[idx] = psfmodels_ref[idx];
     }
     priors.clear();
-    auto model2 = std::make_shared<Model>(data, psfmodels, sources, priors);
+    auto model2 = std::make_shared<M>(data, psfmodels, sources, priors);
     auto params_src_free2 = model2->get_parameters_new(&filter_free);
     params_src_free2 = g2f::nonconsecutive_unique<g2f::ParamBaseRef>(params_src_free2);
 
@@ -479,9 +482,21 @@ TEST_CASE("Model") {
     // verify_model(*model2, channels, params_src_free2, true, true);
 }
 
+TEST_CASE("Model") { test_model<Observation, Image, Data, Model>(); }
+
+#ifdef GAUSS2D_FIT_HAS_GSL
+TEST_CASE("Model (GSL)") {
+    typedef g2f::GSLImage<double> GSLImage;
+    typedef g2f::Observation<double, GSLImage, Mask> GSLObservation;
+    typedef g2f::Data<double, GSLImage, Mask> GSLData;
+    typedef g2f::Model<double, GSLImage, g2f::GSLImage<size_t>, Mask> GSLModel;
+    test_model<GSLObservation, GSLImage, GSLData, GSLModel>();
+}
+#endif
+
 TEST_CASE("Model PSF") {
     const Channels channels = CHANNELS_NONE;
-    auto data = make_data(channels, 11, 13);
+    auto data = make_data<Observation, Image, Data>(channels, 11, 13);
     std::vector<std::shared_ptr<g2f::Component>> comps = {};
     auto integrals = make_integrals(CHANNELS_NONE, 7.0, true);
     auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
@@ -526,7 +541,7 @@ TEST_CASE("Model PSF") {
 // This has some overlap with the Model test case but it's not really problematic
 TEST_CASE("Model with priors") {
     const size_t n_x = 33, n_y = 33;
-    auto data = make_data(CHANNELS_NONE, n_x, n_y);
+    auto data = make_data<Observation, Image, Data>(CHANNELS_NONE, n_x, n_y);
     auto centroid_psf = std::make_shared<g2f::CentroidParameters>(
             make_shared_fixed<g2f::CentroidXParameter>(0), make_shared_fixed<g2f::CentroidYParameter>(0));
     g2f::LinearIntegralModel::Data model_psf_ref_data

@@ -12,6 +12,7 @@ headers = [
     'gaussianparametricellipse.h',
     'gaussianprior.h',
     'gsl.h',
+    'gslimage.h',
     'gslinterpolator.h',
     'gslsersicmixinterpolator.h',
     'integralmodel.h',

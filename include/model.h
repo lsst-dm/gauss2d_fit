@@ -347,9 +347,9 @@ private:
 
         std::shared_ptr<const CoordinateSystem> coordsys = observation.get_image().get_coordsys_ptr_const();
         std::shared_ptr<Image> output
-                = !do_output
-                          ? nullptr
-                          : (has_outputs ? outputs_obs->at(0) : std::make_shared<Image>(n_r, n_c, coordsys));
+                = !do_output ? nullptr
+                             : (has_outputs ? outputs_obs->at(0)
+                                            : std::make_shared<Image>(n_r, n_c, nullptr, coordsys));
 
         auto data_eval = !is_mode_image ? observation.get_image_ptr_const() : nullptr;
         auto sigma_inv = !is_mode_image ? observation.get_sigma_inverse_ptr_const() : nullptr;
@@ -432,7 +432,7 @@ private:
                                                     + std::to_string(idx_obs));
                     }
                 } else {
-                    image = std::make_shared<Image>(n_r, n_c, coordsys);
+                    image = std::make_shared<Image>(n_r, n_c, nullptr, coordsys);
                 }
                 arrays.emplace_back(image);
             }
@@ -445,7 +445,7 @@ private:
                           << "; _offsets_params.size()=" << _offsets_params.size() << std::endl;
             }
             auto image = has_outputs ? outputs_obs->at(0)
-                                     : std::make_shared<Image>(1, _n_params_free + 1, coordsys);
+                                     : std::make_shared<Image>(1, _n_params_free + 1, nullptr, coordsys);
             arrays.emplace_back(image);
             grads = std::make_shared<ImageArray<double, Image>>(&arrays);
         } else {
@@ -486,16 +486,16 @@ private:
         if (!((n_obsired == 0) || expired)) {
             throw std::logic_error("jacobian n_obsired=" + std::to_string(n_obsired) + " not in (0,4)");
         }
-        auto map_extra_mut
-                = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, coordsys) : map_extra_weak.lock();
-        auto map_grad_mut
-                = expired ? std::make_shared<Indices>(n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys)
-                          : map_grad_weak.lock();
-        auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, coordsys)
+        auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, nullptr, coordsys)
+                                     : map_extra_weak.lock();
+        auto map_grad_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D,
+                                                                nullptr, coordsys)
+                                    : map_grad_weak.lock();
+        auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, nullptr, coordsys)
                                          : factors_extra_weak.lock();
-        auto factors_grad_mut
-                = expired ? std::make_shared<Image>(n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D, coordsys)
-                          : factors_grad_weak.lock();
+        auto factors_grad_mut = expired ? std::make_shared<Image>(n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D,
+                                                                  nullptr, coordsys)
+                                        : factors_grad_weak.lock();
         ;
 
         ExtraParamMap map_extra = {};
@@ -1202,10 +1202,10 @@ public:
                     for (const auto& prior : this->_priors) {
                         n_prior_residuals += prior->size();
                     }
-                    _residuals_prior
-                            = residuals_prior == nullptr
-                                      ? (_residuals_prior = std::make_shared<Image>(1, n_prior_residuals))
-                                      : std::move(residuals_prior);
+                    _residuals_prior = residuals_prior == nullptr
+                                               ? (_residuals_prior
+                                                  = std::make_shared<Image>(1, n_prior_residuals, nullptr))
+                                               : std::move(residuals_prior);
                     if ((_residuals_prior->get_n_rows() != 1)
                         || (_residuals_prior->get_n_cols() != n_prior_residuals)) {
                         throw std::invalid_argument("residuals_prior=" + _residuals_prior->str()
@@ -1218,7 +1218,8 @@ public:
                     const size_t n_params_jac = _n_params_free + 1;
                     if (outputs_prior.size() == 0) {
                         for (size_t idx_jac = 0; idx_jac < n_params_jac; ++idx_jac) {
-                            _outputs_prior.emplace_back(std::make_shared<Image>(1, n_prior_residuals));
+                            _outputs_prior.emplace_back(
+                                    std::make_shared<Image>(1, n_prior_residuals, nullptr));
                         }
                         if (print) std::cout << "outputs_prior built" << std::endl;
                     } else if (outputs_prior.size() != n_params_jac) {
