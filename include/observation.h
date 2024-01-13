@@ -105,8 +105,8 @@ public:
             throw std::invalid_argument("Must supply non-null image, variance and mask");
         }
         std::string msg;
-        bool passed = images_compatible<T, I, T, I>(*_image, *_sigma_inv, &msg);
-        passed &= images_compatible<T, I, bool, M>(*_image, *_mask_inv, &msg);
+        bool passed = images_compatible<T, I, T, I>(*_image, *_sigma_inv, true, &msg);
+        passed &= images_compatible<T, I, bool, M>(*_image, *_mask_inv, true, &msg);
         if (passed != (msg.empty()))
             throw std::logic_error("Observation images_compatible=" + std::to_string(passed)
                                    + " != msg != '' (=" + msg + ")");

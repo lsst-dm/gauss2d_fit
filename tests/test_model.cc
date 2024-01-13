@@ -113,6 +113,9 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 
             auto outputs = model.get_outputs();
             if (do_jacobian) {
+                auto offsets = model.get_offsets_parameters();
+                CHECK(offsets.size() == params_free.size());
+
                 auto errors = model.verify_jacobian(findiff_frac, findiff_add, rtol, atol);
                 std::string errormsg = "";
                 if (errors.size() != 0) {

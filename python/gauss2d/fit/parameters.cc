@@ -28,9 +28,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
+#include "gauss2d/fit/util.h"
 #include "parameters/transform.h"
 
 #include "parameters.h"
@@ -79,4 +81,7 @@ void bind_parameters(py::module &m) {
     // TODO: Determine why this won't work with std::shared_ptr<parameters::Limits<double>>
     declare_transform_full<double, g2f::LogitLimitedTransform, true, true,
                            std::shared_ptr<parameters::Limits<double>>, double>(m, "LogitLimited");
+    const std::vector<std::reference_wrapper<Parameter>> _default = {};
+    m.def("params_unique", &g2f::nonconsecutive_unique<std::reference_wrapper<Parameter>>,
+          "params"_a = _default);
 }

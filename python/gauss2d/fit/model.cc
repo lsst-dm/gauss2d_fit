@@ -81,6 +81,7 @@ void bind_model(py::module &m) {
                     },
                     "channel"_a)
             .def_property_readonly("mode", &Model::get_mode)
+            .def("offsets_parameters", &Model::get_offsets_parameters)
             .def_property_readonly("outputs", &Model::get_outputs)
             .def("parameters", &Model::get_parameters, "parameters"_a = g2f::ParamRefs(),
                  "paramfilter"_a = nullptr)
