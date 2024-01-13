@@ -21,6 +21,7 @@ headers = [
     'linearsersicmixinterpolator.h',
     'math.h',
     'model.h',
+    'modeller.h',
     'observation.h',
     'param_defs.h',
     'param_filter.h',

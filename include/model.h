@@ -1530,4 +1530,4 @@ public:
 
 }  // namespace gauss2d::fit
 
-#endif
+#endif  // GAUSS2DFIT_MODELLER_H
