@@ -37,8 +37,8 @@ TEST_CASE("Observation") {
                                                                    observation->get_sigma_inverse()));
     CHECK(gauss2d::images_compatible<double, Image, bool, Mask>(observation->get_image(),
                                                                 observation->get_mask_inverse()));
-    CHECK(observation->str() != "");
+    CHECK_NE(observation->str(), "");
     g2f::ParamCRefs params{};
     // no parameters yet
-    CHECK(observation->get_parameters_const(params).size() == 0);
+    CHECK_EQ(0, observation->get_parameters_const(params).size());
 }
