@@ -1161,7 +1161,8 @@ public:
                           std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                           std::vector<std::shared_ptr<Image>> residuals = {},
                           std::vector<std::shared_ptr<Image>> outputs_prior = {},
-                          std::shared_ptr<Image> residuals_prior = nullptr, bool force = false,
+                          std::shared_ptr<Image> residuals_prior = nullptr,
+                          bool force = false,
                           bool print = false) {
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;
@@ -1365,7 +1366,7 @@ public:
      *
      * @note Verification is done using isclose(), which is modelled after Python's numpy.isclose.
      */
-    std::vector<std::string> verify_jacobian(double findiff_frac = 1e-4, double findiff_add = 1e-4,
+    std::vector<std::string> verify_jacobian(double findiff_frac = 1e-5, double findiff_add = 1e-5,
                                              double rtol = 1e-3, double atol = 1e-3) {
         if (_mode != EvaluatorMode::jacobian) {
             this->setup_evaluators(EvaluatorMode::jacobian);

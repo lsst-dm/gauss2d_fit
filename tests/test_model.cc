@@ -80,8 +80,8 @@ std::shared_ptr<t> make_shared_fixed(double value) {
 
 void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
                   g2f::ParamRefs params_free, bool check_outputs_differ = true, bool skip_rho = false,
-                  bool print = false, double findiff_frac = 1e-4, double findiff_add = 1e-4,
-                  double rtol = 1e-3, double atol = 1e-3) {
+                  bool print = false, double findiff_frac = 1e-6, double findiff_add = 1e-6,
+                  double rtol = 5e-5, double atol = 5e-5) {
     const size_t n_channels = channels.size();
     auto grads = model.compute_loglike_grad(true, false, true);
     g2f::ParamFilter filter_free{false, true, true, true};
@@ -203,16 +203,28 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                         auto& param_str_col = params_free[col].get();
                         std::string name_row = param_str_row.get_name();
                         std::string name_col = param_str_col.get_name();
-                        if (!((name_row == g2f::SersicIndexParameter::_name)
-                              || (name_row == g2f::ReffXParameter::_name)
-                              || (name_row == g2f::ReffYParameter::_name)
-                              || (skip_rho && (name_row == g2f::RhoParameter::_name))
-                              || (name_col == g2f::SersicIndexParameter::_name)
-                              || (name_col == g2f::ReffXParameter::_name)
-                              || (name_col == g2f::ReffYParameter::_name)
+
+                        // TODO: Determine less arbitrary thresholds
+                        double is_close_threshold = 2e-3;
+                        if(
+                            (name_row == g2f::ReffXParameter::_name)
+                            || (name_row == g2f::ReffYParameter::_name)
+                            || (name_col == g2f::ReffXParameter::_name)
+                            || (name_col == g2f::ReffYParameter::_name)
+                            || (name_row == g2f::SersicIndexParameter::_name)
+                            || (name_col == g2f::SersicIndexParameter::_name)
+                        ) {
+                            is_close_threshold *= 10.;
+                        }
+
+                        if (!(
+                              (skip_rho && (name_row == g2f::RhoParameter::_name))
                               || (skip_rho && (name_col == g2f::RhoParameter::_name)))) {
                             auto value2 = hessian2->get_value(row, col);
-                            CHECK_MESSAGE(g2f::isclose(value, value2, 1e-3, 1e-4).isclose, "hessian[", row,
+                            auto msg = g2f::isclose(
+                                value, value2, is_close_threshold, is_close_threshold/10
+                            ).isclose;
+                            CHECK_MESSAGE(msg, "hessian[", row,
                                           ",", col, "]=(", value, ")!= hessian2 value=(", value2,
                                           ") for params_free[row], params_free[col]=", param_str_row.str(),
                                           param_str_col.str());
@@ -310,6 +322,8 @@ TEST_CASE("Model") {
     auto limits_axrat_logit = std::make_shared<parameters::Limits<double>>(-1e-10, 1 + 1e-10);
     auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
     auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
+    auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
+    auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
 
     Model::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
@@ -327,6 +341,9 @@ TEST_CASE("Model") {
             std::shared_ptr<g2f::ParametricEllipse> ellipse;
             if (i == 0) {
                 auto ellipse_g = std::make_shared<g2f::GaussianParametricEllipse>(c + 0.5, c + 1.5, 0);
+                ellipse_g->get_sigma_x_param_ptr()->set_transform(transform_log10);
+                ellipse_g->get_sigma_y_param_ptr()->set_transform(transform_log10);
+                ellipse_g->get_rho_param_ptr()->set_transform(transform_rho);
                 ellipse = ellipse_g;
                 comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroids, integralmodel);
             } else {
@@ -448,14 +465,19 @@ TEST_CASE("Model") {
     g2f::FractionalIntegralModel::Data data_frac2 = {};
     double frac_value = 0.3;
     for (const auto& channel : channels) {
-        auto frac1 = std::make_shared<g2f::ProperFractionParameter>(frac_value);
+        auto frac1 = std::make_shared<g2f::ProperFractionParameter>(
+            frac_value,
+            nullptr,
+            g2f::get_transform_default<g2f::Log10Transform>()
+        );
         auto frac2 = std::make_shared<g2f::ProperFractionParameter>(1.0, nullptr, nullptr, nullptr, true);
         data_frac1.emplace_back(*channel, frac1);
         data_frac2.emplace_back(*channel, frac2);
         frac_value += 0.15;
     }
 
-    auto integrals_frac = make_integrals(channels, 0.3);
+    // TODO: set fixed=false when DM-40674 is fixed
+    auto integrals_frac = make_integrals(channels, 0.3, true);
     auto integralmodel_frac = std::make_shared<g2f::LinearIntegralModel>(&integrals_frac);
 
     auto fracmodel1 = g2f::FractionalIntegralModel::make(data_frac1, integralmodel_frac, false);
@@ -478,8 +500,7 @@ TEST_CASE("Model") {
     auto params_src_free2 = model2->get_parameters_new(&filter_free);
     params_src_free2 = g2f::nonconsecutive_unique<g2f::ParamBaseRef>(params_src_free2);
 
-    // TODO: enable when DM-40674 is fixed
-    // verify_model(*model2, channels, params_src_free2, true, true);
+    verify_model(*model2, channels, params_src_free2, true, true, true, 1e-5, 1e-5, 1e-5, 1e-5);
 }
 
 TEST_CASE("Model PSF") {
@@ -493,6 +514,10 @@ TEST_CASE("Model PSF") {
     auto cens = std::make_shared<g2f::CentroidParameters>(std::make_shared<g2f::CentroidXParameter>(0),
                                                           std::make_shared<g2f::CentroidYParameter>(0));
 
+    auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
+    auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
+    auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
+
     for (const auto& sizefrac : {std::pair{1.5, 1.0 - 1e-15}, {2.5, 1.0}}) {
         const auto is_last = sizefrac.second == 1;
         auto frac = std::make_shared<g2f::ProperFractionParameter>(sizefrac.second);
@@ -504,9 +529,10 @@ TEST_CASE("Model PSF") {
         last = g2f::FractionalIntegralModel::make(data, last, is_last);
 
         comps.emplace_back(std::make_shared<g2f::GaussianComponent>(
-                std::make_shared<g2f::GaussianParametricEllipse>(std::make_shared<g2f::SigmaXParameter>(size),
-                                                                 std::make_shared<g2f::SigmaYParameter>(size),
-                                                                 std::make_shared<g2f::RhoParameter>(0)),
+                std::make_shared<g2f::GaussianParametricEllipse>(
+                    std::make_shared<g2f::SigmaXParameter>(size, nullptr, transform_log10),
+                    std::make_shared<g2f::SigmaYParameter>(size, nullptr, transform_log10),
+                    std::make_shared<g2f::RhoParameter>(0, nullptr, transform_rho)),
                 cens, last));
     }
     g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
@@ -597,7 +623,7 @@ TEST_CASE("Model with priors") {
     auto params_free = model->get_parameters_new(&filter);
     params_free = g2f::nonconsecutive_unique(params_free);
 
-    verify_model(*model, CHANNELS_NONE, params_free, true, false, true, 1e-5, 1e-5);
+    verify_model(*model, CHANNELS_NONE, params_free, true, false, true);
 
     // Test repeat evaluation with and without forcing and specifiying outputs
     model->setup_evaluators(Model::EvaluatorMode::jacobian);
