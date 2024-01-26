@@ -103,12 +103,18 @@ public:
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
     ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 
+    double get_sersicindex() const;
+
+    SersicMixComponentIndexParameter& get_sersicindex_param() const;
+    std::shared_ptr<SersicMixComponentIndexParameter> get_sersicindex_param_ptr();
+
     static const size_t N_PARAMS = N_PARAMS_GAUSS2D + 1;
 
     void set_extra_param_factors(const Channel& channel, ExtraParamFactors& factors,
                                  size_t index) const override;
     void set_grad_param_factors(const Channel& channel, GradParamFactors& factors,
                                 size_t index) const override;
+    void set_sersicindex(double value);
 
     std::string repr(bool name_keywords = false) const override;
     std::string str() const override;

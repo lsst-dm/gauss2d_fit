@@ -376,6 +376,18 @@ ParamCRefs& SersicMixComponent::get_parameters_const(ParamCRefs& params, ParamFi
     return params;
 }
 
+double SersicMixComponent::get_sersicindex() const {
+    return this->_sersicindex->get_value();
+}
+
+SersicMixComponentIndexParameter& SersicMixComponent::get_sersicindex_param() const {
+    return *(this->_sersicindex);
+}
+
+std::shared_ptr<SersicMixComponentIndexParameter> SersicMixComponent::get_sersicindex_param_ptr() {
+    return this->_sersicindex;
+}
+
 void SersicMixComponent::set_extra_param_factors(const Channel& channel, ExtraParamFactors& factors,
                                                  size_t index) const {
     if (_sersicindex->get_free()) {
@@ -437,6 +449,10 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
         values[4] = values_base[4] * sizeratio;
         values[5] = values_base[5];
     }
+}
+
+void SersicMixComponent::set_sersicindex(double value) {
+    this->_sersicindex->set_value(value);
 }
 
 std::string SersicMixComponent::repr(bool name_keywords) const {
