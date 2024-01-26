@@ -231,10 +231,21 @@ private:
                         }
                         for (size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
                             factors_extra_in->set_value_unchecked(row, col, _factors_extra[row][col]);
-                            if (print) std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
+                            if (print) {
+                                std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
+                            }
+                        }
+                        if (print) {
+                            std::cout << "]\nfactors_grad[" << row << "]=[";
                         }
                         for (size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
                             factors_grad_in->set_value_unchecked(row, col, _factors_grad[row][col]);
+                            if (print) {
+                                std::cout << factors_grad_in->get_value_unchecked(row, col) << ",";
+                            }
+                        }
+                        if (print) {
+                            std::cout << "]\n";
                         }
                     }
                     offset = row_max;
@@ -457,8 +468,9 @@ private:
             grads = nullptr;
         }
         if (print) {
-            std::cout << observation.str() << std::endl;
-            std::cout << gaussians->str() << std::endl;
+            std::cout << observation.str() << "\n";
+            std::cout << gaussians->str() << "\n";
+            std::cout << "output is null: " << (output == nullptr) << "\n";
         }
 
         // Ensure grads & output aren't nullptr after move
@@ -488,6 +500,9 @@ private:
         unsigned int n_obsired = map_extra_weak.expired() + map_grad_weak.expired()
                                  + factors_grad_weak.expired() + factors_extra_weak.expired();
         const bool expired = n_obsired == 4;
+        if(print) {
+            std::cout << "expired=" << expired << "\n";
+        }
         if (!((n_obsired == 0) || expired)) {
             throw std::logic_error("jacobian n_obsired=" + std::to_string(n_obsired) + " not in (0,4)");
         }
@@ -578,7 +593,9 @@ private:
                     std::cout << std::endl;
                 }
             }
-            if constexpr (print) std::cout << "]" << std::endl << "map_grad=[" << std::endl;
+            if constexpr (print) {
+                std::cout << "]" << std::endl << "map_grad=[" << std::endl;
+            }
             for (size_t idx_row = 0; idx_row < map_grad.size(); idx_row++) {
                 const auto& row = map_grad[idx_row];
                 for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; col++) {
@@ -612,7 +629,9 @@ private:
                 Maps are stored as vectors in gauss2dfit (to avoid unnecessary templating)
                 The inputs to gauss2d's Evaluator are templated Images, so copy the values
             */
-            if constexpr (print) std::cout << "factors/maps: {" << std::endl;
+            if constexpr (print) {
+                std::cout << "factors/maps: {\n";
+            }
             for (size_t row = 0; row < n_gaussians_conv; ++row) {
                 for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; ++col) {
                     map_extra_mut->set_value_unchecked(row, col, (map_extra)[row][col]);
@@ -633,7 +652,7 @@ private:
                     stream_iter_ref(map_grad[row], std::cout);
                     std::cout << ", factors_grad=";
                     stream_iter_ref(factors_grad[row], std::cout);
-                    std::cout << std::endl;
+                    std::cout << "\n";
                 }
             }
             if constexpr (print) std::cout << "}" << std::endl;
@@ -1261,8 +1280,9 @@ public:
                                                         + "]=" + output_prior->str() + " rows,cols != 1,"
                                                         + std::to_string(n_residuals_prior));
                         }
-                        for (size_t col = 0; col < n_residuals_prior; ++col)
+                        for (size_t col = 0; col < n_residuals_prior; ++col) {
                             output_prior->set_value(0, col, 0);
+                        }
                         _outputs_prior.emplace_back(std::move(output_prior));
                         idx_jac++;
                     }
