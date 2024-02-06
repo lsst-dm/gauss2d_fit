@@ -9,6 +9,7 @@
 #include <set>
 #include <sstream>
 
+#include "gauss2d/coordinatesystem.h"
 #include "gauss2d/vectorimage.h"
 
 #include "centroidparameters.h"
@@ -30,32 +31,38 @@
 #include "transforms.h"
 #include "util.h"
 
-typedef gauss2d::VectorImage<double> Image;
-typedef gauss2d::VectorImage<size_t> Indices;
-typedef gauss2d::VectorImage<bool> Mask;
+namespace g2 = gauss2d;
+namespace g2f = g2::fit;
+
+typedef g2::VectorImage<double> Image;
+typedef g2::VectorImage<size_t> Indices;
+typedef g2::VectorImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 typedef g2f::Data<double, Image, Mask> Data;
 typedef g2f::Model<double, Image, Indices, Mask> Model;
 typedef std::vector<std::shared_ptr<const g2f::Channel>> Channels;
 
-namespace g2f = gauss2d::fit;
-
 const auto CHANNEL_NONE = g2f::Channel::NONE_PTR();
 Channels CHANNELS_NONE = {CHANNEL_NONE};
 
 std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_t n_y,
+                                const size_t dn_x = 0., const size_t dn_y = 0.,
                                 const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation>> observations;
+    double dx_min = 0., dy_min = 0.;
     for (const auto& channel_ptr : channels) {
-        auto img = std::make_unique<Image>(n_y, n_x);
+        auto coordsys = std::make_shared<const g2::CoordinateSystem>(1., 1., -1. + dx_min, 2. + dy_min);
+        auto img = std::make_unique<Image>(n_y, n_x, coordsys);
         img->fill(0);
-        auto err = std::make_unique<Image>(n_y, n_x);
+        auto err = std::make_unique<Image>(n_y, n_x, coordsys);
         err->fill(sigma_inv_value);
-        auto mask = std::make_unique<Mask>(n_y, n_x);
+        auto mask = std::make_unique<Mask>(n_y, n_x, coordsys);
         mask->fill(1);
         auto observation = std::make_shared<Observation>(std::move(img), std::move(err), std::move(mask),
                                                          *channel_ptr);
         observations.emplace_back(observation);
+        dx_min += 0.4;
+        dy_min += -1.3;
     }
     return std::make_shared<Data>(observations);
 }
@@ -189,6 +196,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                                   g2f::to_string_float(value_new),
                                   " with compute_hessian(transformed=", std::to_string(transformed), ")");
                 }
+                // Check that the Hessian is not very sensitive to the choice of finite differences
                 g2f::HessianOptions opt{false, 1e-10, 1e-10};
                 auto hessian2 = model.compute_hessian(transformed, include_prior, opt);
                 const auto n_cols = hessian->get_n_cols();
@@ -357,8 +365,8 @@ TEST_CASE("Model") {
                 comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
                                                                  sersic_n);
             }
-            auto ell_g2 = gauss2d::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
-            auto ell_maj = gauss2d::EllipseMajor(ell_g2);
+            auto ell_g2 = g2::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
+            auto ell_maj = g2::EllipseMajor(ell_g2);
             double axrat = ell_maj.get_axrat();
             double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat
                                    + std::pow(g2f::ShapePriorOptions::size_maj_floor_default, 2));
@@ -554,8 +562,8 @@ TEST_CASE("Model PSF") {
 
 // This has some overlap with the Model test case but it's not really problematic
 TEST_CASE("Model with priors") {
-    const size_t n_x = 33, n_y = 33;
-    auto data = make_data(CHANNELS_NONE, n_x, n_y);
+    const size_t n_x = 31, n_y = 27;
+    auto data = make_data(CHANNELS_NONE, n_x, n_y, 1, 3);
     auto centroid_psf = std::make_shared<g2f::CentroidParameters>(
             make_shared_fixed<g2f::CentroidXParameter>(0), make_shared_fixed<g2f::CentroidYParameter>(0));
     g2f::LinearIntegralModel::Data model_psf_ref_data
@@ -595,8 +603,8 @@ TEST_CASE("Model with priors") {
             std::make_shared<g2f::RhoParameter>(-0.020842));
 
     auto ell_g2
-            = gauss2d::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
-    auto ell_maj = gauss2d::EllipseMajor(ell_g2);
+            = g2::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
+    auto ell_maj = g2::EllipseMajor(ell_g2);
     double axrat = ell_maj.get_axrat();
     double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat);
     axrat = sqrt(axrat * axrat + std::pow(g2f::ShapePriorOptions::axrat_floor_default, 2));

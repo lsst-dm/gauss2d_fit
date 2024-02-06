@@ -691,12 +691,13 @@ public:
      * @param findiff_add The minimum value of the finite difference increment.
      * @param rtol The allowed relative tolerance in the Jacobian as compared to the finite difference.
      * @param atol The allowed absolute tolerance in the Jacobian as compared to the finite difference.
-     * @return
+     * @return The gradient of the log likelihoods for the free parameters of the model, in the order
+     *         returned by get_parameters.
      */
     std::vector<double> compute_loglike_grad(bool include_prior = true, bool print = false,
                                              bool verify = false, double findiff_frac = 1e-5,
-                                             double findiff_add = 1e-5, double rtol = 5e-3,
-                                             double atol = 5e-3) {
+                                             double findiff_add = 1e-5, double rtol = 1e-3,
+                                             double atol = 1e-8) {
         this->setup_evaluators(EvaluatorMode::loglike_grad, {}, {}, {}, nullptr, true, print);
         this->evaluate(print);
 
@@ -745,6 +746,7 @@ public:
             for (const auto& prior : _priors) {
                 auto result = prior->evaluate(true);
 
+                // TODO: Confirm that this works with ShapePrior
                 for (const auto& paramref : params_free) {
                     double dll_dx = result.compute_dloglike_dx(paramref);
                     loglike_grads.at(param_idx[paramref]) += dll_dx;
@@ -755,7 +757,6 @@ public:
             std::string errmsg;
             this->setup_evaluators(Model::EvaluatorMode::loglike);
             auto loglike = this->evaluate();
-            auto loglike_sum = sum_iter(loglike);
 
             auto params = this->get_parameters_new(&filter_free);
             params = nonconsecutive_unique<ParamBaseRef>(params);
@@ -766,8 +767,19 @@ public:
                 double diff = std::copysign(std::abs(value * findiff_frac) + findiff_add,
                                             loglike_grads[idx_param]);
                 diff = finite_difference_param(param, diff);
-                auto loglike_new = this->evaluate();
-                auto dloglike = (sum_iter(loglike_new) - loglike_sum) / diff;
+                std::vector<double> loglike_new_plus;
+                std::vector<double> loglike_new_minus;
+                try {
+                    param.set_value_transformed(value + diff/2.);
+                    loglike_new_plus = this->evaluate();
+                    param.set_value_transformed(value - diff/2.);
+                    loglike_new_minus = this->evaluate();
+                } catch (std::runtime_error& e) {
+                    param.set_value_transformed(value + diff);
+                    loglike_new_plus = this->evaluate();
+                    loglike_new_minus = loglike;
+                }
+                auto dloglike = (sum_iter(loglike_new_plus) - sum_iter(loglike_new_minus)) / diff;
                 auto close = isclose(dloglike, loglike_grads[idx_param], rtol, atol);
                 param.set_value_transformed(value);
                 if (!close.isclose) {
@@ -777,13 +789,13 @@ public:
                         double dlp_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
                         dlp_dx_sum += dlp_dx;
                     }
-                    double dlp_dx_findiff = (loglike_new.back() - loglike.back()) / diff;
+                    double dlp_dx_findiff = (loglike_new_plus.back() - loglike_new_minus.back()) / diff;
                     errmsg += param.str() + " failed loglike_grad verification; isclose=" + close.str()
                               + " from findiff=" + to_string_float(dloglike) + " vs "
                               + to_string_float(dll_dx_exact)
-                              + " (ratio = " + to_string_float(dll_dx_exact / dloglike)
-                              + ") from loglike_new=" + to_string_float_iter(loglike_new)
-                              + "; dll_dx_prior=" + to_string_float(dlp_dx_sum)
+                              + " (diff = " + to_string_float(dll_dx_exact - dloglike)
+                              + " , ratio = " + to_string_float(dll_dx_exact / dloglike)
+                              + "); dll_dx_prior=" + to_string_float(dlp_dx_sum)
                               + " vs findiff: " + to_string_float(dlp_dx_findiff) + "\n";
                 }
             }

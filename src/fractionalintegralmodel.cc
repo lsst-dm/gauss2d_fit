@@ -210,8 +210,9 @@ FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
                 if (!is_fixed) errmsg += " is_fixed != true;";
                 if (!is_one) errmsg += " get_value()=" + std::to_string(param->get_value()) + "!=1;";
                 if (errmsg.size() > 0) {
-                    throw std::runtime_error("FractionalIntegralModel data[" + std::to_string(idx)
-                                             + "] is_final==true but" + errmsg);
+                    throw std::invalid_argument("FractionalIntegralModel data[" + std::to_string(idx)
+                                                + "] is_final==true but param for " + channel.get().str()
+                                                + errmsg);
                 }
             }
             if (_map.find(channel) != _map.end()) {
