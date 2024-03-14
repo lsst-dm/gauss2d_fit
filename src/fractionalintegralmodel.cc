@@ -93,6 +93,11 @@ FractionalIntegralModel::get_integral_derivative_factors(const Channel &channel)
     }
     auto factors = _parent->get_integral_derivative_factors(channel);
     if (is_final()) {
+        /*
+            The last component's fraction is fixed, but it has an integral of
+            (1 - frac_previous)*integral_remaining, the derivative of which
+            w.r.t. frac_revious is -1*integral_remaining.
+         */
         factors.back().second[0] *= -1.;
     } else {
         // TODO: Check this if/when it's ever enabled
@@ -205,8 +210,9 @@ FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
                 if (!is_fixed) errmsg += " is_fixed != true;";
                 if (!is_one) errmsg += " get_value()=" + std::to_string(param->get_value()) + "!=1;";
                 if (errmsg.size() > 0) {
-                    throw std::runtime_error("FractionalIntegralModel data[" + std::to_string(idx)
-                                             + "] is_final==true but" + errmsg);
+                    throw std::invalid_argument("FractionalIntegralModel data[" + std::to_string(idx)
+                                                + "] is_final==true but param for " + channel.get().str()
+                                                + errmsg);
                 }
             }
             if (_map.find(channel) != _map.end()) {

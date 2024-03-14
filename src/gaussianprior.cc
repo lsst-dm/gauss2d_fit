@@ -39,7 +39,9 @@ PriorEvaluation GaussianPrior::evaluate(bool calc_jacobians, bool normalize) con
     std::map<ParamBaseCRef, std::vector<double>> jacobians = {};
     // dresidual/dx = d((x - mean)/stddev)/dx = 1/stddev
     if (calc_jacobians) {
-        jacobians[*_param] = {1.0 / _stddev};
+        jacobians[*_param] = {
+            1.0 / (_stddev*(_transformed ? 1.0 : _param->get_transform_derivative()))
+        };
     }
 
     return PriorEvaluation{prior, {residual}, jacobians};

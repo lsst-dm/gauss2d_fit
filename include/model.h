@@ -231,10 +231,21 @@ private:
                         }
                         for (size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
                             factors_extra_in->set_value_unchecked(row, col, _factors_extra[row][col]);
-                            if (print) std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
+                            if (print) {
+                                std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
+                            }
+                        }
+                        if (print) {
+                            std::cout << "]\nfactors_grad[" << row << "]=[";
                         }
                         for (size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
                             factors_grad_in->set_value_unchecked(row, col, _factors_grad[row][col]);
+                            if (print) {
+                                std::cout << factors_grad_in->get_value_unchecked(row, col) << ",";
+                            }
+                        }
+                        if (print) {
+                            std::cout << "]\n";
                         }
                     }
                     offset = row_max;
@@ -263,7 +274,7 @@ private:
         for (const auto& prior : _priors) {
             auto eval = prior->evaluate(is_jacobian, normalize_loglike);
             loglike += eval.loglike;
-            if (is_jacobian) {
+            if (_residuals_prior != nullptr) {
                 size_t idx_jac = idx_resid;
                 size_t n_resid = eval.residuals.size();
                 for (const double value : eval.residuals) {
@@ -271,18 +282,20 @@ private:
                 }
                 // Reset the index back to the original start
                 idx_resid = idx_jac;
-                for (const auto& [param, values] : eval.jacobians) {
-                    if (values.size() != n_resid) {
-                        throw std::logic_error("Prior=" + prior->str() + " param=" + param.get().str()
-                                               + " has n_values=" + std::to_string(values.size())
-                                               + " != residuals.size=" + std::to_string(n_resid));
+                if (is_jacobian) {
+                    for (const auto& [param, values] : eval.jacobians) {
+                        if (values.size() != n_resid) {
+                            throw std::logic_error("Prior=" + prior->str() + " param=" + param.get().str()
+                                                   + " has n_values=" + std::to_string(values.size())
+                                                   + " != residuals.size=" + std::to_string(n_resid));
+                        }
+                        const size_t idx_param = _offsets_params.at(param);
+                        const auto& img = _outputs_prior.at(idx_param);
+                        for (const double value : values) {
+                            img->set_value(0, idx_jac++, value);
+                        }
+                        idx_jac = idx_resid;
                     }
-                    const size_t idx_param = _offsets_params.at(param);
-                    const auto& img = _outputs_prior.at(idx_param);
-                    for (const double value : values) {
-                        img->set_value(0, idx_jac++, value);
-                    }
-                    idx_jac = idx_resid;
                 }
                 idx_resid += n_resid;
             }
@@ -425,11 +438,14 @@ private:
                                                     + "] can't be null for obs #" + std::to_string(idx_obs));
                     }
                     const auto& image_ref = observation.get_image();
-                    if (!images_compatible(*image, image_ref)) {
+                    std::string msg;
+                    // We don't care about coordinate systems in this case
+                    auto compatible = images_compatible(*image, image_ref, false, &msg);
+                    if (!compatible) {
                         throw std::invalid_argument("outputs[" + std::to_string(idx_img) + "]=" + image->str()
                                                     + " incompatible with corresponding image="
-                                                    + image_ref.str() + "for obs #"
-                                                    + std::to_string(idx_obs));
+                                                    + image_ref.str() + " for obs #" + std::to_string(idx_obs)
+                                                    + " due to: " + msg);
                     }
                 } else {
                     image = std::make_shared<Image>(n_r, n_c, coordsys);
@@ -452,8 +468,9 @@ private:
             grads = nullptr;
         }
         if (print) {
-            std::cout << observation.str() << std::endl;
-            std::cout << gaussians->str() << std::endl;
+            std::cout << observation.str() << "\n";
+            std::cout << gaussians->str() << "\n";
+            std::cout << "output is null: " << (output == nullptr) << "\n";
         }
 
         // Ensure grads & output aren't nullptr after move
@@ -483,6 +500,9 @@ private:
         unsigned int n_obsired = map_extra_weak.expired() + map_grad_weak.expired()
                                  + factors_grad_weak.expired() + factors_extra_weak.expired();
         const bool expired = n_obsired == 4;
+        if(print) {
+            std::cout << "expired=" << expired << "\n";
+        }
         if (!((n_obsired == 0) || expired)) {
             throw std::logic_error("jacobian n_obsired=" + std::to_string(n_obsired) + " not in (0,4)");
         }
@@ -573,7 +593,9 @@ private:
                     std::cout << std::endl;
                 }
             }
-            if constexpr (print) std::cout << "]" << std::endl << "map_grad=[" << std::endl;
+            if constexpr (print) {
+                std::cout << "]" << std::endl << "map_grad=[" << std::endl;
+            }
             for (size_t idx_row = 0; idx_row < map_grad.size(); idx_row++) {
                 const auto& row = map_grad[idx_row];
                 for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; col++) {
@@ -607,7 +629,9 @@ private:
                 Maps are stored as vectors in gauss2dfit (to avoid unnecessary templating)
                 The inputs to gauss2d's Evaluator are templated Images, so copy the values
             */
-            if constexpr (print) std::cout << "factors/maps: {" << std::endl;
+            if constexpr (print) {
+                std::cout << "factors/maps: {\n";
+            }
             for (size_t row = 0; row < n_gaussians_conv; ++row) {
                 for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; ++col) {
                     map_extra_mut->set_value_unchecked(row, col, (map_extra)[row][col]);
@@ -628,7 +652,7 @@ private:
                     stream_iter_ref(map_grad[row], std::cout);
                     std::cout << ", factors_grad=";
                     stream_iter_ref(factors_grad[row], std::cout);
-                    std::cout << std::endl;
+                    std::cout << "\n";
                 }
             }
             if constexpr (print) std::cout << "}" << std::endl;
@@ -667,12 +691,13 @@ public:
      * @param findiff_add The minimum value of the finite difference increment.
      * @param rtol The allowed relative tolerance in the Jacobian as compared to the finite difference.
      * @param atol The allowed absolute tolerance in the Jacobian as compared to the finite difference.
-     * @return
+     * @return The gradient of the log likelihoods for the free parameters of the model, in the order
+     *         returned by get_parameters.
      */
     std::vector<double> compute_loglike_grad(bool include_prior = true, bool print = false,
                                              bool verify = false, double findiff_frac = 1e-5,
-                                             double findiff_add = 1e-5, double rtol = 5e-3,
-                                             double atol = 5e-3) {
+                                             double findiff_add = 1e-5, double rtol = 1e-3,
+                                             double atol = 1e-8) {
         this->setup_evaluators(EvaluatorMode::loglike_grad, {}, {}, {}, nullptr, true, print);
         this->evaluate(print);
 
@@ -721,6 +746,7 @@ public:
             for (const auto& prior : _priors) {
                 auto result = prior->evaluate(true);
 
+                // TODO: Confirm that this works with ShapePrior
                 for (const auto& paramref : params_free) {
                     double dll_dx = result.compute_dloglike_dx(paramref);
                     loglike_grads.at(param_idx[paramref]) += dll_dx;
@@ -731,7 +757,6 @@ public:
             std::string errmsg;
             this->setup_evaluators(Model::EvaluatorMode::loglike);
             auto loglike = this->evaluate();
-            auto loglike_sum = sum_iter(loglike);
 
             auto params = this->get_parameters_new(&filter_free);
             params = nonconsecutive_unique<ParamBaseRef>(params);
@@ -742,8 +767,19 @@ public:
                 double diff = std::copysign(std::abs(value * findiff_frac) + findiff_add,
                                             loglike_grads[idx_param]);
                 diff = finite_difference_param(param, diff);
-                auto loglike_new = this->evaluate();
-                auto dloglike = (sum_iter(loglike_new) - loglike_sum) / diff;
+                std::vector<double> loglike_new_plus;
+                std::vector<double> loglike_new_minus;
+                try {
+                    param.set_value_transformed(value + diff/2.);
+                    loglike_new_plus = this->evaluate();
+                    param.set_value_transformed(value - diff/2.);
+                    loglike_new_minus = this->evaluate();
+                } catch (std::runtime_error& e) {
+                    param.set_value_transformed(value + diff);
+                    loglike_new_plus = this->evaluate();
+                    loglike_new_minus = loglike;
+                }
+                auto dloglike = (sum_iter(loglike_new_plus) - sum_iter(loglike_new_minus)) / diff;
                 auto close = isclose(dloglike, loglike_grads[idx_param], rtol, atol);
                 param.set_value_transformed(value);
                 if (!close.isclose) {
@@ -753,13 +789,13 @@ public:
                         double dlp_dx = prior->evaluate(true).compute_dloglike_dx(param, true);
                         dlp_dx_sum += dlp_dx;
                     }
-                    double dlp_dx_findiff = (loglike_new.back() - loglike.back()) / diff;
+                    double dlp_dx_findiff = (loglike_new_plus.back() - loglike_new_minus.back()) / diff;
                     errmsg += param.str() + " failed loglike_grad verification; isclose=" + close.str()
                               + " from findiff=" + to_string_float(dloglike) + " vs "
                               + to_string_float(dll_dx_exact)
-                              + " (ratio = " + to_string_float(dll_dx_exact / dloglike)
-                              + ") from loglike_new=" + to_string_float_iter(loglike_new)
-                              + "; dll_dx_prior=" + to_string_float(dlp_dx_sum)
+                              + " (diff = " + to_string_float(dll_dx_exact - dloglike)
+                              + " , ratio = " + to_string_float(dll_dx_exact / dloglike)
+                              + "); dll_dx_prior=" + to_string_float(dlp_dx_sum)
                               + " vs findiff: " + to_string_float(dlp_dx_findiff) + "\n";
                 }
             }
@@ -1068,6 +1104,14 @@ public:
     /// Return _outputs (output Image instances for each Observation in _data)
     std::vector<std::shared_ptr<Image>> get_outputs() const { return _outputs; }
 
+    std::vector<std::pair<ParamBaseCRef, size_t>> get_offsets_parameters() const {
+        std::vector<std::pair<ParamBaseCRef, size_t>> offsets = {};
+        for (auto& [param, offset] : _offsets_params) {
+            offsets.emplace_back(param, offset);
+        }
+        return offsets;
+    }
+
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override {
         for (auto& source : _sources) source->get_parameters(params, filter);
         for (auto& psfmodel : _psfmodels) psfmodel->get_parameters(params, filter);
@@ -1133,8 +1177,10 @@ public:
      * @param mode The EvaluatorMode to use for all Evaluator instances.
      * @param outputs A vector of vectors of Image outputs for each Evaluator (created if empty and needed).
      * @param residuals A vector of residual Images for each Evaluator (created if empty and needed).
-     * @param outputs_prior A vector of prior residual Images for each Evaluator
+     * @param outputs_prior A vector of prior output (Jacobian) Images for each Evaluator
      *                      (created if empty and needed).
+     * @param residuals_prior A vector of prior residual Images for each Evaluator
+     *                             (created if empty and needed).
      * @param force Whether to force setting up even if already set up in the same mode
      * @param print Whether to print diagnostic statements to stdout.
      *
@@ -1146,7 +1192,8 @@ public:
                           std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                           std::vector<std::shared_ptr<Image>> residuals = {},
                           std::vector<std::shared_ptr<Image>> outputs_prior = {},
-                          std::shared_ptr<Image> residuals_prior = nullptr, bool force = false,
+                          std::shared_ptr<Image> residuals_prior = nullptr,
+                          bool force = false,
                           bool print = false) {
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;
@@ -1191,34 +1238,40 @@ public:
                 _offsets_params.clear();
             }
 
-            if (is_jacobian) {
-                if (print) {
-                    std::cout << "setup_evaluators jacobian called for model:" << std::endl;
-                    std::cout << this->str() << std::endl;
+            size_t n_residuals_prior = 0;
+            bool do_residuals_prior = (_size_priors > 0)
+                                      && (is_loglike_grad || is_jacobian || (mode == EvaluatorMode::loglike)
+                                          || (_mode == EvaluatorMode::loglike_image));
+            if (do_residuals_prior) {
+                for (const auto& prior : this->_priors) {
+                    n_residuals_prior += prior->size();
                 }
 
-                if (_size_priors > 0) {
-                    size_t n_prior_residuals = 0;
-                    for (const auto& prior : this->_priors) {
-                        n_prior_residuals += prior->size();
+                _residuals_prior
+                        = residuals_prior == nullptr
+                                  ? (_residuals_prior = std::make_shared<Image>(1, n_residuals_prior))
+                                  : std::move(residuals_prior);
+                if ((_residuals_prior->get_n_rows() != 1)
+                    || (_residuals_prior->get_n_cols() != n_residuals_prior)) {
+                    throw std::invalid_argument("residuals_prior=" + _residuals_prior->str()
+                                                + " rows,cols != 1," + std::to_string(n_residuals_prior));
+                }
+                if (print) std::cout << "residuals_prior built/validated" << std::endl;
+                for (size_t col = 0; col < n_residuals_prior; ++col) {
+                    _residuals_prior->set_value(0, col, 0);
+                }
+                if (print) std::cout << "residuals_prior reset" << std::endl;
+
+                if (is_jacobian) {
+                    if (print) {
+                        std::cout << "setup_evaluators jacobian called for model:" << std::endl;
+                        std::cout << this->str() << std::endl;
                     }
-                    _residuals_prior
-                            = residuals_prior == nullptr
-                                      ? (_residuals_prior = std::make_shared<Image>(1, n_prior_residuals))
-                                      : std::move(residuals_prior);
-                    if ((_residuals_prior->get_n_rows() != 1)
-                        || (_residuals_prior->get_n_cols() != n_prior_residuals)) {
-                        throw std::invalid_argument("residuals_prior=" + _residuals_prior->str()
-                                                    + " rows,cols != 1," + std::to_string(n_prior_residuals));
-                    }
-                    if (print) std::cout << "residuals_prior built/validated" << std::endl;
-                    for (size_t col = 0; col < n_prior_residuals; ++col)
-                        _residuals_prior->set_value(0, col, 0);
-                    if (print) std::cout << "residuals_prior reset" << std::endl;
+
                     const size_t n_params_jac = _n_params_free + 1;
                     if (outputs_prior.size() == 0) {
                         for (size_t idx_jac = 0; idx_jac < n_params_jac; ++idx_jac) {
-                            _outputs_prior.emplace_back(std::make_shared<Image>(1, n_prior_residuals));
+                            _outputs_prior.emplace_back(std::make_shared<Image>(1, n_residuals_prior));
                         }
                         if (print) std::cout << "outputs_prior built" << std::endl;
                     } else if (outputs_prior.size() != n_params_jac) {
@@ -1234,19 +1287,21 @@ public:
                                                         + "] is null");
                         }
                         if ((output_prior->get_n_rows() != 1)
-                            || (output_prior->get_n_cols() != n_prior_residuals)) {
+                            || (output_prior->get_n_cols() != n_residuals_prior)) {
                             throw std::invalid_argument("outputs_prior[" + std::to_string(idx_jac)
                                                         + "]=" + output_prior->str() + " rows,cols != 1,"
-                                                        + std::to_string(n_prior_residuals));
+                                                        + std::to_string(n_residuals_prior));
                         }
-                        for (size_t col = 0; col < n_prior_residuals; ++col)
+                        for (size_t col = 0; col < n_residuals_prior; ++col) {
                             output_prior->set_value(0, col, 0);
+                        }
                         _outputs_prior.emplace_back(std::move(output_prior));
                         idx_jac++;
                     }
                     if (print) std::cout << "outputs_prior validated" << std::endl;
                 }
-            } else {
+            }
+            if (!is_jacobian) {
                 _outputs.reserve(size());
             }
 
@@ -1267,22 +1322,20 @@ public:
 
             if (print) std::cout << "evaluators made" << std::endl;
 
-            size_t n_residuals_prior = 0;
             std::set<ParamBaseCRef> params_prior;
             size_t idx_prior = 0;
 
             // Check that the priors are reasonable.
             for (const auto& prior : _priors) {
                 auto eval_prior = prior->evaluate(is_jacobian);
+                size_t n_resid = prior->size();
+                size_t n_resid_eval = eval_prior.residuals.size();
+                if (n_resid != eval_prior.residuals.size()) {
+                    throw std::logic_error(prior->str() + ".size()=" + std::to_string(n_resid)
+                                           + " != evaluate(true).residuals.size()="
+                                           + std::to_string(n_resid_eval));
+                }
                 if (is_jacobian) {
-                    size_t n_resid = prior->size();
-                    size_t n_resid_eval = eval_prior.residuals.size();
-                    if (n_resid != eval_prior.residuals.size()) {
-                        throw std::logic_error(prior->str() + ".size()=" + std::to_string(n_resid)
-                                               + " != evaluate(true).residuals.size()="
-                                               + std::to_string(n_resid_eval));
-                    }
-                    n_residuals_prior += n_resid;
                     size_t idx_param = 0;
                     for (const auto& param_jacob : eval_prior.jacobians) {
                         const auto& param = param_jacob.first;
@@ -1299,8 +1352,8 @@ public:
                 idx_prior++;
             }
             if (print && (_priors.size() > 0)) std::cout << "priors validated" << std::endl;
-            if (is_jacobian && (_size_priors > 0)) {
-                if (_residuals_prior->get_n_cols() != n_residuals_prior) {
+            if (_size_priors > 0) {
+                if ((_residuals_prior != nullptr) && (_residuals_prior->get_n_cols() != n_residuals_prior)) {
                     throw std::invalid_argument("residuals_prior=" + _residuals_prior->str() + " n_residuals="
                                                 + std::to_string(n_residuals_prior) + "!= get_n_cols()="
                                                 + std::to_string(_residuals_prior->get_n_cols()));
@@ -1345,7 +1398,7 @@ public:
      *
      * @note Verification is done using isclose(), which is modelled after Python's numpy.isclose.
      */
-    std::vector<std::string> verify_jacobian(double findiff_frac = 1e-4, double findiff_add = 1e-4,
+    std::vector<std::string> verify_jacobian(double findiff_frac = 1e-5, double findiff_add = 1e-5,
                                              double rtol = 1e-3, double atol = 1e-3) {
         if (_mode != EvaluatorMode::jacobian) {
             this->setup_evaluators(EvaluatorMode::jacobian);

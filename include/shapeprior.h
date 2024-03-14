@@ -31,7 +31,7 @@ public:
      *
      * @param delta_jacobian The small value difference to add to parameter values when computing Jacobians
      * @param size_maj_floor The floor value for the major axis size
-     * @param axrat_floor Th
+     * @param axrat_floor The floor value for the axis ratio
      */
     ShapePriorOptions(double delta_jacobian = delta_jacobian_default,
                       double size_maj_floor = size_maj_floor_default,

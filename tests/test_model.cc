@@ -9,6 +9,7 @@
 #include <set>
 #include <sstream>
 
+#include "gauss2d/coordinatesystem.h"
 #include "gauss2d/vectorimage.h"
 
 #include "centroidparameters.h"
@@ -30,32 +31,38 @@
 #include "transforms.h"
 #include "util.h"
 
-typedef gauss2d::VectorImage<double> Image;
-typedef gauss2d::VectorImage<size_t> Indices;
-typedef gauss2d::VectorImage<bool> Mask;
+namespace g2 = gauss2d;
+namespace g2f = g2::fit;
+
+typedef g2::VectorImage<double> Image;
+typedef g2::VectorImage<size_t> Indices;
+typedef g2::VectorImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 typedef g2f::Data<double, Image, Mask> Data;
 typedef g2f::Model<double, Image, Indices, Mask> Model;
 typedef std::vector<std::shared_ptr<const g2f::Channel>> Channels;
 
-namespace g2f = gauss2d::fit;
-
 const auto CHANNEL_NONE = g2f::Channel::NONE_PTR();
 Channels CHANNELS_NONE = {CHANNEL_NONE};
 
 std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_t n_y,
+                                const size_t dn_x = 0., const size_t dn_y = 0.,
                                 const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation>> observations;
+    double dx_min = 0., dy_min = 0.;
     for (const auto& channel_ptr : channels) {
-        auto img = std::make_unique<Image>(n_y, n_x);
+        auto coordsys = std::make_shared<const g2::CoordinateSystem>(1., 1., -1. + dx_min, 2. + dy_min);
+        auto img = std::make_unique<Image>(n_y, n_x, coordsys);
         img->fill(0);
-        auto err = std::make_unique<Image>(n_y, n_x);
+        auto err = std::make_unique<Image>(n_y, n_x, coordsys);
         err->fill(sigma_inv_value);
-        auto mask = std::make_unique<Mask>(n_y, n_x);
+        auto mask = std::make_unique<Mask>(n_y, n_x, coordsys);
         mask->fill(1);
         auto observation = std::make_shared<Observation>(std::move(img), std::move(err), std::move(mask),
                                                          *channel_ptr);
         observations.emplace_back(observation);
+        dx_min += 0.4;
+        dy_min += -1.3;
     }
     return std::make_shared<Data>(observations);
 }
@@ -80,8 +87,8 @@ std::shared_ptr<t> make_shared_fixed(double value) {
 
 void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
                   g2f::ParamRefs params_free, bool check_outputs_differ = true, bool skip_rho = false,
-                  bool print = false, double findiff_frac = 1e-4, double findiff_add = 1e-4,
-                  double rtol = 1e-3, double atol = 1e-3) {
+                  bool print = false, double findiff_frac = 1e-6, double findiff_add = 1e-6,
+                  double rtol = 5e-5, double atol = 5e-5) {
     const size_t n_channels = channels.size();
     auto grads = model.compute_loglike_grad(true, false, true);
     g2f::ParamFilter filter_free{false, true, true, true};
@@ -113,6 +120,9 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 
             auto outputs = model.get_outputs();
             if (do_jacobian) {
+                auto offsets = model.get_offsets_parameters();
+                CHECK(offsets.size() == params_free.size());
+
                 auto errors = model.verify_jacobian(findiff_frac, findiff_add, rtol, atol);
                 std::string errormsg = "";
                 if (errors.size() != 0) {
@@ -186,6 +196,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                                   g2f::to_string_float(value_new),
                                   " with compute_hessian(transformed=", std::to_string(transformed), ")");
                 }
+                // Check that the Hessian is not very sensitive to the choice of finite differences
                 g2f::HessianOptions opt{false, 1e-10, 1e-10};
                 auto hessian2 = model.compute_hessian(transformed, include_prior, opt);
                 const auto n_cols = hessian->get_n_cols();
@@ -200,16 +211,28 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                         auto& param_str_col = params_free[col].get();
                         std::string name_row = param_str_row.get_name();
                         std::string name_col = param_str_col.get_name();
-                        if (!((name_row == g2f::SersicIndexParameter::_name)
-                              || (name_row == g2f::ReffXParameter::_name)
-                              || (name_row == g2f::ReffYParameter::_name)
-                              || (skip_rho && (name_row == g2f::RhoParameter::_name))
-                              || (name_col == g2f::SersicIndexParameter::_name)
-                              || (name_col == g2f::ReffXParameter::_name)
-                              || (name_col == g2f::ReffYParameter::_name)
+
+                        // TODO: Determine less arbitrary thresholds
+                        double is_close_threshold = 2e-3;
+                        if(
+                            (name_row == g2f::ReffXParameter::_name)
+                            || (name_row == g2f::ReffYParameter::_name)
+                            || (name_col == g2f::ReffXParameter::_name)
+                            || (name_col == g2f::ReffYParameter::_name)
+                            || (name_row == g2f::SersicIndexParameter::_name)
+                            || (name_col == g2f::SersicIndexParameter::_name)
+                        ) {
+                            is_close_threshold *= 10.;
+                        }
+
+                        if (!(
+                              (skip_rho && (name_row == g2f::RhoParameter::_name))
                               || (skip_rho && (name_col == g2f::RhoParameter::_name)))) {
                             auto value2 = hessian2->get_value(row, col);
-                            CHECK_MESSAGE(g2f::isclose(value, value2, 1e-3, 1e-4).isclose, "hessian[", row,
+                            auto msg = g2f::isclose(
+                                value, value2, is_close_threshold, is_close_threshold/10
+                            ).isclose;
+                            CHECK_MESSAGE(msg, "hessian[", row,
                                           ",", col, "]=(", value, ")!= hessian2 value=(", value2,
                                           ") for params_free[row], params_free[col]=", param_str_row.str(),
                                           param_str_col.str());
@@ -307,6 +330,8 @@ TEST_CASE("Model") {
     auto limits_axrat_logit = std::make_shared<parameters::Limits<double>>(-1e-10, 1 + 1e-10);
     auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
     auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
+    auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
+    auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
 
     Model::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
@@ -324,6 +349,9 @@ TEST_CASE("Model") {
             std::shared_ptr<g2f::ParametricEllipse> ellipse;
             if (i == 0) {
                 auto ellipse_g = std::make_shared<g2f::GaussianParametricEllipse>(c + 0.5, c + 1.5, 0);
+                ellipse_g->get_sigma_x_param_ptr()->set_transform(transform_log10);
+                ellipse_g->get_sigma_y_param_ptr()->set_transform(transform_log10);
+                ellipse_g->get_rho_param_ptr()->set_transform(transform_rho);
                 ellipse = ellipse_g;
                 comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroids, integralmodel);
             } else {
@@ -337,8 +365,8 @@ TEST_CASE("Model") {
                 comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
                                                                  sersic_n);
             }
-            auto ell_g2 = gauss2d::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
-            auto ell_maj = gauss2d::EllipseMajor(ell_g2);
+            auto ell_g2 = g2::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
+            auto ell_maj = g2::EllipseMajor(ell_g2);
             double axrat = ell_maj.get_axrat();
             double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat
                                    + std::pow(g2f::ShapePriorOptions::size_maj_floor_default, 2));
@@ -445,14 +473,19 @@ TEST_CASE("Model") {
     g2f::FractionalIntegralModel::Data data_frac2 = {};
     double frac_value = 0.3;
     for (const auto& channel : channels) {
-        auto frac1 = std::make_shared<g2f::ProperFractionParameter>(frac_value);
+        auto frac1 = std::make_shared<g2f::ProperFractionParameter>(
+            frac_value,
+            nullptr,
+            g2f::get_transform_default<g2f::Log10Transform>()
+        );
         auto frac2 = std::make_shared<g2f::ProperFractionParameter>(1.0, nullptr, nullptr, nullptr, true);
         data_frac1.emplace_back(*channel, frac1);
         data_frac2.emplace_back(*channel, frac2);
         frac_value += 0.15;
     }
 
-    auto integrals_frac = make_integrals(channels, 0.3);
+    // TODO: set fixed=false when DM-40674 is fixed
+    auto integrals_frac = make_integrals(channels, 0.3, true);
     auto integralmodel_frac = std::make_shared<g2f::LinearIntegralModel>(&integrals_frac);
 
     auto fracmodel1 = g2f::FractionalIntegralModel::make(data_frac1, integralmodel_frac, false);
@@ -475,8 +508,7 @@ TEST_CASE("Model") {
     auto params_src_free2 = model2->get_parameters_new(&filter_free);
     params_src_free2 = g2f::nonconsecutive_unique<g2f::ParamBaseRef>(params_src_free2);
 
-    // TODO: enable when DM-40674 is fixed
-    // verify_model(*model2, channels, params_src_free2, true, true);
+    verify_model(*model2, channels, params_src_free2, true, true, true, 1e-5, 1e-5, 1e-5, 1e-5);
 }
 
 TEST_CASE("Model PSF") {
@@ -490,6 +522,10 @@ TEST_CASE("Model PSF") {
     auto cens = std::make_shared<g2f::CentroidParameters>(std::make_shared<g2f::CentroidXParameter>(0),
                                                           std::make_shared<g2f::CentroidYParameter>(0));
 
+    auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
+    auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
+    auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
+
     for (const auto& sizefrac : {std::pair{1.5, 1.0 - 1e-15}, {2.5, 1.0}}) {
         const auto is_last = sizefrac.second == 1;
         auto frac = std::make_shared<g2f::ProperFractionParameter>(sizefrac.second);
@@ -501,9 +537,10 @@ TEST_CASE("Model PSF") {
         last = g2f::FractionalIntegralModel::make(data, last, is_last);
 
         comps.emplace_back(std::make_shared<g2f::GaussianComponent>(
-                std::make_shared<g2f::GaussianParametricEllipse>(std::make_shared<g2f::SigmaXParameter>(size),
-                                                                 std::make_shared<g2f::SigmaYParameter>(size),
-                                                                 std::make_shared<g2f::RhoParameter>(0)),
+                std::make_shared<g2f::GaussianParametricEllipse>(
+                    std::make_shared<g2f::SigmaXParameter>(size, nullptr, transform_log10),
+                    std::make_shared<g2f::SigmaYParameter>(size, nullptr, transform_log10),
+                    std::make_shared<g2f::RhoParameter>(0, nullptr, transform_rho)),
                 cens, last));
     }
     g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
@@ -525,8 +562,8 @@ TEST_CASE("Model PSF") {
 
 // This has some overlap with the Model test case but it's not really problematic
 TEST_CASE("Model with priors") {
-    const size_t n_x = 33, n_y = 33;
-    auto data = make_data(CHANNELS_NONE, n_x, n_y);
+    const size_t n_x = 31, n_y = 27;
+    auto data = make_data(CHANNELS_NONE, n_x, n_y, 1, 3);
     auto centroid_psf = std::make_shared<g2f::CentroidParameters>(
             make_shared_fixed<g2f::CentroidXParameter>(0), make_shared_fixed<g2f::CentroidYParameter>(0));
     g2f::LinearIntegralModel::Data model_psf_ref_data
@@ -566,8 +603,8 @@ TEST_CASE("Model with priors") {
             std::make_shared<g2f::RhoParameter>(-0.020842));
 
     auto ell_g2
-            = gauss2d::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
-    auto ell_maj = gauss2d::EllipseMajor(ell_g2);
+            = g2::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
+    auto ell_maj = g2::EllipseMajor(ell_g2);
     double axrat = ell_maj.get_axrat();
     double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat);
     axrat = sqrt(axrat * axrat + std::pow(g2f::ShapePriorOptions::axrat_floor_default, 2));
@@ -594,7 +631,7 @@ TEST_CASE("Model with priors") {
     auto params_free = model->get_parameters_new(&filter);
     params_free = g2f::nonconsecutive_unique(params_free);
 
-    verify_model(*model, CHANNELS_NONE, params_free, true, false, true, 1e-5, 1e-5);
+    verify_model(*model, CHANNELS_NONE, params_free, true, false, true);
 
     // Test repeat evaluation with and without forcing and specifiying outputs
     model->setup_evaluators(Model::EvaluatorMode::jacobian);

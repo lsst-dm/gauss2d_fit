@@ -50,6 +50,10 @@ void bind_gaussianparametricellipse(py::module &m) {
                                     &g2f::GaussianParametricEllipse::set_sigma_x)
                       .def_property("sigma_y", &g2f::GaussianParametricEllipse::get_sigma_y,
                                     &g2f::GaussianParametricEllipse::set_sigma_y)
+                      .def_property("size_x", &g2f::GaussianParametricEllipse::get_size_x,
+                                    &g2f::GaussianParametricEllipse::set_size_x)
+                      .def_property("size_y", &g2f::GaussianParametricEllipse::get_size_y,
+                                    &g2f::GaussianParametricEllipse::set_size_y)
                       .def_property("xyr", &g2f::GaussianParametricEllipse::get_xyr,
                                     &g2f::GaussianParametricEllipse::set_xyr)
                       .def_property_readonly("rho_param", &g2f::GaussianParametricEllipse::get_rho_param)
@@ -57,12 +61,20 @@ void bind_gaussianparametricellipse(py::module &m) {
                                              &g2f::GaussianParametricEllipse::get_sigma_x_param)
                       .def_property_readonly("sigma_y_param",
                                              &g2f::GaussianParametricEllipse::get_sigma_y_param)
+                      .def_property_readonly("size_x_param",
+                                             &g2f::GaussianParametricEllipse::get_size_x_param)
+                      .def_property_readonly("size_y_param",
+                                             &g2f::GaussianParametricEllipse::get_size_y_param)
                       .def_property_readonly("rho_param_ptr",
                                              &g2f::GaussianParametricEllipse::get_rho_param_ptr)
                       .def_property_readonly("sigma_x_param_ptr",
                                              &g2f::GaussianParametricEllipse::get_sigma_x_param_ptr)
                       .def_property_readonly("sigma_y_param_ptr",
                                              &g2f::GaussianParametricEllipse::get_sigma_y_param_ptr)
+                      .def_property_readonly("size_x_param_ptr",
+                                             &g2f::GaussianParametricEllipse::get_size_x_param_ptr)
+                      .def_property_readonly("size_y_param_ptr",
+                                             &g2f::GaussianParametricEllipse::get_size_y_param_ptr)
                       .def("set", &g2f::GaussianParametricEllipse::set)
                       .def("__repr__",
                            [](const g2f::GaussianParametricEllipse &self) { return self.repr(true); })

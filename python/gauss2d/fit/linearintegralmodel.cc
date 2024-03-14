@@ -42,7 +42,7 @@ void bind_linearintegralmodel(py::module &m) {
                          g2f::IntegralModel>(m, "LinearIntegralModel")
                       .def(py::init<const g2f::LinearIntegralModel::Data *>(), "data"_a)
                       .def_property_readonly("channels", &g2f::LinearIntegralModel::get_channels)
-                      .def_property_readonly("integral", &g2f::LinearIntegralModel::get_integral)
+                      .def("integral", &g2f::LinearIntegralModel::get_integral, "channel"_a)
                       .def("parameters", &g2f::LinearIntegralModel::get_parameters,
                            "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
                       .def("__getitem__", [](const g2f::LinearIntegralModel &self,

@@ -73,6 +73,12 @@ void bind_sersicmixcomponent(py::module &m) {
                                     std::shared_ptr<g2f::SersicMixComponentIndexParameter>>(),
                            "ellipse"_a = nullptr, "centroid"_a = nullptr, "integral"_a = nullptr,
                            "sersicindex"_a = nullptr)
+                      .def_property("sersicindex", &g2f::SersicMixComponent::get_sersicindex,
+                                    &g2f::SersicMixComponent::set_sersicindex)
+                      .def_property_readonly("sersicindex_param",
+                                             &g2f::SersicMixComponent::get_sersicindex_param)
+                      .def_property_readonly("sersicindex_param_ptr",
+                                             &g2f::SersicMixComponent::get_sersicindex_param_ptr)
                       .def("parameters", &g2f::SersicMixComponent::get_parameters,
                            "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
                       .def("gaussians",

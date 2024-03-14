@@ -65,8 +65,8 @@ inline void GaussianParametricEllipse::set_hwhm_y(double hwhm_y) {
 inline void GaussianParametricEllipse::set_rho(double rho) { _rho->set_value(rho); }
 inline void GaussianParametricEllipse::set_sigma_x(double sigma_x) { _sigma_x->set_value(sigma_x); }
 inline void GaussianParametricEllipse::set_sigma_y(double sigma_y) { _sigma_y->set_value(sigma_y); }
-inline void GaussianParametricEllipse::set_size_x(double sigma_x) { _sigma_x->set_value(sigma_x); }
-inline void GaussianParametricEllipse::set_size_y(double sigma_y) { _sigma_y->set_value(sigma_y); }
+inline void GaussianParametricEllipse::set_size_x(double size_x) { _sigma_x->set_value(size_x); }
+inline void GaussianParametricEllipse::set_size_y(double size_y) { _sigma_y->set_value(size_y); }
 void GaussianParametricEllipse::set_hxyr(const std::array<double, 3>& hxyr) {
     this->set_h(hxyr[0], hxyr[1], hxyr[2]);
 }

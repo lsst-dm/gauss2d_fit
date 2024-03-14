@@ -143,7 +143,7 @@ void GaussianComponent::set_extra_param_factors(const Channel& channel, ExtraPar
     auto& row = factors[index];
 
     if (n_factors > 0) {
-        row[0] = factors_int[0].first.get().get_transform_derivative() * factors_int[0].second[0];
+        row[0] = factors_int[0].second[0] / factors_int[0].first.get().get_transform_derivative();
     } else {
         row[0] = 0;
     }

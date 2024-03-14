@@ -30,13 +30,13 @@ TEST_CASE("LinearIntegralModel") {
 
     g2f::ParamCRefs params;
     integral->get_parameters_const(params);
-    CHECK(params.size() == 2);
-    CHECK(params.at(0) == *p1);
+    CHECK_EQ(params.size(), 2);
+    CHECK_EQ(params.at(0), *p1);
 
     g2f::ParamFilter filter{true, true, true, true};
     g2f::ParamRefs params2;
     integral->get_parameters(params2, &filter);
-    CHECK(params2.size() == 2);
+    CHECK_EQ(params2.size(), 2);
     filter.channel = *c2;
     integral->get_parameters(params2, &filter);
     CHECK(params2.size() == 3);
@@ -44,4 +44,12 @@ TEST_CASE("LinearIntegralModel") {
     filter.channel = *c3;
     integral->get_parameters(params2, &filter);
     CHECK(params2.size() == 3);
+}
+
+TEST_CASE("LinearIntegralModel(default)") {
+    const auto& channel = g2f::Channel::NONE();
+    auto integral = std::make_shared<g2f::LinearIntegralModel>(nullptr);
+    double value = 2.;
+    integral->at(channel)->set_value(value);
+    CHECK_EQ(integral->get_integral(channel), value);
 }
