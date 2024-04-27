@@ -33,7 +33,7 @@
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
 #include "gauss2d/fit/util.h"
-#include "parameters/transform.h"
+#include "lsst/modelfit/parameters.h"
 
 #include "parameters.h"
 #include "pybind11.h"
@@ -71,7 +71,7 @@ void bind_parameters(py::module &m) {
     declare_sizeparameter<double, g2f::SigmaYParameter, g2f::SizeYParameter>(m, "SigmaY");
     declare_parameter<double, g2f::StdDevParameter>(m, "StdDev");
     declare_transform_base<double>(m);
-    declare_transform<double, parameters::UnitTransform<double>>(m, "Unit");
+    declare_transform<double, lsst::modelfit::parameters::UnitTransform<double>>(m, "Unit");
     declare_transform<double, g2f::InverseTransform>(m, "Inverse");
     declare_transform<double, g2f::JanskyToABMagTransform>(m, "JanskyToABMag");
     declare_transform<double, g2f::NanojanskyToABMagTransform>(m, "NanojanskyToABMag");

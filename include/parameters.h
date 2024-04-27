@@ -8,8 +8,9 @@
 #include <cfloat>
 #include <iostream>
 
-#include "parameters/parameter.h"
-#include "parameters/unit.h"
+#include "lsst/modelfit/parameters.h"
+
+namespace parameters = lsst::modelfit::parameters;
 
 namespace gauss2d::fit {
 

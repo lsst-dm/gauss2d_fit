@@ -3,7 +3,9 @@
 
 #include <vector>
 
-#include "parameters/parameter.h"
+#include "lsst/modelfit/parameters.h"
+
+namespace parameters = lsst::modelfit::parameters;
 
 namespace gauss2d::fit {
 using ParamBase = parameters::ParameterBase<double>;

@@ -22,7 +22,7 @@ if gsl_dep.found()
 endif
 
 if use_eups
-    gauss2d_eupsdir = run_command('eups', 'list', '-d', 'gauss2d', check: true).stdout().strip()
+    gauss2d_eupsdir = run_command('sh', '-c', 'echo $GAUSS2D_DIR', check: true).stdout().strip()
     cpp = meson.get_compiler('cpp')
     gauss2d_dep = declare_dependency(
         dependencies: [cpp.find_library('gauss2d', dirs: [gauss2d_eupsdir + '/build-release/lib64']),],
@@ -32,7 +32,7 @@ if use_eups
         include_directories: gauss2d_eupsdir + '/python/lib/build-release/include',
     )
     gauss2dfit_eupsdir = gauss2dfit_eups.stdout().strip()
-    parameters_eupsdir = run_command('eups', 'list', '-d', 'parameters', check: true).stdout().strip()
+    parameters_eupsdir = run_command('sh', '-c', 'echo $MODELFIT_PARAMETERS_DIR', check: true).stdout().strip()
     # TODO: Can this dependency be extracted from '../meson.build' somehow
     gauss2dfit_dep = declare_dependency(
         dependencies: [cpp.find_library('gauss2dfit', dirs: [gauss2dfit_eupsdir + '/build-release/lib64']),],

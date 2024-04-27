@@ -31,9 +31,9 @@
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/sersicmixcomponent.h"
 #include "gauss2d/fit/sersicparametricellipse.h"
+#include "lsst/modelfit/parameters.h"
 
 #include "parameters.h"
-#include "parameters/parameter.h"
 #include "pybind11.h"
 
 namespace py = pybind11;

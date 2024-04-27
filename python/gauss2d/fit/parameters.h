@@ -32,10 +32,10 @@
 #include <memory>
 #include <string>
 
+#include "lsst/modelfit/parameters.h"
+
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
-#include "parameters/limits.h"
-#include "parameters/transform.h"
 
 #include "pybind11.h"
 #include "utils.h"
@@ -44,6 +44,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
+namespace parameters = lsst::modelfit::parameters;
 
 template <typename T>
 void declare_limits(py::module &m) {

@@ -1,7 +1,3 @@
-//
-// Created by dtaranu on 4/8/21.
-//
-
 #ifndef GAUSS2D_FIT_TRANSFORMS_H
 #define GAUSS2D_FIT_TRANSFORMS_H
 
@@ -9,13 +5,9 @@
 #include <iostream>
 #include <memory>
 
-#ifndef PARAMETERS_LIMITS_H
-#include "parameters/limits.h"
-#endif
+#include "lsst/modelfit/parameters.h"
 
-#ifndef PARAMETERS_TRANSFORM_H
-#include "parameters/transform.h"
-#endif
+namespace parameters = lsst::modelfit::parameters;
 
 namespace gauss2d::fit {
 #pragma GCC diagnostic push

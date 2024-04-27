@@ -45,9 +45,8 @@ typedef std::vector<std::shared_ptr<const g2f::Channel>> Channels;
 const auto CHANNEL_NONE = g2f::Channel::NONE_PTR();
 Channels CHANNELS_NONE = {CHANNEL_NONE};
 
-std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_t n_y,
-                                const size_t dn_x = 0., const size_t dn_y = 0.,
-                                const double sigma_inv_value = 1.) {
+std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_t n_y, const size_t dn_x = 0.,
+                                const size_t dn_y = 0., const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation>> observations;
     double dx_min = 0., dy_min = 0.;
     for (const auto& channel_ptr : channels) {
@@ -214,26 +213,23 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 
                         // TODO: Determine less arbitrary thresholds
                         double is_close_threshold = 2e-3;
-                        if(
-                            (name_row == g2f::ReffXParameter::_name)
+                        if ((name_row == g2f::ReffXParameter::_name)
                             || (name_row == g2f::ReffYParameter::_name)
                             || (name_col == g2f::ReffXParameter::_name)
                             || (name_col == g2f::ReffYParameter::_name)
                             || (name_row == g2f::SersicIndexParameter::_name)
-                            || (name_col == g2f::SersicIndexParameter::_name)
-                        ) {
+                            || (name_col == g2f::SersicIndexParameter::_name)) {
                             is_close_threshold *= 10.;
                         }
 
-                        if (!(
-                              (skip_rho && (name_row == g2f::RhoParameter::_name))
+                        if (!((skip_rho && (name_row == g2f::RhoParameter::_name))
                               || (skip_rho && (name_col == g2f::RhoParameter::_name)))) {
                             auto value2 = hessian2->get_value(row, col);
-                            auto msg = g2f::isclose(
-                                value, value2, is_close_threshold, is_close_threshold/10
-                            ).isclose;
-                            CHECK_MESSAGE(msg, "hessian[", row,
-                                          ",", col, "]=(", value, ")!= hessian2 value=(", value2,
+                            auto msg
+                                    = g2f::isclose(value, value2, is_close_threshold, is_close_threshold / 10)
+                                              .isclose;
+                            CHECK_MESSAGE(msg, "hessian[", row, ",", col, "]=(", value,
+                                          ")!= hessian2 value=(", value2,
                                           ") for params_free[row], params_free[col]=", param_str_row.str(),
                                           param_str_col.str());
                         }
@@ -474,10 +470,7 @@ TEST_CASE("Model") {
     double frac_value = 0.3;
     for (const auto& channel : channels) {
         auto frac1 = std::make_shared<g2f::ProperFractionParameter>(
-            frac_value,
-            nullptr,
-            g2f::get_transform_default<g2f::Log10Transform>()
-        );
+                frac_value, nullptr, g2f::get_transform_default<g2f::Log10Transform>());
         auto frac2 = std::make_shared<g2f::ProperFractionParameter>(1.0, nullptr, nullptr, nullptr, true);
         data_frac1.emplace_back(*channel, frac1);
         data_frac2.emplace_back(*channel, frac2);
@@ -538,9 +531,9 @@ TEST_CASE("Model PSF") {
 
         comps.emplace_back(std::make_shared<g2f::GaussianComponent>(
                 std::make_shared<g2f::GaussianParametricEllipse>(
-                    std::make_shared<g2f::SigmaXParameter>(size, nullptr, transform_log10),
-                    std::make_shared<g2f::SigmaYParameter>(size, nullptr, transform_log10),
-                    std::make_shared<g2f::RhoParameter>(0, nullptr, transform_rho)),
+                        std::make_shared<g2f::SigmaXParameter>(size, nullptr, transform_log10),
+                        std::make_shared<g2f::SigmaYParameter>(size, nullptr, transform_log10),
+                        std::make_shared<g2f::RhoParameter>(0, nullptr, transform_rho)),
                 cens, last));
     }
     g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
@@ -602,8 +595,7 @@ TEST_CASE("Model with priors") {
             std::make_shared<g2f::ReffXParameter>(1.475109), std::make_shared<g2f::ReffYParameter>(1.469544),
             std::make_shared<g2f::RhoParameter>(-0.020842));
 
-    auto ell_g2
-            = g2::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
+    auto ell_g2 = g2::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
     auto ell_maj = g2::EllipseMajor(ell_g2);
     double axrat = ell_maj.get_axrat();
     double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat);

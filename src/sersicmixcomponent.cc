@@ -376,9 +376,7 @@ ParamCRefs& SersicMixComponent::get_parameters_const(ParamCRefs& params, ParamFi
     return params;
 }
 
-double SersicMixComponent::get_sersicindex() const {
-    return this->_sersicindex->get_value();
-}
+double SersicMixComponent::get_sersicindex() const { return this->_sersicindex->get_value(); }
 
 SersicMixComponentIndexParameter& SersicMixComponent::get_sersicindex_param() const {
     return *(this->_sersicindex);
@@ -451,9 +449,7 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
     }
 }
 
-void SersicMixComponent::set_sersicindex(double value) {
-    this->_sersicindex->set_value(value);
-}
+void SersicMixComponent::set_sersicindex(double value) { this->_sersicindex->set_value(value); }
 
 std::string SersicMixComponent::repr(bool name_keywords) const {
     return "SersicMixComponent(" + EllipticalComponent::repr(name_keywords) + ", "

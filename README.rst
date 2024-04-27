@@ -14,8 +14,8 @@ package - but it can be used for any kind of image or domain.
 *gauss2dfit* is provided in two parts; a C++ shared library (libgauss2dfit) and
 optional Python bindings. Both depend on the base package
 `gauss2d <https://github.com/lsst-dm/gauss2d/>`, as well as the
-`parameters <https://github.com/lsst-dm/parameters/>` package for defining
-parameters with limits and transformations.
+`modelfit_parameters <https://github.com/lsst/modelfit_parameters/>` package
+for defining parameters with limits and transformations.
 
 *gauss2dfit* is built with `Meson <https://github.com/mesonbuild>`_ and uses
 `pkg-config <https://github.com/pkgconf/pkgconf>`_ to store package

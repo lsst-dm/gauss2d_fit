@@ -500,7 +500,7 @@ private:
         unsigned int n_obsired = map_extra_weak.expired() + map_grad_weak.expired()
                                  + factors_grad_weak.expired() + factors_extra_weak.expired();
         const bool expired = n_obsired == 4;
-        if(print) {
+        if (print) {
             std::cout << "expired=" << expired << "\n";
         }
         if (!((n_obsired == 0) || expired)) {
@@ -770,9 +770,9 @@ public:
                 std::vector<double> loglike_new_plus;
                 std::vector<double> loglike_new_minus;
                 try {
-                    param.set_value_transformed(value + diff/2.);
+                    param.set_value_transformed(value + diff / 2.);
                     loglike_new_plus = this->evaluate();
-                    param.set_value_transformed(value - diff/2.);
+                    param.set_value_transformed(value - diff / 2.);
                     loglike_new_minus = this->evaluate();
                 } catch (std::runtime_error& e) {
                     param.set_value_transformed(value + diff);
@@ -1192,8 +1192,7 @@ public:
                           std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                           std::vector<std::shared_ptr<Image>> residuals = {},
                           std::vector<std::shared_ptr<Image>> outputs_prior = {},
-                          std::shared_ptr<Image> residuals_prior = nullptr,
-                          bool force = false,
+                          std::shared_ptr<Image> residuals_prior = nullptr, bool force = false,
                           bool print = false) {
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;

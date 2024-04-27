@@ -1,7 +1,7 @@
 #ifndef GAUSS2D_FIT_SERSICMIXCOMPONENT_H
 #define GAUSS2D_FIT_SERSICMIXCOMPONENT_H
 
-#include <parameters/parameter.h>
+#include "lsst/modelfit/parameters.h"
 
 #include "channel.h"
 #include "ellipticalcomponent.h"
@@ -68,7 +68,7 @@ public:
     }
 };
 
-// TODO: Add ref to derivation of weights, when publicized
+// TODO: Add ref to derivation of weights, when published
 /**
  * @brief A Gaussian mixture approximation to a Sersic profile Component.
  *
@@ -81,7 +81,8 @@ public:
  * but deliberately excludes the very inner and outermost regions.
  *
  * @note See https://ned.ipac.caltech.edu/level5/March05/Graham/Graham2.html
- *       for a useful summary of various properties of the Sersic profile.
+ *       (Graham & Driver 2005) for a useful summary of various properties
+ *       of the Sersic profile.
  */
 class SersicMixComponent : private SersicParametricEllipseHolder, public EllipticalComponent {
 private:
