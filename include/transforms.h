@@ -7,16 +7,20 @@
 
 #include "lsst/modelfit/parameters.h"
 
-namespace parameters = lsst::modelfit::parameters;
-
 namespace gauss2d::fit {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+
+namespace parameters = lsst::modelfit::parameters;
 typedef parameters::Transform<double> Transform;
 
 struct InverseTransform : public Transform {
     std::string description() const override { return "Inverse transform"; }
-    std::string repr(bool name_keywords = false) const override { return "InverseTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<InverseTransform>(false, namespace_separator) + "()";
+    }
     std::string str() const override { return "InverseTransform()"; }
 
     inline double derivative(double x) const override { return 1 / (x * x); }
@@ -28,7 +32,11 @@ struct JanskyToABMagTransform : public Transform {
     static inline const double f_nu_0 = 3630.780547701002879554236770479;
 
     std::string description() const override { return "jansky to AB magnitude transform"; }
-    std::string repr(bool name_keywords = false) const override { return "JanskyToABMagTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<JanskyToABMagTransform>(false, namespace_separator) + "()";
+    }
     std::string str() const override { return "JanskyToABMagTransform()"; }
 
     inline double derivative(double x) const override {
@@ -40,7 +48,11 @@ struct JanskyToABMagTransform : public Transform {
 
 struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
     std::string description() const override { return "nanojansky to AB magnitude transform"; }
-    std::string repr(bool name_keywords = false) const override { return "NanojanskyToABMagTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<NanojanskyToABMagTransform>(false, namespace_separator) + "()";
+    }
     std::string str() const override { return "NanojanskyToABMagTransform()"; }
 
     inline double derivative(double x) const override { return JanskyToABMagTransform::derivative(x); }
@@ -50,7 +62,11 @@ struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
 
 struct LogTransform : public Transform {
     std::string description() const override { return "Natural (base e) logarithmic transform"; }
-    std::string repr(bool name_keywords = false) const override { return "LogTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<LogTransform>(false, namespace_separator) + "()";
+    }
     std::string str() const override { return "LogTransform()"; }
 
     inline double derivative(double x) const override { return 1 / x; }
@@ -60,7 +76,11 @@ struct LogTransform : public Transform {
 
 struct Log10Transform : public Transform {
     std::string description() const override { return "Base 10 logarithmic transform"; }
-    std::string repr(bool name_keywords = false) const override { return "Log10Transform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<Log10Transform>(false, namespace_separator) + "()";
+    }
     std::string str() const override { return "Log10Transform()"; }
 
     inline double derivative(double x) const override {
@@ -72,7 +92,11 @@ struct Log10Transform : public Transform {
 
 struct LogitTransform : public Transform {
     std::string description() const override { return "Logit transform"; }
-    std::string repr(bool name_keywords = false) const override { return "LogitTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<LogitTransform>(false, namespace_separator) + "()";
+    }
     std::string str() const override { return "LogitTransform()"; }
 
     inline double derivative(double x) const override { return 1 / x + 1 / (1 - x); }
@@ -90,8 +114,10 @@ private:
 
 public:
     std::string description() const override { return "Logit limited (to finite range) transform"; }
-    std::string repr(bool name_keywords = false) const override {
-        return std::string(parameters::type_name<LogitLimitedTransform>()) + "("
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<LogitLimitedTransform>(false, namespace_separator) + "("
                + (name_keywords ? "limits=" : "") + _limits->repr(name_keywords) + ", "
                + (name_keywords ? "factor=" : "") + std::to_string(_factor) + ")";
     }
