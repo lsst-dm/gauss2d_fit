@@ -39,8 +39,8 @@ namespace g2f = gauss2d::fit;
 void bind_parametricgaussian1d(py::module &m) {
     auto _e = py::class_<g2f::ParametricGaussian1D, std::shared_ptr<g2f::ParametricGaussian1D>,
                          gauss2d::Object>(m, "ParametricGaussian1D")
-                      .def(py::init<std::shared_ptr<g2f::MeanParameter>,
-                                    std::shared_ptr<g2f::StdDevParameter>>(),
+                      .def(py::init<std::shared_ptr<g2f::MeanParameterD>,
+                                    std::shared_ptr<g2f::StdDevParameterD>>(),
                            "mean"_a = nullptr, "stddev"_a = nullptr)
                       .def_property("mean", &g2f::ParametricGaussian1D::get_mean,
                                     &g2f::ParametricGaussian1D::set_mean)

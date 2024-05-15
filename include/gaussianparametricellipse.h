@@ -14,9 +14,9 @@ namespace gauss2d::fit {
  */
 class GaussianParametricEllipse : public gauss2d::EllipseData, public ParametricEllipse {
 private:
-    std::shared_ptr<SigmaXParameter> _sigma_x;
-    std::shared_ptr<SigmaYParameter> _sigma_y;
-    std::shared_ptr<RhoParameter> _rho;
+    std::shared_ptr<SigmaXParameterD> _sigma_x;
+    std::shared_ptr<SigmaYParameterD> _sigma_y;
+    std::shared_ptr<RhoParameterD> _rho;
 
 public:
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
@@ -33,21 +33,21 @@ public:
     std::array<double, 3> get_xyr() const override;
     std::array<double, 3> get_hxyr() const override;
 
-    RhoParameter& get_rho_param() const override;
+    RhoParameterD& get_rho_param() const override;
     /// Explicit alias for get_size_x_param
-    SigmaXParameter& get_sigma_x_param() const;
+    SigmaXParameterD& get_sigma_x_param() const;
     /// Explicit alias for get_size_y_param
-    SigmaYParameter& get_sigma_y_param() const;
-    SizeXParameter& get_size_x_param() const override;
-    SizeYParameter& get_size_y_param() const override;
+    SigmaYParameterD& get_sigma_y_param() const;
+    SizeXParameterD& get_size_x_param() const override;
+    SizeYParameterD& get_size_y_param() const override;
 
-    std::shared_ptr<RhoParameter> get_rho_param_ptr() override;
+    std::shared_ptr<RhoParameterD> get_rho_param_ptr() override;
     /// Explicit alias for get_sigma_x_param_ptr
-    std::shared_ptr<SigmaXParameter> get_sigma_x_param_ptr();
+    std::shared_ptr<SigmaXParameterD> get_sigma_x_param_ptr();
     /// Explicit alias for get_sigma_y_param_ptr
-    std::shared_ptr<SigmaYParameter> get_sigma_y_param_ptr();
-    std::shared_ptr<SizeXParameter> get_size_x_param_ptr() override;
-    std::shared_ptr<SizeYParameter> get_size_y_param_ptr() override;
+    std::shared_ptr<SigmaYParameterD> get_sigma_y_param_ptr();
+    std::shared_ptr<SizeXParameterD> get_size_x_param_ptr() override;
+    std::shared_ptr<SizeYParameterD> get_size_y_param_ptr() override;
 
     void set(double sigma_x, double sigma_y, double rho) override;
     void set_h(double hwhm_x, double hwhm_y, double rho) override;
@@ -71,9 +71,9 @@ public:
      * @param sigma_y The SigmaYParameter to reference.
      * @param rho The RhoParameter to reference. Default-initialized if null.
      */
-    GaussianParametricEllipse(std::shared_ptr<SigmaXParameter> sigma_x,
-                              std::shared_ptr<SigmaYParameter> sigma_y,
-                              std::shared_ptr<RhoParameter> rho = nullptr);
+    GaussianParametricEllipse(std::shared_ptr<SigmaXParameterD> sigma_x,
+                              std::shared_ptr<SigmaYParameterD> sigma_y,
+                              std::shared_ptr<RhoParameterD> rho = nullptr);
     /**
      * Construct a GaussianParametricEllipse from values.
      *

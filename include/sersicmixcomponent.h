@@ -15,7 +15,7 @@ namespace gauss2d::fit {
 /**
  * A SersicIndexParameter for a Gaussian mixture Component.
  */
-class SersicMixComponentIndexParameter : public SersicIndexParameter {
+class SersicMixComponentIndexParameterD : public SersicIndexParameterD {
 private:
     std::vector<IntegralSize> _integralsizes;
     std::vector<IntegralSize> _integralsizes_derivs;
@@ -46,7 +46,7 @@ public:
     void set_value_transformed(double value_transformed) override;
 
     /// See docs for Parameter
-    explicit SersicMixComponentIndexParameter(
+    explicit SersicMixComponentIndexParameterD(
             double value = _get_default(), std::shared_ptr<const parameters::Limits<double>> limits = nullptr,
             std::shared_ptr<const parameters::Transform<double>> transform = nullptr,
             std::shared_ptr<const parameters::Unit> unit = nullptr, bool fixed = false,
@@ -87,7 +87,7 @@ public:
 class SersicMixComponent : private SersicParametricEllipseHolder, public EllipticalComponent {
 private:
     class SersicMixGaussianComponent;
-    std::shared_ptr<SersicMixComponentIndexParameter> _sersicindex;
+    std::shared_ptr<SersicMixComponentIndexParameterD> _sersicindex;
     std::map<std::reference_wrapper<const Channel>, std::vector<std::unique_ptr<SersicMixGaussianComponent>>>
             _gaussians;
 
@@ -106,8 +106,8 @@ public:
 
     double get_sersicindex() const;
 
-    SersicMixComponentIndexParameter& get_sersicindex_param() const;
-    std::shared_ptr<SersicMixComponentIndexParameter> get_sersicindex_param_ptr();
+    SersicMixComponentIndexParameterD& get_sersicindex_param() const;
+    std::shared_ptr<SersicMixComponentIndexParameterD> get_sersicindex_param_ptr();
 
     static const size_t N_PARAMS = N_PARAMS_GAUSS2D + 1;
 
@@ -123,7 +123,7 @@ public:
     explicit SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr,
                                 std::shared_ptr<CentroidParameters> centroid = nullptr,
                                 std::shared_ptr<IntegralModel> integralmodel = nullptr,
-                                std::shared_ptr<SersicMixComponentIndexParameter> sersicindex = nullptr);
+                                std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex = nullptr);
     ~SersicMixComponent();
 };
 }  // namespace gauss2d::fit

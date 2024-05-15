@@ -14,7 +14,7 @@ namespace g2 = gauss2d;
 namespace g2f = gauss2d::fit;
 
 TEST_CASE("GaussianPrior") {
-    auto param = std::make_shared<g2f::IntegralParameter>();
+    auto param = std::make_shared<g2f::IntegralParameterD>();
     double mean = param->get_value();
     double stddev = 1;
     auto prior = g2f::GaussianPrior(param, mean, stddev, false);
@@ -36,7 +36,7 @@ TEST_CASE("GaussianPrior") {
     CHECK(prior.get_stddev() == stddev);
     CHECK(prior.get_transformed() == false);
 
-    param = std::make_shared<g2f::IntegralParameter>(1.0, nullptr, std::make_shared<g2f::Log10Transform>());
+    param = std::make_shared<g2f::IntegralParameterD>(1.0, nullptr, std::make_shared<g2f::Log10Transform>());
     prior = g2f::GaussianPrior(param, param->get_value_transformed(), stddev, true);
     CHECK(prior.get_transformed() == true);
     auto eval = prior.evaluate(true);

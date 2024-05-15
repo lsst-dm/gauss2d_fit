@@ -22,10 +22,10 @@ namespace gauss2d::fit {
 
 class SersicEllipseData : public EllipseData, public QuasiEllipse {
 private:
-    const std::shared_ptr<const ReffXParameter> _size_x;
-    const std::shared_ptr<const ReffYParameter> _size_y;
-    const std::shared_ptr<const RhoParameter> _rho;
-    const std::shared_ptr<const SersicMixComponentIndexParameter> _sersicindex;
+    const std::shared_ptr<const ReffXParameterD> _size_x;
+    const std::shared_ptr<const ReffYParameterD> _size_y;
+    const std::shared_ptr<const RhoParameterD> _rho;
+    const std::shared_ptr<const SersicMixComponentIndexParameterD> _sersicindex;
     unsigned short _index;
 
 public:
@@ -67,10 +67,10 @@ public:
                + ", rho=" + _rho->str() + +")";
     }
 
-    SersicEllipseData(const std::shared_ptr<const ReffXParameter> size_x,
-                      const std::shared_ptr<const ReffYParameter> size_y,
-                      const std::shared_ptr<const RhoParameter> rho,
-                      const std::shared_ptr<const SersicMixComponentIndexParameter> sersicindex,
+    SersicEllipseData(const std::shared_ptr<const ReffXParameterD> size_x,
+                      const std::shared_ptr<const ReffYParameterD> size_y,
+                      const std::shared_ptr<const RhoParameterD> rho,
+                      const std::shared_ptr<const SersicMixComponentIndexParameterD> sersicindex,
                       unsigned short index)
             : _size_x(std::move(size_x)),
               _size_y(std::move(size_y)),
@@ -89,7 +89,7 @@ public:
 
 class SersicModelIntegral : public GaussianModelIntegral, public IntegralModel {
 private:
-    const std::shared_ptr<const SersicMixComponentIndexParameter> _sersicindex;
+    const std::shared_ptr<const SersicMixComponentIndexParameterD> _sersicindex;
     unsigned short _index;
 
 public:
@@ -134,7 +134,7 @@ public:
     }
 
     SersicModelIntegral(const Channel& channel, const std::shared_ptr<const IntegralModel> integralmodel,
-                        const std::shared_ptr<const SersicMixComponentIndexParameter> sersicindex,
+                        const std::shared_ptr<const SersicMixComponentIndexParameterD> sersicindex,
                         unsigned short index)
             : GaussianModelIntegral(channel, integralmodel),
               _sersicindex(std::move(sersicindex)),
@@ -180,12 +180,12 @@ public:
               _integralmodel(std::move(integralmodel)) {}
 };
 
-void SersicMixComponentIndexParameter::_set_ratios(double sersicindex) {
+void SersicMixComponentIndexParameterD::_set_ratios(double sersicindex) {
     _integralsizes = _interpolator->get_integralsizes(sersicindex);
     _integralsizes_derivs = _interpolator->get_integralsizes_derivs(sersicindex);
 }
 
-double SersicMixComponentIndexParameter::get_integralratio(unsigned short index) const {
+double SersicMixComponentIndexParameterD::get_integralratio(unsigned short index) const {
     if (index >= get_order()) {
         throw std::invalid_argument(this->str() + ".get_integralratio(index=" + std::to_string(index)
                                     + " >= max(order=" + std::to_string(get_order()) + "))");
@@ -193,7 +193,7 @@ double SersicMixComponentIndexParameter::get_integralratio(unsigned short index)
     return _integralsizes[index].integral;
 }
 
-double SersicMixComponentIndexParameter::get_integralratio_deriv(unsigned short index) const {
+double SersicMixComponentIndexParameterD::get_integralratio_deriv(unsigned short index) const {
     if (index >= get_order()) {
         throw std::invalid_argument(this->str() + ".get_integralratio_deriv(index=" + std::to_string(index)
                                     + " >= max(order=" + std::to_string(get_order()) + "))");
@@ -201,12 +201,12 @@ double SersicMixComponentIndexParameter::get_integralratio_deriv(unsigned short 
     return _integralsizes_derivs[index].integral;
 }
 
-std::shared_ptr<const SersicMixInterpolator> SersicMixComponentIndexParameter::get_interpolator_default(
+std::shared_ptr<const SersicMixInterpolator> SersicMixComponentIndexParameterD::get_interpolator_default(
         unsigned short order) {
     return get_sersic_mix_interpolator_default(order);
 }
 
-double SersicMixComponentIndexParameter::get_sizeratio(unsigned short index) const {
+double SersicMixComponentIndexParameterD::get_sizeratio(unsigned short index) const {
     if (index >= get_order()) {
         throw std::invalid_argument(this->str() + ".get_integralratio(index=" + std::to_string(index)
                                     + " >= max(order=" + std::to_string(get_order()) + "))");
@@ -214,7 +214,7 @@ double SersicMixComponentIndexParameter::get_sizeratio(unsigned short index) con
     return _integralsizes[index].sigma;
 }
 
-double SersicMixComponentIndexParameter::get_sizeratio_deriv(unsigned short index) const {
+double SersicMixComponentIndexParameterD::get_sizeratio_deriv(unsigned short index) const {
     if (index >= get_order()) {
         throw std::invalid_argument(this->str() + ".get_integralratio(index=" + std::to_string(index)
                                     + " >= max(order=" + std::to_string(get_order()) + "))");
@@ -223,23 +223,24 @@ double SersicMixComponentIndexParameter::get_sizeratio_deriv(unsigned short inde
 }
 
 static const std::string limits_sersic_name
-        = std::string(parameters::type_name<SersicMixComponentIndexParameter>()) + ".limits_maximal";
+        = std::string(parameters::type_name<SersicMixComponentIndexParameterD>()) + ".limits_maximal";
 
 static const auto limits_sersic = std::make_shared<const parameters::Limits<double>>(
-        0.5, 8.0, std::string(parameters::type_name<SersicMixComponentIndexParameter>()) + ".limits_maximal");
+        0.5, 8.0,
+        std::string(parameters::type_name<SersicMixComponentIndexParameterD>()) + ".limits_maximal");
 
-const parameters::Limits<double>& SersicMixComponentIndexParameter::get_limits_maximal() const {
+const parameters::Limits<double>& SersicMixComponentIndexParameterD::get_limits_maximal() const {
     return *limits_sersic;
 }
 
-SersicMixComponentIndexParameter::SersicMixComponentIndexParameter(
+SersicMixComponentIndexParameterD::SersicMixComponentIndexParameterD(
         double value, std::shared_ptr<const parameters::Limits<double>> limits,
         const std::shared_ptr<const parameters::Transform<double>> transform,
         std::shared_ptr<const parameters::Unit> unit, bool fixed, std::string label,
         const std::shared_ptr<const SersicMixInterpolator> interpolator)
-        : SersicIndexParameter(value, nullptr, transform, unit, fixed, label),
+        : SersicIndexParameterD(value, nullptr, transform, unit, fixed, label),
           _interpolator(std::move(interpolator == nullptr
-                                          ? SersicMixComponentIndexParameter::get_interpolator_default(
+                                          ? SersicMixComponentIndexParameterD::get_interpolator_default(
                                                   SERSICMIX_ORDER_DEFAULT)
                                           : interpolator)) {
     // TODO: determine if this can be avoided
@@ -247,19 +248,19 @@ SersicMixComponentIndexParameter::SersicMixComponentIndexParameter(
     _set_ratios(value);
 }
 
-InterpType SersicMixComponentIndexParameter::get_interptype() const {
+InterpType SersicMixComponentIndexParameterD::get_interptype() const {
     return _interpolator->get_interptype();
 }
 
-unsigned short SersicMixComponentIndexParameter::get_order() const { return _interpolator->get_order(); }
+unsigned short SersicMixComponentIndexParameterD::get_order() const { return _interpolator->get_order(); }
 
-void SersicMixComponentIndexParameter::set_value(double value) {
-    SersicIndexParameter::set_value(value);
+void SersicMixComponentIndexParameterD::set_value(double value) {
+    SersicIndexParameterD::set_value(value);
     _set_ratios(value);
 }
 
-void SersicMixComponentIndexParameter::set_value_transformed(double value) {
-    SersicIndexParameter::set_value_transformed(value);
+void SersicMixComponentIndexParameterD::set_value_transformed(double value) {
+    SersicIndexParameterD::set_value_transformed(value);
     _set_ratios(get_value());
 }
 
@@ -378,11 +379,11 @@ ParamCRefs& SersicMixComponent::get_parameters_const(ParamCRefs& params, ParamFi
 
 double SersicMixComponent::get_sersicindex() const { return this->_sersicindex->get_value(); }
 
-SersicMixComponentIndexParameter& SersicMixComponent::get_sersicindex_param() const {
+SersicMixComponentIndexParameterD& SersicMixComponent::get_sersicindex_param() const {
     return *(this->_sersicindex);
 }
 
-std::shared_ptr<SersicMixComponentIndexParameter> SersicMixComponent::get_sersicindex_param_ptr() {
+std::shared_ptr<SersicMixComponentIndexParameterD> SersicMixComponent::get_sersicindex_param_ptr() {
     return this->_sersicindex;
 }
 
@@ -463,11 +464,11 @@ std::string SersicMixComponent::str() const {
 SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse,
                                        std::shared_ptr<CentroidParameters> centroid,
                                        std::shared_ptr<IntegralModel> integralmodel,
-                                       std::shared_ptr<SersicMixComponentIndexParameter> sersicindex)
+                                       std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex)
         : SersicParametricEllipseHolder(std::move(ellipse)),
           EllipticalComponent(_ellipsedata, centroid, integralmodel),
           _sersicindex(sersicindex != nullptr ? std::move(sersicindex)
-                                              : std::make_shared<SersicMixComponentIndexParameter>()) {
+                                              : std::make_shared<SersicMixComponentIndexParameterD>()) {
     for (const Channel& channel : _integralmodel->get_channels()) {
         auto& gaussians = _gaussians[channel];
         gaussians.reserve(_sersicindex->get_order());

@@ -21,7 +21,7 @@ struct InverseTransform : public Transform {
                      = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
         return parameters::type_name_str<InverseTransform>(false, namespace_separator) + "()";
     }
-    std::string str() const override { return "InverseTransform()"; }
+    std::string str() const override { return parameters::type_name_str<InverseTransform>(true) + "()"; }
 
     inline double derivative(double x) const override { return 1 / (x * x); }
     inline double forward(double x) const override { return 1 / x; }
@@ -37,7 +37,9 @@ struct JanskyToABMagTransform : public Transform {
                      = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
         return parameters::type_name_str<JanskyToABMagTransform>(false, namespace_separator) + "()";
     }
-    std::string str() const override { return "JanskyToABMagTransform()"; }
+    std::string str() const override {
+        return parameters::type_name_str<JanskyToABMagTransform>(true) + "()";
+    }
 
     inline double derivative(double x) const override {
         return -1.08573620475812959718098227313021197915 / x;
@@ -53,7 +55,9 @@ struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
                      = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
         return parameters::type_name_str<NanojanskyToABMagTransform>(false, namespace_separator) + "()";
     }
-    std::string str() const override { return "NanojanskyToABMagTransform()"; }
+    std::string str() const override {
+        return parameters::type_name_str<NanojanskyToABMagTransform>(true) + "()";
+    }
 
     inline double derivative(double x) const override { return JanskyToABMagTransform::derivative(x); }
     inline double forward(double x) const override { return JanskyToABMagTransform::forward(x * 1e-9); }
@@ -67,7 +71,7 @@ struct LogTransform : public Transform {
                      = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
         return parameters::type_name_str<LogTransform>(false, namespace_separator) + "()";
     }
-    std::string str() const override { return "LogTransform()"; }
+    std::string str() const override { return parameters::type_name_str<LogTransform>(true) + "()"; }
 
     inline double derivative(double x) const override { return 1 / x; }
     inline double forward(double x) const override { return log(x); }
@@ -81,7 +85,7 @@ struct Log10Transform : public Transform {
                      = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
         return parameters::type_name_str<Log10Transform>(false, namespace_separator) + "()";
     }
-    std::string str() const override { return "Log10Transform()"; }
+    std::string str() const override { return parameters::type_name_str<Log10Transform>(true) + "()"; }
 
     inline double derivative(double x) const override {
         return 0.434294481903251827651128918916605082294397 / x;
@@ -97,7 +101,7 @@ struct LogitTransform : public Transform {
                      = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
         return parameters::type_name_str<LogitTransform>(false, namespace_separator) + "()";
     }
-    std::string str() const override { return "LogitTransform()"; }
+    std::string str() const override { return parameters::type_name_str<LogitTransform>(true) + "()"; }
 
     inline double derivative(double x) const override { return 1 / x + 1 / (1 - x); }
     inline double forward(double x) const override { return log(x / (1 - x)); }
@@ -122,7 +126,7 @@ public:
                + (name_keywords ? "factor=" : "") + std::to_string(_factor) + ")";
     }
     std::string str() const override {
-        return std::string(parameters::type_name<LogitLimitedTransform>()) + "(limits=" + _limits->str()
+        return parameters::type_name_str<LogitLimitedTransform>(true) + "(limits=" + _limits->str()
                + ", factor=" + std::to_string(_factor) + ")";
     }
 

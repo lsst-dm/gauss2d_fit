@@ -37,12 +37,12 @@ TEST_CASE("ShapePrior") {
     auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
 
     auto prior_size_params = std::make_shared<g2f::ParametricGaussian1D>(
-            std::make_shared<g2f::MeanParameter>(mean_size, nullptr,
-                                                 g2f::get_transform_default<g2f::Log10Transform>()),
-            std::make_shared<g2f::StdDevParameter>(stddev_size));
+            std::make_shared<g2f::MeanParameterD>(mean_size, nullptr,
+                                                  g2f::get_transform_default<g2f::Log10Transform>()),
+            std::make_shared<g2f::StdDevParameterD>(stddev_size));
     auto prior_axrat_params = std::make_shared<g2f::ParametricGaussian1D>(
-            std::make_shared<g2f::MeanParameter>(mean_axrat, nullptr, transform_axrat),
-            std::make_shared<g2f::StdDevParameter>(stddev_axrat));
+            std::make_shared<g2f::MeanParameterD>(mean_axrat, nullptr, transform_axrat),
+            std::make_shared<g2f::StdDevParameterD>(stddev_axrat));
 
     auto prior_size = g2f::ShapePrior(ellipse, prior_size_params, nullptr, options);
     double loglike_size = prior_size.evaluate().loglike;

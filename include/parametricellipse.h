@@ -35,13 +35,13 @@ public:
  */
 class ParametricEllipse : public Parametric, public QuasiEllipse {
 public:
-    virtual RhoParameter& get_rho_param() const = 0;
-    virtual SizeXParameter& get_size_x_param() const = 0;
-    virtual SizeYParameter& get_size_y_param() const = 0;
+    virtual RhoParameterD& get_rho_param() const = 0;
+    virtual SizeXParameterD& get_size_x_param() const = 0;
+    virtual SizeYParameterD& get_size_y_param() const = 0;
 
-    virtual std::shared_ptr<RhoParameter> get_rho_param_ptr() = 0;
-    virtual std::shared_ptr<SizeXParameter> get_size_x_param_ptr() = 0;
-    virtual std::shared_ptr<SizeYParameter> get_size_y_param_ptr() = 0;
+    virtual std::shared_ptr<RhoParameterD> get_rho_param_ptr() = 0;
+    virtual std::shared_ptr<SizeXParameterD> get_size_x_param_ptr() = 0;
+    virtual std::shared_ptr<SizeYParameterD> get_size_y_param_ptr() = 0;
 
     // No set because it would be ambiguous with gauss2d::set
     // TODO: Consider disambiguating

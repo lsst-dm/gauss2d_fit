@@ -25,140 +25,140 @@ public:
 static const UnitNone unit_none{};
 
 /// A Parameter representing a size (i.e. a physical length)
-struct SizeParameter {
+struct SizeParameterD {
     virtual double get_size() const = 0;
     virtual void set_size(double size) = 0;
 
-    virtual ~SizeParameter() = default;
+    virtual ~SizeParameterD() = default;
 };
 
-struct SizeXParameter : public SizeParameter {
-    virtual ~SizeXParameter() = default;
+struct SizeXParameterD : public SizeParameterD {
+    virtual ~SizeXParameterD() = default;
 };
 
-struct SizeYParameter : public SizeParameter {
-    virtual ~SizeYParameter() = default;
+struct SizeYParameterD : public SizeParameterD {
+    virtual ~SizeYParameterD() = default;
 };
 
 template <typename T>
 using Param = parameters::Parameter<double, T>;
 
-struct CentroidXParameter : public Param<CentroidXParameter> {
+struct CentroidXParameterD : public Param<CentroidXParameterD> {
     static inline const std::string _desc = "Centroid (x)";
     static inline const std::string _name = "cen_x";
-    using Param<CentroidXParameter>::Parameter;
+    using Param<CentroidXParameterD>::Parameter;
 };
 
-struct CentroidYParameter : public Param<CentroidYParameter> {
+struct CentroidYParameterD : public Param<CentroidYParameterD> {
     static inline const std::string _desc = "Centroid (y)";
     static inline const std::string _name = "cen_y";
-    using Param<CentroidYParameter>::Parameter;
+    using Param<CentroidYParameterD>::Parameter;
 };
 
-struct IntegralParameter : public Param<IntegralParameter> {
+struct IntegralParameterD : public Param<IntegralParameterD> {
 public:
     static inline const bool _linear = true;
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Gaussian integral (total integrated weight/flux)";
     static inline const std::string _name = "integral";
-    using Param<IntegralParameter>::Parameter;
+    using Param<IntegralParameterD>::Parameter;
 };
 
-struct MeanParameter : public Param<MeanParameter> {
+struct MeanParameterD : public Param<MeanParameterD> {
     static inline const std::string _desc = "Gaussian (1D normal) mean";
     static inline const std::string _name = "mean";
-    using Param<MeanParameter>::Parameter;
+    using Param<MeanParameterD>::Parameter;
 };
 
-struct MoffatConcentrationParameter : public Param<MoffatConcentrationParameter> {
+struct MoffatConcentrationParameterD : public Param<MoffatConcentrationParameterD> {
     static inline constexpr double _min = 1.;
     static inline constexpr double _default = 2.5;
     static inline const std::string _desc = "Moffat concentration (beta)";
     static inline const std::string _name = "con_moffat";
-    using Param<MoffatConcentrationParameter>::Parameter;
+    using Param<MoffatConcentrationParameterD>::Parameter;
 };
 
-struct ProperFractionParameter : public Param<ProperFractionParameter> {
+struct ProperFractionParameterD : public Param<ProperFractionParameterD> {
 public:
     static inline constexpr double _min = 0.;
     static inline constexpr double _max = 1.;
     static inline const std::string _desc = "Proper fraction (0 <= x <= 1)";
     static inline const std::string _name = "proper_fraction";
-    using Param<ProperFractionParameter>::Parameter;
+    using Param<ProperFractionParameterD>::Parameter;
 };
 
 /// A generic scale radius, for profiles without specific names like "effective radius"
-struct RadiusScaleParameter : public Param<RadiusScaleParameter> {
+struct RadiusScaleParameterD : public Param<RadiusScaleParameterD> {
     static inline constexpr double _min = 0.;
     static inline constexpr double _default = 1.;
     static inline const std::string _desc = "Scale radius";
     static inline const std::string _name = "r_scale";
-    using Param<RadiusScaleParameter>::Parameter;
+    using Param<RadiusScaleParameterD>::Parameter;
 };
 
-struct ReffXParameter : public Param<ReffXParameter>, SizeXParameter {
+struct ReffXParameterD : public Param<ReffXParameterD>, SizeXParameterD {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Sersic effective radius (x)";
     static inline const std::string _name = "reff_x";
-    using Param<ReffXParameter>::Parameter;
+    using Param<ReffXParameterD>::Parameter;
 };
 
-struct ReffYParameter : public Param<ReffYParameter>, SizeYParameter {
+struct ReffYParameterD : public Param<ReffYParameterD>, SizeYParameterD {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Sersic effective radius (y)";
     static inline const std::string _name = "reff_y";
-    using Param<ReffYParameter>::Parameter;
+    using Param<ReffYParameterD>::Parameter;
 };
 
-struct RhoParameter : public Param<RhoParameter> {
+struct RhoParameterD : public Param<RhoParameterD> {
     static inline constexpr double _min = -1.;
     static inline constexpr double _default = 0.;
     static inline constexpr double _max = 1.;
     static inline const std::string _desc = "Gaussian correlation (rho)";
     static inline const std::string _name = "rho";
-    using Param<RhoParameter>::Parameter;
+    using Param<RhoParameterD>::Parameter;
 };
 
-struct SersicIndexParameter : public Param<SersicIndexParameter> {
+struct SersicIndexParameterD : public Param<SersicIndexParameterD> {
     static inline constexpr double _min = 0.;
     static inline constexpr double _default = 0.5;
     static inline const std::string _desc = "Sersic index";
     static inline const std::string _name = "n_ser";
-    using Param<SersicIndexParameter>::Parameter;
+    using Param<SersicIndexParameterD>::Parameter;
 };
 
-struct SigmaXParameter : public Param<SigmaXParameter>, SizeXParameter {
+struct SigmaXParameterD : public Param<SigmaXParameterD>, SizeXParameterD {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Gaussian sigma (x)";
     static inline const std::string _name = "sigma_x";
-    using Param<SigmaXParameter>::Parameter;
+    using Param<SigmaXParameterD>::Parameter;
 };
 
-struct SigmaYParameter : public Param<SigmaYParameter>, SizeYParameter {
+struct SigmaYParameterD : public Param<SigmaYParameterD>, SizeYParameterD {
     double get_size() const override { return this->get_value(); }
     void set_size(double size) override { this->set_value(size); }
 
     static inline constexpr double _min = 0.;
     static inline const std::string _desc = "Gaussian sigma (y)";
     static inline const std::string _name = "sigma_y";
-    using Param<SigmaYParameter>::Parameter;
+    using Param<SigmaYParameterD>::Parameter;
 };
 
-struct StdDevParameter : public Param<StdDevParameter> {
+struct StdDevParameterD : public Param<StdDevParameterD> {
     static inline constexpr double _min = 0.;
     static inline constexpr double _default = 1.0;
     static inline const std::string _desc = "Gaussian (1D normal) standard deviation (sigma)";
     static inline const std::string _name = "stddev";
-    using Param<StdDevParameter>::Parameter;
+    using Param<StdDevParameterD>::Parameter;
 };
 
 }  // namespace gauss2d::fit

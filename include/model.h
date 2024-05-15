@@ -857,8 +857,8 @@ public:
             param_idx[idx_param] = (*found).second;
             if (not options) {
                 const auto name = param.get().get_name();
-                n_integral += name == IntegralParameter::_name;
-                n_frac += name == ProperFractionParameter::_name;
+                n_integral += name == IntegralParameterD::_name;
+                n_frac += name == ProperFractionParameterD::_name;
             }
         }
 

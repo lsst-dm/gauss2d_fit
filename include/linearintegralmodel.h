@@ -11,26 +11,26 @@
 namespace gauss2d::fit {
 
 /**
- * An IntegralModel with a single linear IntegralParameter per Channel.
+ * An IntegralModel with a single linear IntegralParameterD per Channel.
  */
 class LinearIntegralModel : public IntegralModel {
 public:
-    typedef std::pair<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameter>>
-            ChannelIntegralParameter;
-    typedef std::vector<ChannelIntegralParameter> Data;
+    typedef std::pair<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameterD>>
+            ChannelIntegralParameterD;
+    typedef std::vector<ChannelIntegralParameterD> Data;
 
 private:
     Data _data = {};
     // This could be unordered, but std::hash<std::string> won't take const strings
     // ... and it doesn't seem to be worth the effort to work around
-    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameter>> _map = {};
+    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameterD>> _map = {};
     struct Shared_enabler;
 
 public:
-    /// Get the IntegralParameter for the given Channel
-    std::shared_ptr<IntegralParameter> at(const Channel &channel);
-    /// Get the (const) IntegralParameter for the given Channel
-    std::shared_ptr<const IntegralParameter> at(const Channel &channel) const;
+    /// Get the IntegralParameterD for the given Channel
+    std::shared_ptr<IntegralParameterD> at(const Channel &channel);
+    /// Get the (const) IntegralParameterD for the given Channel
+    std::shared_ptr<const IntegralParameterD> at(const Channel &channel) const;
 
     typename Data::iterator begin() noexcept;
     typename Data::const_iterator cbegin() const noexcept;
@@ -46,7 +46,7 @@ public:
     ParamRefs &get_parameters(ParamRefs &params, ParamFilter *filter = nullptr) const override;
     ParamCRefs &get_parameters_const(ParamCRefs &params, ParamFilter *filter = nullptr) const override;
 
-    /// Return the size of Data (number of Channel/IntegralParameter instances)
+    /// Return the size of Data (number of Channel/IntegralParameterD instances)
     size_t size() const;
 
     std::string repr(bool name_keywords = false) const override;
@@ -59,7 +59,7 @@ public:
     /**
      * Construct a LinearIntegralModel from input Data.
      *
-     * @param data_in A map of IntegralParameter shared_ptr to move for each Channel.
+     * @param data_in A map of IntegralParameterD shared_ptr to move for each Channel.
      *
      * @note No default initialization is provided, so data_in must not be null.
      */

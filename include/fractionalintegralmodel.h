@@ -29,15 +29,15 @@ namespace gauss2d::fit {
  */
 class FractionalIntegralModel : public IntegralModel {
 public:
-    typedef std::pair<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameter>>
-            ChannelIntegralParameter;
-    typedef std::vector<ChannelIntegralParameter> Data;
+    typedef std::pair<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameterD>>
+            ChannelIntegralParameterD;
+    typedef std::vector<ChannelIntegralParameterD> Data;
 
 private:
     Data _data = {};
     // This could be unordered, but std::hash<std::string> won't take const strings
     // (see also linearintegralmodel.h)
-    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameter>> _map = {};
+    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameterD>> _map = {};
 
     // TODO: See if all raw pointers can be changed to reference_wrappers or weak_ptrs
     std::shared_ptr<const FractionalIntegralModel> _find_parent(std::shared_ptr<const IntegralModel> model);
@@ -59,8 +59,8 @@ private:
                             bool is_final);
 
 public:
-    std::shared_ptr<ProperFractionParameter> at(const Channel& channel);
-    std::shared_ptr<const ProperFractionParameter> at(const Channel& channel) const;
+    std::shared_ptr<ProperFractionParameterD> at(const Channel& channel);
+    std::shared_ptr<const ProperFractionParameterD> at(const Channel& channel) const;
 
     typename Data::iterator begin() noexcept;
     typename Data::const_iterator cbegin() const noexcept;
@@ -86,7 +86,7 @@ public:
             const Channel& channel) const override;
     double get_integral_remainder(const Channel& channel) const;
 
-    ProperFractionParameter& get_parameter_frac(const Channel& channel) const;
+    ProperFractionParameterD& get_parameter_frac(const Channel& channel) const;
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
     ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 

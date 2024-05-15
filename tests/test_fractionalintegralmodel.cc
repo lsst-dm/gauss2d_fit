@@ -16,18 +16,18 @@ TEST_CASE("FractionalIntegralModel") {
     const auto c2 = g2f::Channel::make("2");
     const auto c3 = g2f::Channel::make("3");
 
-    auto p1 = std::make_shared<g2f::IntegralParameter>(1);
-    auto p2 = std::make_shared<g2f::IntegralParameter>(2);
-    auto p3 = std::make_shared<g2f::IntegralParameter>(3);
+    auto p1 = std::make_shared<g2f::IntegralParameterD>(1);
+    auto p2 = std::make_shared<g2f::IntegralParameterD>(2);
+    auto p3 = std::make_shared<g2f::IntegralParameterD>(3);
 
     g2f::LinearIntegralModel::Data data = {{*c1, p1}, {*c2, p2}, {*c3, p3}};
     auto integral = std::make_shared<g2f::LinearIntegralModel>(&data);
 
     const auto& channel = *c1;
 
-    g2f::FractionalIntegralModel::Data data_frac{{*c1, std::make_shared<g2f::ProperFractionParameter>(0.5)},
-                                                 {*c2, std::make_shared<g2f::ProperFractionParameter>(0.25)},
-                                                 {*c3, std::make_shared<g2f::ProperFractionParameter>(0.1)}};
+    g2f::FractionalIntegralModel::Data data_frac{{*c1, std::make_shared<g2f::ProperFractionParameterD>(0.5)},
+                                                 {*c2, std::make_shared<g2f::ProperFractionParameterD>(0.25)},
+                                                 {*c3, std::make_shared<g2f::ProperFractionParameterD>(0.1)}};
     auto frac = g2f::FractionalIntegralModel::make(data_frac, integral);
 
     // Check that the parent is set correctly and gives the right value
@@ -52,9 +52,10 @@ TEST_CASE("FractionalIntegralModel") {
     CHECK_EQ(frac->get_parameters_const(params).size(), 6);
 
     // Add another frac and validate it
-    g2f::FractionalIntegralModel::Data data_frac2{{*c1, std::make_shared<g2f::ProperFractionParameter>(0.5)},
-                                                  {*c2, std::make_shared<g2f::ProperFractionParameter>(0.5)},
-                                                  {*c3, std::make_shared<g2f::ProperFractionParameter>(0.5)}};
+    g2f::FractionalIntegralModel::Data data_frac2{
+            {*c1, std::make_shared<g2f::ProperFractionParameterD>(0.5)},
+            {*c2, std::make_shared<g2f::ProperFractionParameterD>(0.5)},
+            {*c3, std::make_shared<g2f::ProperFractionParameterD>(0.5)}};
     auto frac2 = g2f::FractionalIntegralModel::make(data_frac2, frac);
     frac2->at(channel)->set_value(1.);
     CHECK_EQ(frac2->at(channel)->get_value(), 1);
@@ -65,9 +66,9 @@ TEST_CASE("FractionalIntegralModel") {
     CHECK_EQ(std::dynamic_pointer_cast<g2f::FractionalIntegralModel>(integral_base), nullptr);
 
     g2f::FractionalIntegralModel::Data data_frac3{
-            {*c1, std::make_shared<g2f::ProperFractionParameter>(1.0, nullptr, nullptr, nullptr, true)},
-            {*c2, std::make_shared<g2f::ProperFractionParameter>(1.0, nullptr, nullptr, nullptr, true)},
-            {*c3, std::make_shared<g2f::ProperFractionParameter>(1.0)}};
+            {*c1, std::make_shared<g2f::ProperFractionParameterD>(1.0, nullptr, nullptr, nullptr, true)},
+            {*c2, std::make_shared<g2f::ProperFractionParameterD>(1.0, nullptr, nullptr, nullptr, true)},
+            {*c3, std::make_shared<g2f::ProperFractionParameterD>(1.0)}};
     // All prop fraction parameters must be fixed
     CHECK_THROWS_AS(g2f::FractionalIntegralModel::make(data_frac3, frac2, true), std::invalid_argument);
     data_frac3[1].second->set_value(0.0);

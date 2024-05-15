@@ -60,15 +60,15 @@ public:
         for (const double size : sizes) {
             LinearIntegralModel::Data data
                     = {{Channel::NONE(),
-                        std::make_shared<IntegralParameter>(1., nullptr, nullptr, nullptr, fixed)}};
+                        std::make_shared<IntegralParameterD>(1., nullptr, nullptr, nullptr, fixed)}};
             comps.emplace_back(std::make_shared<GaussianComponent>(
                     std::make_shared<GaussianParametricEllipse>(
-                            std::make_shared<SigmaXParameter>(size, nullptr, nullptr, nullptr, fixed),
-                            std::make_shared<SigmaYParameter>(size, nullptr, nullptr, nullptr, fixed),
-                            std::make_shared<RhoParameter>(0, nullptr, nullptr, nullptr, fixed)),
+                            std::make_shared<SigmaXParameterD>(size, nullptr, nullptr, nullptr, fixed),
+                            std::make_shared<SigmaYParameterD>(size, nullptr, nullptr, nullptr, fixed),
+                            std::make_shared<RhoParameterD>(0, nullptr, nullptr, nullptr, fixed)),
                     std::make_shared<CentroidParameters>(
-                            std::make_shared<CentroidXParameter>(0, nullptr, nullptr, nullptr, fixed),
-                            std::make_shared<CentroidYParameter>(0, nullptr, nullptr, nullptr, fixed)),
+                            std::make_shared<CentroidXParameterD>(0, nullptr, nullptr, nullptr, fixed),
+                            std::make_shared<CentroidYParameterD>(0, nullptr, nullptr, nullptr, fixed)),
                     std::make_shared<LinearIntegralModel>(&data)));
         }
         return comps;

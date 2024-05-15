@@ -14,8 +14,8 @@ TEST_CASE("LinearIntegralModel") {
     const auto c2 = g2f::Channel::make("2");
     const auto c3 = g2f::Channel::make("3");
 
-    auto p1 = std::make_shared<g2f::IntegralParameter>(1);
-    auto p2 = std::make_shared<g2f::IntegralParameter>(2);
+    auto p1 = std::make_shared<g2f::IntegralParameterD>(1);
+    auto p2 = std::make_shared<g2f::IntegralParameterD>(2);
 
     g2f::LinearIntegralModel::Data data = {{*c1, p1}, {*c2, p2}};
 

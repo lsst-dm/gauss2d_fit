@@ -15,10 +15,10 @@
 
 namespace gauss2d::fit {
 
-std::shared_ptr<ProperFractionParameter> FractionalIntegralModel::at(const Channel &channel) {
+std::shared_ptr<ProperFractionParameterD> FractionalIntegralModel::at(const Channel &channel) {
     return _map.at(channel);
 }
-std::shared_ptr<const ProperFractionParameter> FractionalIntegralModel::at(const Channel &channel) const {
+std::shared_ptr<const ProperFractionParameterD> FractionalIntegralModel::at(const Channel &channel) const {
     return _map.at(channel);
 }
 
@@ -110,7 +110,7 @@ double FractionalIntegralModel::get_integral_remainder(const Channel &channel) c
     return (1. - this->at(channel)->get_value()) * _get_integral_remainder(_parent.get(), *_model, channel);
 }
 
-ProperFractionParameter &FractionalIntegralModel::get_parameter_frac(const Channel &channel) const {
+ProperFractionParameterD &FractionalIntegralModel::get_parameter_frac(const Channel &channel) const {
     return *(_map.at(channel));
 }
 
@@ -224,7 +224,7 @@ FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
             idx++;
         }
     } else {
-        auto param = std::make_shared<ProperFractionParameter>();
+        auto param = std::make_shared<ProperFractionParameterD>();
         param->set_fixed(_is_final);
         _data.emplace_back(Channel::NONE(), param);
         _map.insert(_data.back());
