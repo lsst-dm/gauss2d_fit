@@ -80,9 +80,8 @@ public:
  * This particular implementation closely matches the majority of the profile,
  * but deliberately excludes the very inner and outermost regions.
  *
- * @note See https://ned.ipac.caltech.edu/level5/March05/Graham/Graham2.html
- *       (Graham & Driver 2005) for a useful summary of various properties
- *       of the Sersic profile.
+ * @note See [Graham & Driver 2005](https://ned.ipac.caltech.edu/level5/March05/Graham/Graham2.html)
+ *       for a useful summary of various properties of the Sersic profile.
  */
 class SersicMixComponent : private SersicParametricEllipseHolder, public EllipticalComponent {
 private:
