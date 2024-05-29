@@ -19,20 +19,20 @@ if gsl_dep.found()
 endif
 
 if use_eups
-    gauss2d_eupsdir = run_command('eups', 'list', '-d', 'gauss2d', check: true).stdout().strip()
+    gauss2d_eupsdir = run_command('sh', '-c', 'echo $GAUSS2D_DIR', check: true).stdout().strip()
     cpp = meson.get_compiler('cpp')
     gauss2d_dep = declare_dependency(
         dependencies: [cpp.find_library('gauss2d', dirs: [gauss2d_eupsdir + '/build-release/lib64']),],
         include_directories: gauss2d_eupsdir + '/build-release/include',
     )
 
-    parameters_eupsdir = run_command('eups', 'list', '-d', 'parameters', check: true).stdout().strip()
+    parameters_eupsdir = run_command('sh', '-c', 'echo $MODELFIT_PARAMETERS_DIR', check: true).stdout().strip()
     parameters_dep = declare_dependency(
         include_directories: parameters_eupsdir + '/build-release/include',
     )
 else
     gauss2d_dep = dependency('gauss2d')
-    parameters_dep = dependency('parameters')
+    parameters_dep = dependency('lsst_modelfit_parameters')
 endif
 
 inc = include_directories('include')

@@ -12,7 +12,7 @@
 namespace g2f = gauss2d::fit;
 
 TEST_CASE("SersicMixComponentIndexParameter") {
-    auto param = g2f::SersicMixComponentIndexParameter(0.5);
+    auto param = g2f::SersicMixComponentIndexParameterD(0.5);
     CHECK_THROWS(param.set_limits(std::make_shared<const parameters::Limits<double>>(0.3, 8.1)));
     CHECK_EQ(param.get_limits_maximal().get_min(), 0.5);
     CHECK_EQ(param.get_limits().get_min(), 0.5);
@@ -23,7 +23,7 @@ TEST_CASE("SersicMixComponentIndexParameter") {
 }
 
 TEST_CASE("SersicMixComponent") {
-    auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameter>(2.0);
+    auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameterD>(2.0);
     CHECK_EQ(sersic_n->get_order(), 4);
     CHECK_EQ(sersic_n->get_value(), 2.0);
     sersic_n->set_value(1.0);
@@ -31,12 +31,12 @@ TEST_CASE("SersicMixComponent") {
 
     const auto& C = g2f::Channel::NONE();
 
-    auto reff_x = std::make_shared<g2f::ReffXParameter>(1.0);
-    auto reff_y = std::make_shared<g2f::ReffYParameter>(1.0);
+    auto reff_x = std::make_shared<g2f::ReffXParameterD>(1.0);
+    auto reff_y = std::make_shared<g2f::ReffYParameterD>(1.0);
 
     const double total = 2.;
 
-    g2f::LinearIntegralModel::Data data = {{C, std::make_shared<g2f::IntegralParameter>(total)}};
+    g2f::LinearIntegralModel::Data data = {{C, std::make_shared<g2f::IntegralParameterD>(total)}};
 
     auto comp = std::make_shared<g2f::SersicMixComponent>(
             std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y),

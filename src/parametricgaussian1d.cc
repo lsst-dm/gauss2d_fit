@@ -7,9 +7,9 @@ double ParametricGaussian1D::get_mean() const { return this->_mean->get_value();
 
 double ParametricGaussian1D::get_stddev() const { return this->_stddev->get_value(); }
 
-MeanParameter &ParametricGaussian1D::get_mean_parameter() const { return *this->_mean; }
+MeanParameterD &ParametricGaussian1D::get_mean_parameter() const { return *this->_mean; }
 
-StdDevParameter &ParametricGaussian1D::get_stddev_parameter() const { return *this->_stddev; }
+StdDevParameterD &ParametricGaussian1D::get_stddev_parameter() const { return *this->_stddev; }
 
 void ParametricGaussian1D::set_mean(double value) { this->_mean->set_value(value); }
 
@@ -24,11 +24,11 @@ std::string ParametricGaussian1D::str() const {
     return std::string("ParametricGaussian1D(mean=") + _mean->str() + ", stddev=" + _stddev->str() + ")";
 }
 
-ParametricGaussian1D::ParametricGaussian1D(std::shared_ptr<MeanParameter> mean,
-                                           std::shared_ptr<StdDevParameter> stddev)
+ParametricGaussian1D::ParametricGaussian1D(std::shared_ptr<MeanParameterD> mean,
+                                           std::shared_ptr<StdDevParameterD> stddev)
         : _mean(std::move(mean)), _stddev(std::move(stddev)) {
-    if (_mean == nullptr) _mean = std::make_shared<MeanParameter>();
-    if (_stddev == nullptr) _stddev = std::make_shared<StdDevParameter>();
+    if (_mean == nullptr) _mean = std::make_shared<MeanParameterD>();
+    if (_stddev == nullptr) _stddev = std::make_shared<StdDevParameterD>();
 }
 
 ParametricGaussian1D::~ParametricGaussian1D() {}

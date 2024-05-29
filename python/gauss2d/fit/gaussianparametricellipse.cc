@@ -40,9 +40,9 @@ void bind_gaussianparametricellipse(py::module &m) {
     auto _e = py::class_<g2f::GaussianParametricEllipse, std::shared_ptr<g2f::GaussianParametricEllipse>,
                          gauss2d::EllipseData, g2f::ParametricEllipse>(m, "GaussianParametricEllipse")
                       .def(py::init<double, double, double>(), "sigma_x"_a = 0, "sigma_y"_a = 0, "rho"_a = 0)
-                      .def(py::init<std::shared_ptr<g2f::SigmaXParameter>,
-                                    std::shared_ptr<g2f::SigmaYParameter>,
-                                    std::shared_ptr<g2f::RhoParameter> >(),
+                      .def(py::init<std::shared_ptr<g2f::SigmaXParameterD>,
+                                    std::shared_ptr<g2f::SigmaYParameterD>,
+                                    std::shared_ptr<g2f::RhoParameterD> >(),
                            "sigma_x"_a = nullptr, "sigma_y"_a = nullptr, "rho"_a = nullptr)
                       .def_property("rho", &g2f::GaussianParametricEllipse::get_rho,
                                     &g2f::GaussianParametricEllipse::set_rho)

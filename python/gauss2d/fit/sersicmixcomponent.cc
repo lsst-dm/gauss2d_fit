@@ -31,9 +31,9 @@
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/sersicmixcomponent.h"
 #include "gauss2d/fit/sersicparametricellipse.h"
+#include "lsst/modelfit/parameters.h"
 
 #include "parameters.h"
-#include "parameters/parameter.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -43,8 +43,8 @@ namespace g2f = gauss2d::fit;
 
 void bind_sersicmixcomponent(py::module &m) {
     using T = double;
-    using C = g2f::SersicMixComponentIndexParameter;
-    using Base = g2f::SersicIndexParameter;
+    using C = g2f::SersicMixComponentIndexParameterD;
+    using Base = g2f::SersicIndexParameterD;
 
     std::string pyclass_name = "SersicMixComponentIndexParameter" + g2f::suffix_type_str<T>();
     declare_parameter_methods<C, C, std::shared_ptr<C>, Base>(
@@ -52,16 +52,17 @@ void bind_sersicmixcomponent(py::module &m) {
             // that it is "derived" from
             py::class_<C, std::shared_ptr<C>, Base>(m, pyclass_name.c_str()))
             // new properties
-            .def_property_readonly("integralratio", &g2f::SersicMixComponentIndexParameter::get_integralratio)
-            .def_property_readonly("interptype", &g2f::SersicMixComponentIndexParameter::get_interptype)
-            .def_property_readonly("order", &g2f::SersicMixComponentIndexParameter::get_order)
-            .def_property_readonly("sizeratio", &g2f::SersicMixComponentIndexParameter::get_sizeratio)
+            .def_property_readonly("integralratio",
+                                   &g2f::SersicMixComponentIndexParameterD::get_integralratio)
+            .def_property_readonly("interptype", &g2f::SersicMixComponentIndexParameterD::get_interptype)
+            .def_property_readonly("order", &g2f::SersicMixComponentIndexParameterD::get_order)
+            .def_property_readonly("sizeratio", &g2f::SersicMixComponentIndexParameterD::get_sizeratio)
             // constructor with added arg
             .def(py::init<T, std::shared_ptr<const parameters::Limits<T>>,
                           std::shared_ptr<const parameters::Transform<T>>,
                           std::shared_ptr<const parameters::Unit>, bool, std::string,
                           const std::shared_ptr<const g2f::SersicMixInterpolator>>(),
-                 "value"_a = g2f::SersicMixComponentIndexParameter::_get_default(), "limits"_a = nullptr,
+                 "value"_a = g2f::SersicMixComponentIndexParameterD::_get_default(), "limits"_a = nullptr,
                  "transform"_a = nullptr, "unit"_a = gauss2d::fit::unit_none, "fixed"_a = false,
                  "label"_a = "", "interpolator"_a = nullptr);
 
@@ -70,7 +71,7 @@ void bind_sersicmixcomponent(py::module &m) {
                       .def(py::init<std::shared_ptr<g2f::SersicParametricEllipse>,
                                     std::shared_ptr<g2f::CentroidParameters>,
                                     std::shared_ptr<g2f::IntegralModel>,
-                                    std::shared_ptr<g2f::SersicMixComponentIndexParameter>>(),
+                                    std::shared_ptr<g2f::SersicMixComponentIndexParameterD>>(),
                            "ellipse"_a = nullptr, "centroid"_a = nullptr, "integral"_a = nullptr,
                            "sersicindex"_a = nullptr)
                       .def_property("sersicindex", &g2f::SersicMixComponent::get_sersicindex,

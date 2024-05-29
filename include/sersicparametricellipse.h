@@ -14,9 +14,9 @@ namespace gauss2d::fit {
  */
 class SersicParametricEllipse : public ParametricEllipse {
 private:
-    std::shared_ptr<ReffXParameter> _size_x;
-    std::shared_ptr<ReffYParameter> _size_y;
-    std::shared_ptr<RhoParameter> _rho;
+    std::shared_ptr<ReffXParameterD> _size_x;
+    std::shared_ptr<ReffYParameterD> _size_y;
+    std::shared_ptr<RhoParameterD> _rho;
 
 public:
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
@@ -27,15 +27,15 @@ public:
     double get_size_y() const override;
     std::array<double, 3> get_xyr() const override;
 
-    RhoParameter& get_rho_param() const override;
-    SizeXParameter& get_size_x_param() const override;
-    SizeYParameter& get_size_y_param() const override;
+    RhoParameterD& get_rho_param() const override;
+    SizeXParameterD& get_size_x_param() const override;
+    SizeYParameterD& get_size_y_param() const override;
 
-    std::shared_ptr<ReffXParameter> get_reff_x_param_ptr();
-    std::shared_ptr<ReffYParameter> get_reff_y_param_ptr();
-    std::shared_ptr<RhoParameter> get_rho_param_ptr() override;
-    std::shared_ptr<SizeXParameter> get_size_x_param_ptr() override;
-    std::shared_ptr<SizeYParameter> get_size_y_param_ptr() override;
+    std::shared_ptr<ReffXParameterD> get_reff_x_param_ptr();
+    std::shared_ptr<ReffYParameterD> get_reff_y_param_ptr();
+    std::shared_ptr<RhoParameterD> get_rho_param_ptr() override;
+    std::shared_ptr<SizeXParameterD> get_size_x_param_ptr() override;
+    std::shared_ptr<SizeYParameterD> get_size_y_param_ptr() override;
 
     void set_rho(double rho) override;
     void set_size_x(double size_x) override;
@@ -51,8 +51,8 @@ public:
      * @param size_y The y-axis effective radius parameter.
      * @param rho The correlation (rho) parameter.
      */
-    SersicParametricEllipse(std::shared_ptr<ReffXParameter> size_x, std::shared_ptr<ReffYParameter> size_y,
-                            std::shared_ptr<RhoParameter> rho = nullptr);
+    SersicParametricEllipse(std::shared_ptr<ReffXParameterD> size_x, std::shared_ptr<ReffYParameterD> size_y,
+                            std::shared_ptr<RhoParameterD> rho = nullptr);
     explicit SersicParametricEllipse(double size_x = 0, double size_y = 0, double rho = 0);
 };
 }  // namespace gauss2d::fit

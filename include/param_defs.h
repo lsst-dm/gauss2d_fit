@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "parameters/parameter.h"
+#include "lsst/modelfit/parameters.h"
 
 namespace gauss2d::fit {
-using ParamBase = parameters::ParameterBase<double>;
+using ParamBase = lsst::modelfit::parameters::ParameterBase<double>;
 using ParamBaseCRef = std::reference_wrapper<const ParamBase>;
 using ParamCRefs = std::vector<ParamBaseCRef>;
 using ParamBaseRef = std::reference_wrapper<ParamBase>;

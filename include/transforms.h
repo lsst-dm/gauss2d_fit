@@ -1,7 +1,3 @@
-//
-// Created by dtaranu on 4/8/21.
-//
-
 #ifndef GAUSS2D_FIT_TRANSFORMS_H
 #define GAUSS2D_FIT_TRANSFORMS_H
 
@@ -9,23 +5,23 @@
 #include <iostream>
 #include <memory>
 
-#ifndef PARAMETERS_LIMITS_H
-#include "parameters/limits.h"
-#endif
-
-#ifndef PARAMETERS_TRANSFORM_H
-#include "parameters/transform.h"
-#endif
+#include "lsst/modelfit/parameters.h"
 
 namespace gauss2d::fit {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+
+namespace parameters = lsst::modelfit::parameters;
 typedef parameters::Transform<double> Transform;
 
 struct InverseTransform : public Transform {
     std::string description() const override { return "Inverse transform"; }
-    std::string repr(bool name_keywords = false) const override { return "InverseTransform()"; }
-    std::string str() const override { return "InverseTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<InverseTransform>(false, namespace_separator) + "()";
+    }
+    std::string str() const override { return parameters::type_name_str<InverseTransform>(true) + "()"; }
 
     inline double derivative(double x) const override { return 1 / (x * x); }
     inline double forward(double x) const override { return 1 / x; }
@@ -36,8 +32,14 @@ struct JanskyToABMagTransform : public Transform {
     static inline const double f_nu_0 = 3630.780547701002879554236770479;
 
     std::string description() const override { return "jansky to AB magnitude transform"; }
-    std::string repr(bool name_keywords = false) const override { return "JanskyToABMagTransform()"; }
-    std::string str() const override { return "JanskyToABMagTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<JanskyToABMagTransform>(false, namespace_separator) + "()";
+    }
+    std::string str() const override {
+        return parameters::type_name_str<JanskyToABMagTransform>(true) + "()";
+    }
 
     inline double derivative(double x) const override {
         return -1.08573620475812959718098227313021197915 / x;
@@ -48,8 +50,14 @@ struct JanskyToABMagTransform : public Transform {
 
 struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
     std::string description() const override { return "nanojansky to AB magnitude transform"; }
-    std::string repr(bool name_keywords = false) const override { return "NanojanskyToABMagTransform()"; }
-    std::string str() const override { return "NanojanskyToABMagTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<NanojanskyToABMagTransform>(false, namespace_separator) + "()";
+    }
+    std::string str() const override {
+        return parameters::type_name_str<NanojanskyToABMagTransform>(true) + "()";
+    }
 
     inline double derivative(double x) const override { return JanskyToABMagTransform::derivative(x); }
     inline double forward(double x) const override { return JanskyToABMagTransform::forward(x * 1e-9); }
@@ -58,8 +66,12 @@ struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
 
 struct LogTransform : public Transform {
     std::string description() const override { return "Natural (base e) logarithmic transform"; }
-    std::string repr(bool name_keywords = false) const override { return "LogTransform()"; }
-    std::string str() const override { return "LogTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<LogTransform>(false, namespace_separator) + "()";
+    }
+    std::string str() const override { return parameters::type_name_str<LogTransform>(true) + "()"; }
 
     inline double derivative(double x) const override { return 1 / x; }
     inline double forward(double x) const override { return log(x); }
@@ -68,8 +80,12 @@ struct LogTransform : public Transform {
 
 struct Log10Transform : public Transform {
     std::string description() const override { return "Base 10 logarithmic transform"; }
-    std::string repr(bool name_keywords = false) const override { return "Log10Transform()"; }
-    std::string str() const override { return "Log10Transform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<Log10Transform>(false, namespace_separator) + "()";
+    }
+    std::string str() const override { return parameters::type_name_str<Log10Transform>(true) + "()"; }
 
     inline double derivative(double x) const override {
         return 0.434294481903251827651128918916605082294397 / x;
@@ -80,8 +96,12 @@ struct Log10Transform : public Transform {
 
 struct LogitTransform : public Transform {
     std::string description() const override { return "Logit transform"; }
-    std::string repr(bool name_keywords = false) const override { return "LogitTransform()"; }
-    std::string str() const override { return "LogitTransform()"; }
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<LogitTransform>(false, namespace_separator) + "()";
+    }
+    std::string str() const override { return parameters::type_name_str<LogitTransform>(true) + "()"; }
 
     inline double derivative(double x) const override { return 1 / x + 1 / (1 - x); }
     inline double forward(double x) const override { return log(x / (1 - x)); }
@@ -98,13 +118,15 @@ private:
 
 public:
     std::string description() const override { return "Logit limited (to finite range) transform"; }
-    std::string repr(bool name_keywords = false) const override {
-        return std::string(parameters::type_name<LogitLimitedTransform>()) + "("
+    std::string repr(bool name_keywords = false,
+                     const std::string_view& namespace_separator
+                     = parameters::Object::CC_NAMESPACE_SEPARATOR) const override {
+        return parameters::type_name_str<LogitLimitedTransform>(false, namespace_separator) + "("
                + (name_keywords ? "limits=" : "") + _limits->repr(name_keywords) + ", "
                + (name_keywords ? "factor=" : "") + std::to_string(_factor) + ")";
     }
     std::string str() const override {
-        return std::string(parameters::type_name<LogitLimitedTransform>()) + "(limits=" + _limits->str()
+        return parameters::type_name_str<LogitLimitedTransform>(true) + "(limits=" + _limits->str()
                + ", factor=" + std::to_string(_factor) + ")";
     }
 

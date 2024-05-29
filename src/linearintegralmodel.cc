@@ -22,11 +22,11 @@ LinearIntegralModel::get_integral_derivative_factors(const Channel& channel) con
     return {};
 }
 
-std::shared_ptr<IntegralParameter> LinearIntegralModel::at(const Channel& channel) {
+std::shared_ptr<IntegralParameterD> LinearIntegralModel::at(const Channel& channel) {
     return _map.at(channel);
 }
 
-std::shared_ptr<const IntegralParameter> LinearIntegralModel::at(const Channel& channel) const {
+std::shared_ptr<const IntegralParameterD> LinearIntegralModel::at(const Channel& channel) const {
     return _map.at(channel);
 }
 
@@ -85,7 +85,7 @@ LinearIntegralModel::LinearIntegralModel(const Data* data_in) {
             idx++;
         }
     } else {
-        _data.emplace_back(Channel::NONE(), std::make_shared<IntegralParameter>(1));
+        _data.emplace_back(Channel::NONE(), std::make_shared<IntegralParameterD>(1));
         _map.insert(_data.back());
     }
 }

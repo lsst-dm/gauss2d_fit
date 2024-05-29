@@ -6,7 +6,7 @@
 
 namespace gauss2d::fit {
 template <typename t>
-t& _get_parameters(t& params, ParamFilter* filter, CentroidXParameter& x, CentroidYParameter& y) {
+t& _get_parameters(t& params, ParamFilter* filter, CentroidXParameterD& x, CentroidYParameterD& y) {
     insert_param(x, params, filter);
     insert_param(y, params, filter);
     return params;
@@ -24,11 +24,11 @@ double CentroidParameters::get_x() const { return _x->get_value(); }
 double CentroidParameters::get_y() const { return _y->get_value(); }
 std::array<double, 2> CentroidParameters::get_xy() const { return {this->get_x(), this->get_y()}; }
 
-CentroidXParameter& CentroidParameters::get_x_param() const { return *_x; }
-CentroidYParameter& CentroidParameters::get_y_param() const { return *_y; }
+CentroidXParameterD& CentroidParameters::get_x_param() const { return *_x; }
+CentroidYParameterD& CentroidParameters::get_y_param() const { return *_y; }
 
-std::shared_ptr<CentroidXParameter> CentroidParameters::get_x_param_ptr() { return _x; }
-std::shared_ptr<CentroidYParameter> CentroidParameters::get_y_param_ptr() { return _y; }
+std::shared_ptr<CentroidXParameterD> CentroidParameters::get_x_param_ptr() { return _x; }
+std::shared_ptr<CentroidYParameterD> CentroidParameters::get_y_param_ptr() { return _y; }
 
 void CentroidParameters::set_x(double x) { _x->set_value(x); }
 void CentroidParameters::set_y(double y) { _y->set_value(y); }
@@ -46,15 +46,15 @@ std::string CentroidParameters::str() const {
     return "CentroidParameters(x=" + _x->str() + ", y=" + _y->str() + ")";
 }
 
-CentroidParameters::CentroidParameters(std::shared_ptr<CentroidXParameter> x,
-                                       std::shared_ptr<CentroidYParameter> y)
+CentroidParameters::CentroidParameters(std::shared_ptr<CentroidXParameterD> x,
+                                       std::shared_ptr<CentroidYParameterD> y)
         : CentroidData(),
-          _x(x == nullptr ? std::make_shared<CentroidXParameter>() : std::move(x)),
-          _y(y == nullptr ? std::make_shared<CentroidYParameter>() : std::move(y)) {}
+          _x(x == nullptr ? std::make_shared<CentroidXParameterD>() : std::move(x)),
+          _y(y == nullptr ? std::make_shared<CentroidYParameterD>() : std::move(y)) {}
 
 CentroidParameters::CentroidParameters(double x, double y)
         : CentroidData(),
-          _x(std::make_shared<CentroidXParameter>(x)),
-          _y(std::make_shared<CentroidYParameter>(y)) {}
+          _x(std::make_shared<CentroidXParameterD>(x)),
+          _y(std::make_shared<CentroidYParameterD>(y)) {}
 
 }  // namespace gauss2d::fit

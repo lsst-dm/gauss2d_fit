@@ -12,8 +12,8 @@ namespace g2f = gauss2d::fit;
 
 TEST_CASE("ParametricGaussian1d") {
     CHECK(g2f::ParametricGaussian1D().str().size() > 0);
-    auto mean_param = std::make_shared<g2f::MeanParameter>();
-    auto stddev_param = std::make_shared<g2f::StdDevParameter>();
+    auto mean_param = std::make_shared<g2f::MeanParameterD>();
+    auto stddev_param = std::make_shared<g2f::StdDevParameterD>();
     double mean = mean_param->get_value();
     double stddev = stddev_param->get_value();
     auto prior = g2f::ParametricGaussian1D(mean_param, stddev_param);

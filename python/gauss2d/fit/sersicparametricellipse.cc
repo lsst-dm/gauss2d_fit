@@ -40,9 +40,9 @@ void bind_sersicparametricellipse(py::module &m) {
     auto _e = py::class_<g2f::SersicParametricEllipse, std::shared_ptr<g2f::SersicParametricEllipse>,
                          g2f::ParametricEllipse>(m, "SersicParametricEllipse")
                       .def(py::init<double, double, double>(), "size_x"_a = 0, "size_y"_a = 0, "rho"_a = 0)
-                      .def(py::init<std::shared_ptr<g2f::ReffXParameter>,
-                                    std::shared_ptr<g2f::ReffYParameter>,
-                                    std::shared_ptr<g2f::RhoParameter> >(),
+                      .def(py::init<std::shared_ptr<g2f::ReffXParameterD>,
+                                    std::shared_ptr<g2f::ReffYParameterD>,
+                                    std::shared_ptr<g2f::RhoParameterD> >(),
                            "size_x"_a = nullptr, "size_y"_a = nullptr, "rho"_a = nullptr)
                       .def_property("rho", &g2f::SersicParametricEllipse::get_rho,
                                     &g2f::SersicParametricEllipse::set_rho)

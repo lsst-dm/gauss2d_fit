@@ -33,7 +33,7 @@
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
 #include "gauss2d/fit/util.h"
-#include "parameters/transform.h"
+#include "lsst/modelfit/parameters.h"
 
 #include "parameters.h"
 #include "pybind11.h"
@@ -52,26 +52,26 @@ void bind_parameters(py::module &m) {
     declare_limits<double>(m);
     using Parameter = parameters::ParameterBase<double>;
     auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "ParameterD");
-    auto integral = declare_parameter<double, g2f::IntegralParameter>(m, "Integral");
-    integral.def_property("label", &g2f::IntegralParameter::get_label, &g2f::IntegralParameter::set_label);
-    declare_parameter<double, g2f::CentroidXParameter>(m, "CentroidX");
-    declare_parameter<double, g2f::CentroidYParameter>(m, "CentroidY");
-    declare_parameter<double, g2f::MeanParameter>(m, "Mean");
-    declare_parameter<double, g2f::MoffatConcentrationParameter>(m, "MoffatConcentration");
-    auto propfrac = declare_parameter<double, g2f::ProperFractionParameter>(m, "ProperFraction");
-    propfrac.def_property("label", &g2f::ProperFractionParameter::get_label,
-                          &g2f::ProperFractionParameter::set_label);
-    declare_sizeparameter_base<double>(m);
-    declare_parameter<double, g2f::RadiusScaleParameter>(m, "RadiusScale");
-    declare_sizeparameter<double, g2f::ReffXParameter, g2f::SizeXParameter>(m, "ReffX");
-    declare_sizeparameter<double, g2f::ReffYParameter, g2f::SizeYParameter>(m, "ReffY");
-    declare_parameter<double, g2f::RhoParameter>(m, "Rho");
-    declare_parameter<double, g2f::SersicIndexParameter>(m, "SersicIndex");
-    declare_sizeparameter<double, g2f::SigmaXParameter, g2f::SizeXParameter>(m, "SigmaX");
-    declare_sizeparameter<double, g2f::SigmaYParameter, g2f::SizeYParameter>(m, "SigmaY");
-    declare_parameter<double, g2f::StdDevParameter>(m, "StdDev");
+    auto integral = declare_parameter<double, g2f::IntegralParameterD>(m, "Integral");
+    integral.def_property("label", &g2f::IntegralParameterD::get_label, &g2f::IntegralParameterD::set_label);
+    declare_parameter<double, g2f::CentroidXParameterD>(m, "CentroidX");
+    declare_parameter<double, g2f::CentroidYParameterD>(m, "CentroidY");
+    declare_parameter<double, g2f::MeanParameterD>(m, "Mean");
+    declare_parameter<double, g2f::MoffatConcentrationParameterD>(m, "MoffatConcentration");
+    auto propfrac = declare_parameter<double, g2f::ProperFractionParameterD>(m, "ProperFraction");
+    propfrac.def_property("label", &g2f::ProperFractionParameterD::get_label,
+                          &g2f::ProperFractionParameterD::set_label);
+    declare_sizeparameter_base<double, g2f::SizeXParameterD, g2f::SizeYParameterD>(m);
+    declare_parameter<double, g2f::RadiusScaleParameterD>(m, "RadiusScale");
+    declare_sizeparameter<double, g2f::ReffXParameterD, g2f::SizeXParameterD>(m, "ReffX");
+    declare_sizeparameter<double, g2f::ReffYParameterD, g2f::SizeYParameterD>(m, "ReffY");
+    declare_parameter<double, g2f::RhoParameterD>(m, "Rho");
+    declare_parameter<double, g2f::SersicIndexParameterD>(m, "SersicIndex");
+    declare_sizeparameter<double, g2f::SigmaXParameterD, g2f::SizeXParameterD>(m, "SigmaX");
+    declare_sizeparameter<double, g2f::SigmaYParameterD, g2f::SizeYParameterD>(m, "SigmaY");
+    declare_parameter<double, g2f::StdDevParameterD>(m, "StdDev");
     declare_transform_base<double>(m);
-    declare_transform<double, parameters::UnitTransform<double>>(m, "Unit");
+    declare_transform<double, lsst::modelfit::parameters::UnitTransform<double>>(m, "Unit");
     declare_transform<double, g2f::InverseTransform>(m, "Inverse");
     declare_transform<double, g2f::JanskyToABMagTransform>(m, "JanskyToABMag");
     declare_transform<double, g2f::NanojanskyToABMagTransform>(m, "NanojanskyToABMag");

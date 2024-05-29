@@ -32,10 +32,10 @@
 #include <memory>
 #include <string>
 
+#include "lsst/modelfit/parameters.h"
+
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
-#include "parameters/limits.h"
-#include "parameters/transform.h"
 
 #include "pybind11.h"
 #include "utils.h"
@@ -44,6 +44,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace g2f = gauss2d::fit;
+namespace parameters = lsst::modelfit::parameters;
 
 template <typename T>
 void declare_limits(py::module &m) {
@@ -58,14 +59,6 @@ void declare_limits(py::module &m) {
             .def_property("max", &Class::get_max, &Class::set_max)
             .def("__repr__", [](const Class &self) { return self.repr(true); })
             .def("__str__", &Class::str);
-}
-
-template <typename T, class C, class... Bases>
-auto declare_parameter_class(py::module &m, std::string name,
-                             std::string suffix = g2f::suffix_type_str<T>()) {
-    using Base = parameters::ParameterBase<T>;
-    std::string pyclass_name = name + "Parameter" + g2f::suffix_type_str<T>();
-    return py::class_<C, std::shared_ptr<C>, Base, Bases...>(m, pyclass_name.c_str());
 }
 
 /*
@@ -114,7 +107,6 @@ auto declare_parameter_methods(py::class_<C, Args...> c) {
             //    .def(py::self == py::self)
             //    .def(py::self != py::self)
             //    .def(hash(py::self))
-            .def("__repr__", [](const C &self) { return self.repr(true); })
             .def("__str__", &Class::str);
 }
 
@@ -123,44 +115,42 @@ auto declare_parameter(py::module &m, std::string name, std::string suffix = g2f
     using Base = parameters::ParameterBase<T>;
     using Class = parameters::Parameter<T, C>;
     return declare_parameter_methods<Class, C, std::shared_ptr<C>, Base>(
-            declare_parameter_class<T, C, Bases...>(m, name, suffix)
+            py::class_<C, std::shared_ptr<C>, Base, Bases...>(m, (name + "Parameter" + suffix).c_str())
                     .def(py::init<T, std::shared_ptr<const parameters::Limits<T>>,
                                   std::shared_ptr<const parameters::Transform<T>>,
                                   std::shared_ptr<const parameters::Unit>, bool, std::string>(),
                          "value"_a = Class::_get_default(), "limits"_a = nullptr, "transform"_a = nullptr,
-                         "unit"_a = gauss2d::fit::unit_none, "fixed"_a = false, "label"_a = ""));
+                         "unit"_a = gauss2d::fit::unit_none, "fixed"_a = false, "label"_a = "")
+                    .def("__repr__", [](const C &self) { return self.repr(true, "."); }));
 }
 
 template <typename T, class C, class... Bases>
-auto declare_sizeparameter(py::module &m, std::string name, std::string suffix = g2f::suffix_type_str<T>()) {
-    return declare_parameter<T, C, Bases...>(m, name, suffix)
-            .def_property("size", &C::get_size, &C::set_size);
+auto declare_sizeparameter(py::module &m, std::string name) {
+    return declare_parameter<T, C, Bases...>(m, name).def_property("size", &C::get_size, &C::set_size);
 }
 
-template <typename T>
+template <typename T, class ClassX, class ClassY>
 auto declare_sizeparameter_base(py::module &m, std::string suffix = g2f::suffix_type_str<T>()) {
-    using ClassX = g2f::SizeXParameter;
     py::class_<ClassX, std::shared_ptr<ClassX>>(m, ("SizeXParameter" + suffix).c_str());
-    using ClassY = g2f::SizeYParameter;
     py::class_<ClassY, std::shared_ptr<ClassY>>(m, ("SizeYParameter" + suffix).c_str());
 }
 
 template <typename T>
-void declare_transform_base(py::module &m, std::string suffix = g2f::suffix_type_str<T>()) {
+void declare_transform_base(py::module &m) {
     using Class = parameters::Transform<T>;
-    py::class_<Class, std::shared_ptr<Class>>(m, ("Transform" + suffix).c_str());
+    py::class_<Class, std::shared_ptr<Class>>(m, "TransformD");
 }
 
 template <typename T, class C, bool has_factor, bool has_limits, typename... Arguments>
-void declare_transform_full(py::module &m, std::string name, std::string suffix = g2f::suffix_type_str<T>()) {
+void declare_transform_full(py::module &m, std::string name) {
     using Class = C;
     auto x = py::class_<Class, std::shared_ptr<Class>, parameters::Transform<T>>(
-                     m, (name + "Transform" + suffix).c_str())
+                     m, (name + "TransformD").c_str())
                      .def("description", &Class::description)
                      .def("derivative", &Class::derivative)
                      .def("forward", &Class::forward)
                      .def("reverse", &Class::reverse)
-                     .def("__repr__", [](const Class &self) { return self.repr(true); })
+                     .def("__repr__", [](const Class &self) { return self.repr(true, "."); })
                      .def("__str__", &Class::str);
     if constexpr (has_factor) x.def_property("factor", &Class::get_factor, &Class::set_factor);
     if constexpr (has_limits) x.def_property("limits", &Class::get_limits, &Class::set_limits);
@@ -177,8 +167,8 @@ void declare_transform_full(py::module &m, std::string name, std::string suffix 
 }
 
 template <typename T, class C, typename... Arguments>
-void declare_transform(py::module &m, std::string name, std::string suffix = g2f::suffix_type_str<T>()) {
-    declare_transform_full<T, C, false, false, Arguments...>(m, name, suffix);
+void declare_transform(py::module &m, std::string name) {
+    declare_transform_full<T, C, false, false, Arguments...>(m, name);
 }
 
 #endif
