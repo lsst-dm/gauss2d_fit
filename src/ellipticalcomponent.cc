@@ -1,14 +1,14 @@
-#include "ellipticalcomponent.h"
-
-#include "centroidparameters.h"
-#include "component.h"
-#include "parametricellipse.h"
-#include "linearintegralmodel.h"
-#include "param_defs.h"
-#include "param_filter.h"
 #include <stdexcept>
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/ellipticalcomponent.h"
+#include "lsst/gauss2d/fit/centroidparameters.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/parametricellipse.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+
+namespace lsst::gauss2d::fit {
 
 const CentroidParameters& EllipticalComponent::get_centroid() const { return *_centroid; }
 const ParametricEllipse& EllipticalComponent::get_ellipse() const { return *_ellipse; }
@@ -27,10 +27,10 @@ ParamCRefs& EllipticalComponent::get_parameters_const(ParamCRefs& params, ParamF
     return params;
 }
 
-std::string EllipticalComponent::repr(bool name_keywords) const {
-    return (name_keywords ? "ellipse=" : "") + _ellipse->repr(name_keywords) + ", "
-           + (name_keywords ? "centroid=" : "") + _centroid->repr(name_keywords) + ", "
-           + (name_keywords ? "integralmodel=" : "") + _integralmodel->repr(name_keywords);
+std::string EllipticalComponent::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return (name_keywords ? "ellipse=" : "") + _ellipse->repr(name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "centroid=" : "") + _centroid->repr(name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "integralmodel=" : "") + _integralmodel->repr(name_keywords, namespace_separator);
 }
 
 std::string EllipticalComponent::str() const {
@@ -48,4 +48,4 @@ EllipticalComponent::EllipticalComponent(std::shared_ptr<ParametricEllipse> elli
     if (_ellipse == nullptr) throw std::invalid_argument("ellipse must not be null");
 }
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

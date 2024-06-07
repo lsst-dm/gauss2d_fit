@@ -21,8 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef GAUSS2D_FIT_PYBIND11
-#define GAUSS2D_FIT_PYBIND11
+#ifndef LSST_GAUSS2D_FIT_PYBIND11
+#define LSST_GAUSS2D_FIT_PYBIND11
 
 #include <pybind11/pybind11.h>
 
@@ -40,7 +40,7 @@ void bind_gaussiancomponent(py::module &m);
 void bind_gaussianmodelintegral(py::module &m);
 void bind_gaussianparametricellipse(py::module &m);
 void bind_gaussianprior(py::module &m);
-#ifdef GAUSS2D_FIT_HAS_GSL
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 void bind_gsl(py::module &m);
 void bind_gslsersicmixinterpolator(py::module &m);
 #endif

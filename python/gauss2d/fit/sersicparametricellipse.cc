@@ -27,14 +27,14 @@
 
 #include <memory>
 
-#include "gauss2d/fit/parameters.h"
-#include "gauss2d/fit/sersicparametricellipse.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/sersicparametricellipse.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_sersicparametricellipse(py::module &m) {
     auto _e = py::class_<g2f::SersicParametricEllipse, std::shared_ptr<g2f::SersicParametricEllipse>,

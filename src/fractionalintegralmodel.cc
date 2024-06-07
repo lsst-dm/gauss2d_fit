@@ -1,19 +1,21 @@
-#include "fractionalintegralmodel.h"
-
 #include <functional>
 #include <memory>
 #include <stdexcept>
 #include <vector>
 
-#include "channel.h"
-#include "component.h"
-#include "integralmodel.h"
-#include "param_defs.h"
-#include "param_filter.h"
-#include "parameters.h"
-#include "util.h"
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/fractionalintegralmodel.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/util.h"
+
+namespace lsst::gauss2d::fit {
 
 std::shared_ptr<ProperFractionParameterD> FractionalIntegralModel::at(const Channel &channel) {
     return _map.at(channel);
@@ -141,16 +143,18 @@ bool FractionalIntegralModel::is_final() const { return _is_final; }
 
 size_t FractionalIntegralModel::size() const { return _data.size(); }
 
-std::string FractionalIntegralModel::repr(bool name_keywords) const {
-    std::string s = std::string("FractionalIntegralModel(") + (name_keywords ? "data={" : "{");
+std::string FractionalIntegralModel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    std::string s = type_name_str<FractionalIntegralModel>(false, namespace_separator) + "("
+                    + (name_keywords ? "data={" : "{");
     for (const auto &datum : _data) {
-        s += datum.first.get().repr(name_keywords) + ": " + datum.second->repr(name_keywords) + ",";
+        s += datum.first.get().repr(name_keywords, namespace_separator) + ": "
+             + datum.second->repr(name_keywords, namespace_separator) + ",";
     }
     return s + "})";
 }
 
 std::string FractionalIntegralModel::str() const {
-    std::string s = "FractionalIntegralModel(data={";
+    std::string s = type_name_str<FractionalIntegralModel>(true) + "(data={";
     for (const auto &datum : _data) {
         s += datum.first.get().str() + ": " + datum.second->str() + ",";
     }
@@ -232,10 +236,10 @@ FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
     auto data_keys = this->get_channels();
     auto model_keys = _model.get()->get_channels();
     if (data_keys != model_keys) {
-        throw std::invalid_argument("FractionalIntegralModel data channels=" + str_iter_refw(data_keys)
-                                    + " != model.get_channels()=" + str_iter_refw(model_keys));
+        throw std::invalid_argument("FractionalIntegralModel data channels=" + str_iter_ref<true>(data_keys)
+                                    + " != model.get_channels()=" + str_iter_ref<true>(model_keys));
     }
 }
 FractionalIntegralModel::~FractionalIntegralModel(){};
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

@@ -21,8 +21,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef GAUSS2D_FIT_PYTHON_PARAMETERS_H
-#define GAUSS2D_FIT_PYTHON_PARAMETERS_H
+#ifndef LSST_GAUSS2D_FIT_PYTHON_PARAMETERS_H
+#define LSST_GAUSS2D_FIT_PYTHON_PARAMETERS_H
 
 #include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
@@ -43,7 +43,7 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 namespace parameters = lsst::modelfit::parameters;
 
 template <typename T>

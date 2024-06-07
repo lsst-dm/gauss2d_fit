@@ -29,13 +29,13 @@
 
 #include "pybind11.h"
 
-#include "gauss2d/fit/linearsersicmixinterpolator.h"
-#include "gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_linearsersicmixinterpolator(py::module &m) {
     auto _e = py::class_<g2f::LinearSersicMixInterpolator, std::shared_ptr<g2f::LinearSersicMixInterpolator>,

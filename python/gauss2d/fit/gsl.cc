@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifdef GAUSS2D_FIT_HAS_GSL
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
 #include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
@@ -29,15 +29,15 @@
 
 #include "pybind11.h"
 
-#include "gauss2d/fit/gsl.h"
+#include "lsst/gauss2d/fit/gsl.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_gsl(py::module &m) {
     // Placeholder for now - Python doesn't need to know about gsl_interp_type
 }
 
-#endif  // GAUSS2D_FIT_HAS_GSL
+#endif  // LSST_GAUSS2D_FIT_HAS_GSL

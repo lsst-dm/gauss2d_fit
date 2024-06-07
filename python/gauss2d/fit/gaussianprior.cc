@@ -27,15 +27,15 @@
 
 #include <memory>
 
-#include "gauss2d/fit/gaussianprior.h"
-#include "gauss2d/fit/param_defs.h"
-#include "gauss2d/fit/prior.h"
+#include "lsst/gauss2d/fit/gaussianprior.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/prior.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussianprior(py::module &m) {
     auto _e = py::class_<g2f::GaussianPrior, std::shared_ptr<g2f::GaussianPrior>, g2f::Prior>(m,

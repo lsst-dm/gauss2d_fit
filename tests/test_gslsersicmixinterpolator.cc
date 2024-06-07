@@ -2,10 +2,12 @@
 
 #include "doctest.h"
 
-#include "gslsersicmixinterpolator.h"
-#include "util.h"
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
-namespace g2f = gauss2d::fit;
+#include "lsst/gauss2d/fit/gslsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/util.h"
+
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("GSLSersicMixInterpolator") {
     auto interpolator_default = g2f::GSLSersicMixInterpolator();
@@ -66,7 +68,7 @@ TEST_CASE("GSLSersicMixInterpolator") {
                 CHECK_MESSAGE(close_sigma.isclose, msg);
             }
         }
-        auto knots = gauss2d::fit::get_sersic_mix_knots(order);
+        auto knots = lsst::gauss2d::fit::get_sersic_mix_knots(order);
         double sersicindices[2] = {interpolator.sersicindex_min, interpolator.sersicindex_max};
         g2f::SersicMixValues expected[2] = {knots[0], knots.back()};
         for (size_t i = 0; i < 2; ++i) {
@@ -87,3 +89,5 @@ TEST_CASE("GSLSersicMixInterpolator") {
         }
     }
 }
+
+#endif

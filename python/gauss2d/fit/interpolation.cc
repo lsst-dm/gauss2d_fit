@@ -27,12 +27,12 @@
 
 #include "pybind11.h"
 
-#include "gauss2d/fit/interpolation.h"
+#include "lsst/gauss2d/fit/interpolation.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_interpolation(py::module &m) {
     auto _e = py::enum_<g2f::InterpType>(m, "InterpType")

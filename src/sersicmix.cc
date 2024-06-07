@@ -1,40 +1,44 @@
 #include <stdexcept>
 #include <vector>
 
-#ifdef GAUSS2D_FIT_HAS_GSL
-#include "gslsersicmixinterpolator.h"
-#endif
-#include "linearsersicmixinterpolator.h"
-#include "sersicmix.h"
-#include "util.h"
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/gslsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/util.h"
 
-std::string IntegralSize::repr(bool name_keywords) const {
-    return std::string("IntegralSize(") + (name_keywords ? "integral=" : "") + std::to_string(integral) + ", "
-           + (name_keywords ? "sigma=" : "") + std::to_string(sigma) + ")";
+namespace lsst::gauss2d::fit {
+
+std::string IntegralSize::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<IntegralSize>(false, namespace_separator) + "(" + (name_keywords ? "integral=" : "")
+           + to_string_float(integral) + ", " + (name_keywords ? "sigma=" : "") + to_string_float(sigma)
+           + ")";
 }
 
 std::string IntegralSize::str() const {
-    return "IntegralSize(integral=" + std::to_string(integral) + ", sigma=" + std::to_string(sigma) + ")";
+    return type_name_str<IntegralSize>(true) + "(integral=" + to_string_float(integral)
+           + ", sigma=" + to_string_float(sigma) + ")";
 }
 
 IntegralSize::IntegralSize(double integral_, double sigma_) : integral(integral_), sigma(sigma_) {}
 
-std::string SersicMixValues::repr(bool name_keywords) const {
-    return std::string("SersicMixValues(") + (name_keywords ? "sersicindex=" : "")
-           + std::to_string(sersicindex) + ", " + (name_keywords ? "values=" : "")
-           + repr_iter_ref(values, name_keywords) + ")";
+std::string SersicMixValues::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<SersicMixValues>(false, namespace_separator) + "("
+           + (name_keywords ? "sersicindex=" : "") + to_string_float(sersicindex) + ", "
+           + (name_keywords ? "values=" : "") + repr_iter_ref<false>(values, name_keywords) + ")";
 }
 
 std::string SersicMixValues::str() const {
-    return "SersicMixValues(sersicindex=" + std::to_string(sersicindex) + ", values=" + str_iter_ref(values)
-           + ")";
+    return type_name_str<SersicMixValues>(true) + "(sersicindex=" + to_string_float(sersicindex)
+           + ", values=" + str_iter_ref<false>(values) + ")";
 }
 
 const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(unsigned short order) {
-#ifdef GAUSS2D_FIT_HAS_GSL
-    static auto interpolator = std::make_shared<GSLSersicMixInterpolator>(order);
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
+    static auto interpolator = std::make_shared<LinearSersicMixInterpolator>(order);
+    // static auto interpolator = std::make_shared<GSLSersicMixInterpolator>(order);
 #else
     static auto interpolator = std::make_shared<LinearSersicMixInterpolator>(order);
 #endif
@@ -1851,4 +1855,4 @@ std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order) {
     throw std::invalid_argument("No knots available for Sersic mixture of order " + std::to_string(order));
 }
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

@@ -2,12 +2,12 @@
 
 #include "doctest.h"
 
-#ifdef GAUSS2D_FIT_HAS_GSL
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
-#include "gsl.h"
-#include "gslinterpolator.h"
+#include "lsst/gauss2d/fit/gsl.h"
+#include "lsst/gauss2d/fit/gslinterpolator.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 std::vector<double> x = {0., 1., 2., 2.5, 3.};
 std::vector<double> y = {-1., 1., 0., -1., 0.};

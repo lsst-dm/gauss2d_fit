@@ -1,4 +1,3 @@
-#include "gauss2d/image.h"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
@@ -6,14 +5,16 @@
 #include <memory>
 #include <stdexcept>
 
-#include "gauss2d/vectorimage.h"
+#include "lsst/gauss2d/image.h"
+#include "lsst/gauss2d/vectorimage.h"
 
-#include "observation.h"
+#include "lsst/gauss2d/fit/observation.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2d = lsst::gauss2d;
+namespace g2f = lsst::gauss2d::fit;
 
-typedef gauss2d::VectorImage<double> Image;
-typedef gauss2d::VectorImage<bool> Mask;
+typedef g2d::VectorImage<double> Image;
+typedef g2d::VectorImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 
 TEST_CASE("Observation") {
@@ -33,10 +34,10 @@ TEST_CASE("Observation") {
     auto observation = std::make_shared<Observation>(std::make_unique<Image>(N_Y, N_X),
                                                      std::make_unique<Image>(N_Y, N_X),
                                                      std::make_unique<Mask>(N_Y, N_X));
-    CHECK(gauss2d::images_compatible<double, Image, double, Image>(observation->get_image(),
-                                                                   observation->get_sigma_inverse()));
-    CHECK(gauss2d::images_compatible<double, Image, bool, Mask>(observation->get_image(),
-                                                                observation->get_mask_inverse()));
+    CHECK(lsst::gauss2d::images_compatible<double, Image, double, Image>(observation->get_image(),
+                                                                         observation->get_sigma_inverse()));
+    CHECK(lsst::gauss2d::images_compatible<double, Image, bool, Mask>(observation->get_image(),
+                                                                      observation->get_mask_inverse()));
     CHECK_NE(observation->str(), "");
     g2f::ParamCRefs params{};
     // no parameters yet

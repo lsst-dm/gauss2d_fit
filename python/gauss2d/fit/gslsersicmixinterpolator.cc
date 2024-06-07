@@ -21,7 +21,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifdef GAUSS2D_FIT_HAS_GSL
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
 #include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
@@ -31,14 +31,14 @@
 
 #include "pybind11.h"
 
-#include "gauss2d/fit/gsl.h"
-#include "gauss2d/fit/gslsersicmixinterpolator.h"
-#include "gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/gsl.h"
+#include "lsst/gauss2d/fit/gslsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_gslsersicmixinterpolator(py::module &m) {
     auto _e = py::class_<g2f::GSLSersicMixInterpolator, std::shared_ptr<g2f::GSLSersicMixInterpolator>,
@@ -60,4 +60,4 @@ void bind_gslsersicmixinterpolator(py::module &m) {
                       .def("__str__", &g2f::GSLSersicMixInterpolator::str);
 }
 
-#endif  // GAUSS2D_FIT_HAS_GSL
+#endif  // #ifdef LSST_GAUSS2D_FIT_HAS_GSL

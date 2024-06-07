@@ -5,15 +5,15 @@
 #include <memory>
 #include <stdexcept>
 
-#include "gauss2d/vectorimage.h"
+#include "lsst/gauss2d/vectorimage.h"
 
-#include "data.h"
-#include "observation.h"
+#include "lsst/gauss2d/fit/data.h"
+#include "lsst/gauss2d/fit/observation.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
-typedef gauss2d::VectorImage<double> Image;
-typedef gauss2d::VectorImage<bool> Mask;
+typedef lsst::gauss2d::VectorImage<double> Image;
+typedef lsst::gauss2d::VectorImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 typedef g2f::Data<double, Image, Mask> Data;
 

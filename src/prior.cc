@@ -21,13 +21,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "param_defs.h"
-#include "prior.h"
-#include "util.h"
-
 #include <string>
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
+
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/prior.h"
+#include "lsst/gauss2d/fit/util.h"
+
+namespace lsst::gauss2d::fit {
 
 std::string str_jacobians(const std::map<ParamBaseCRef, std::vector<double>>& jacobians,
                           bool python_style = true) {
@@ -77,15 +80,16 @@ double PriorEvaluation::compute_dloglike_dx(const ParamBase& param, bool transfo
     return dll_dx;
 }
 
-std::string PriorEvaluation::repr(bool name_keywords) const {
-    return std::string("PriorEvaluation(") + (name_keywords ? "loglike=" : "") + to_string_float(loglike)
-           + ", " + (name_keywords ? "residuals=" : "") + to_string_float_iter(residuals) + ", "
+std::string PriorEvaluation::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<PriorEvaluation>(false, namespace_separator) + "("
+           + (name_keywords ? "loglike=" : "") + to_string_float(loglike) + ", "
+           + (name_keywords ? "residuals=" : "") + to_string_float_iter(residuals) + ", "
            + (name_keywords ? "jacobians=" : "") + str_jacobians(jacobians) + ")";
 }
 
 std::string PriorEvaluation::str() const {
-    return "PriorEvaluation(loglike=" + to_string_float(loglike) + ", residuals="
+    return type_name_str<PriorEvaluation>(true) + "(loglike=" + to_string_float(loglike) + ", residuals="
            + to_string_float_iter(residuals) + ", jacobians=" + str_jacobians(jacobians) + ")";
 }
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

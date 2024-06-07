@@ -1,8 +1,10 @@
-#include "gaussianparametricellipse.h"
-#include "gauss2d/ellipse.h"
-#include "parameters.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/ellipse.h"
+#include "lsst/gauss2d/fit/gaussianparametricellipse.h"
+#include "lsst/gauss2d/fit/parameters.h"
+
+namespace lsst::gauss2d::fit {
 template <typename t>
 t& _get_parameters(t& params, ParamFilter* filter, SigmaXParameterD& x, SigmaYParameterD& y,
                    RhoParameterD& r) {
@@ -58,10 +60,10 @@ void GaussianParametricEllipse::set_h(double hwhm_x, double hwhm_y, double rho) 
     set_rho(rho);
 }
 inline void GaussianParametricEllipse::set_hwhm_x(double hwhm_x) {
-    _sigma_x->set_value(gauss2d::M_HWHM_SIGMA * hwhm_x);
+    _sigma_x->set_value(lsst::gauss2d::M_HWHM_SIGMA * hwhm_x);
 }
 inline void GaussianParametricEllipse::set_hwhm_y(double hwhm_y) {
-    _sigma_y->set_value(gauss2d::M_HWHM_SIGMA * hwhm_y);
+    _sigma_y->set_value(lsst::gauss2d::M_HWHM_SIGMA * hwhm_y);
 }
 inline void GaussianParametricEllipse::set_rho(double rho) { _rho->set_value(rho); }
 inline void GaussianParametricEllipse::set_sigma_x(double sigma_x) { _sigma_x->set_value(sigma_x); }
@@ -75,16 +77,16 @@ void GaussianParametricEllipse::set_xyr(const std::array<double, 3>& xyr) {
     this->set(xyr[0], xyr[1], xyr[2]);
 }
 
-std::string GaussianParametricEllipse::repr(bool name_keywords) const {
-    return std::string("GaussianParametricEllipse(") + (name_keywords ? "sigma_x=" : "")
-           + _sigma_x->repr(name_keywords) + ", " + (name_keywords ? "sigma_y=" : "")
-           + _sigma_y->repr(name_keywords) + ", " + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords)
-           + ")";
+std::string GaussianParametricEllipse::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<GaussianParametricEllipse>(false, namespace_separator) + "("
+           + (name_keywords ? "sigma_x=" : "") + _sigma_x->repr(name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "sigma_y=" : "") + _sigma_y->repr(name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords, namespace_separator) + ")";
 }
 
 std::string GaussianParametricEllipse::str() const {
-    return "GaussianParametricEllipse(sigma_x=" + _sigma_x->str() + ", sigma_y=" + _sigma_y->str()
-           + ", rho=" + _rho->str() + ")";
+    return type_name_str<GaussianParametricEllipse>(true) + "(sigma_x=" + _sigma_x->str()
+           + ", sigma_y=" + _sigma_y->str() + ", rho=" + _rho->str() + ")";
 }
 
 GaussianParametricEllipse::GaussianParametricEllipse(std::shared_ptr<SigmaXParameterD> sigma_x,
@@ -98,4 +100,4 @@ GaussianParametricEllipse::GaussianParametricEllipse(double sigma_x, double sigm
           _sigma_y(std::make_shared<SigmaYParameterD>(sigma_y)),
           _rho(std::make_shared<RhoParameterD>(rho)){};
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

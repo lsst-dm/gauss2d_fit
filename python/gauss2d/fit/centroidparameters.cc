@@ -28,8 +28,8 @@
 #include <memory>
 #include <string>
 
-#include "gauss2d/centroid.h"
-#include "gauss2d/fit/centroidparameters.h"
+#include "lsst/gauss2d/centroid.h"
+#include "lsst/gauss2d/fit/centroidparameters.h"
 #include "pybind11.h"
 
 // #include "utils.h"
@@ -37,7 +37,7 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_centroidparameters(py::module &m) {
     auto _c = py::class_<g2f::CentroidParameters, std::shared_ptr<g2f::CentroidParameters>,

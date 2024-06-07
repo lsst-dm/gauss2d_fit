@@ -30,9 +30,9 @@
 #include <string>
 #include <vector>
 
-#include "gauss2d/fit/parameters.h"
-#include "gauss2d/fit/transforms.h"
-#include "gauss2d/fit/util.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/transforms.h"
+#include "lsst/gauss2d/fit/util.h"
 #include "lsst/modelfit/parameters.h"
 
 #include "parameters.h"
@@ -42,7 +42,7 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_parameters(py::module &m) {
     auto _u = py::class_<parameters::Unit, std::shared_ptr<parameters::Unit>>(m, "Unit");

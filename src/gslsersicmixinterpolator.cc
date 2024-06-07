@@ -1,14 +1,17 @@
-#ifdef GAUSS2D_FIT_HAS_GSL
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "gslsersicmixinterpolator.h"
-#include "util.h"
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/gslsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/util.h"
+
+namespace lsst::gauss2d::fit {
 
 double GSLSersicMixInterpolator::get_final_correction() const { return _final_correction; }
 
@@ -78,7 +81,7 @@ InterpType GSLSersicMixInterpolator::get_interptype() const { return _interp_typ
 
 unsigned short GSLSersicMixInterpolator::get_order() const { return _order; }
 
-std::string GSLSersicMixInterpolator::repr(bool name_keywords) const {
+std::string GSLSersicMixInterpolator::repr(bool name_keywords, std::string_view namespace_separator) const {
     return std::string("GSLSersicMixInterpolator(") + (name_keywords ? "order=" : "") + std::to_string(_order)
            + ")";
 }
@@ -121,6 +124,6 @@ GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const I
 
 GSLSersicMixInterpolator::~GSLSersicMixInterpolator() {}
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit
 
-#endif  // #ifdef GAUSS2D_FIT_HAS_GSL
+#endif  // #ifdef LSST_GAUSS2D_FIT_HAS_GSL

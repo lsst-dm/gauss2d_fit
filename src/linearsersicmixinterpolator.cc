@@ -3,17 +3,18 @@
 #include <string>
 #include <vector>
 
-#include "linearsersicmixinterpolator.h"
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
 
-#include "iostream"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
 
-namespace gauss2d::fit {
+namespace lsst::gauss2d::fit {
 
 std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes(double sersicindex) const {
     if (!((sersicindex >= sersicindex_min) && (sersicindex <= sersicindex_max))) {
-        throw std::invalid_argument("sersicindex=" + std::to_string(sersicindex)
-                                    + " !(>=" + std::to_string(sersicindex_min)
-                                    + "&& <=" + std::to_string(sersicindex_max));
+        throw std::invalid_argument("sersicindex=" + to_string_float(sersicindex)
+                                    + " !(>=" + to_string_float(sersicindex_min)
+                                    + "&& <=" + to_string_float(sersicindex_max));
     }
 
     if (sersicindex == sersicindex_min)
@@ -29,8 +30,8 @@ std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes(double 
     double frac_low = (high.sersicindex - sersicindex) / (high.sersicindex - low.sersicindex);
     if (!((frac_low >= 0) && (frac_low <= 1))) {
         throw std::logic_error("Got invalid frac_low=" + std::to_string(frac_low)
-                               + " with n, lo, hi=" + std::to_string(sersicindex) + ","
-                               + std::to_string(low.sersicindex) + "," + std::to_string(high.sersicindex));
+                               + " with n, lo, hi=" + to_string_float(sersicindex) + ","
+                               + to_string_float(low.sersicindex) + "," + to_string_float(high.sersicindex));
     }
     double frac_high = 1 - frac_low;
 
@@ -46,9 +47,9 @@ std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes(double 
 
 std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes_derivs(double sersicindex) const {
     if (!((sersicindex >= sersicindex_min) && (sersicindex <= sersicindex_max))) {
-        throw std::invalid_argument("sersicindex=" + std::to_string(sersicindex)
-                                    + " !(>=" + std::to_string(sersicindex_min)
-                                    + "&& <=" + std::to_string(sersicindex_max));
+        throw std::invalid_argument("sersicindex=" + to_string_float(sersicindex)
+                                    + " !(>=" + to_string_float(sersicindex_min)
+                                    + "&& <=" + to_string_float(sersicindex_max));
     }
 
     auto found = sersicindex == sersicindex_min
@@ -56,8 +57,8 @@ std::vector<IntegralSize> LinearSersicMixInterpolator::get_integralsizes_derivs(
                          : ((sersicindex == sersicindex_max)
                                     ? --knots.end()
                                     : std::upper_bound(knots.begin(), knots.end(), sersicindex));
-    auto high = *found;
-    auto low = *(--found);
+    auto& high = *found;
+    auto& low = *(--found);
 
     double dn_inv = 1. / (high.sersicindex - low.sersicindex);
 
@@ -75,13 +76,14 @@ InterpType LinearSersicMixInterpolator::get_interptype() const { return InterpTy
 
 unsigned short LinearSersicMixInterpolator::get_order() const { return _order; }
 
-std::string LinearSersicMixInterpolator::repr(bool name_keywords) const {
-    return std::string("LinearSersicMixInterpolator(") + (name_keywords ? "order=" : "")
-           + std::to_string(_order) + ")";
+std::string LinearSersicMixInterpolator::repr(bool name_keywords,
+                                              std::string_view namespace_separator) const {
+    return type_name_str<LinearSersicMixInterpolator>(false, namespace_separator) + "("
+           + (name_keywords ? "order=" : "") + std::to_string(_order) + ")";
 }
 
 std::string LinearSersicMixInterpolator::str() const {
-    return "LinearSersicMixInterpolator(order=" + std::to_string(_order) + ")";
+    return type_name_str<LinearSersicMixInterpolator>(true) + "(order=" + std::to_string(_order) + ")";
 }
 
 LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order)
@@ -92,4 +94,4 @@ LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order)
 
 LinearSersicMixInterpolator::~LinearSersicMixInterpolator(){};
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

@@ -2,11 +2,11 @@
 
 #include "doctest.h"
 
-#include "channel.h"
-#include "gaussiancomponent.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/gaussiancomponent.h"
 
-namespace g2 = gauss2d;
-namespace g2f = gauss2d::fit;
+namespace g2d = lsst::gauss2d;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("GaussianComponent") {
     const auto& C = g2f::Channel::NONE();
@@ -21,7 +21,7 @@ TEST_CASE("GaussianComponent") {
     auto gaussians = comp->get_gaussians(C);
     CHECK(gaussians->size() == 1);
     const auto& g0 = gaussians->at(0);
-    const g2::Gaussian g1{};
+    const g2d::Gaussian g1{};
     CHECK(g0.get_centroid_const() == g1.get_centroid_const());
     CHECK(g0.get_ellipse_const() == g1.get_ellipse_const());
     CHECK(g0.get_integral_const() == g1.get_integral_const());

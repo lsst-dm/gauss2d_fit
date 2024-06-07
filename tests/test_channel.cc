@@ -2,9 +2,9 @@
 
 #include "doctest.h"
 
-#include "channel.h"
+#include "lsst/gauss2d/fit/channel.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("Channels") {
     CHECK(g2f::Channel::get_channels().size() == 1);

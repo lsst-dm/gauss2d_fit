@@ -29,15 +29,15 @@
 #include <optional>
 #include <string>
 
-#include "gauss2d/gaussian.h"
-#include "gauss2d/fit/model.h"
-#include "gauss2d/fit/parametricmodel.h"
-#include "gauss2d/python/pyimage.h"
+#include "lsst/gauss2d/gaussian.h"
+#include "lsst/gauss2d/fit/model.h"
+#include "lsst/gauss2d/fit/parametricmodel.h"
+#include "lsst/gauss2d/python/pyimage.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 namespace g2p = gauss2d::python;
 
 typedef g2p::PyImage<double> Image;

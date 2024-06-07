@@ -1,12 +1,13 @@
-#include "psfmodel.h"
-
 #include <memory>
 #include <optional>
 
-#include "param_filter.h"
-#include "source.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/psfmodel.h"
+#include "lsst/gauss2d/fit/source.h"
+
+namespace lsst::gauss2d::fit {
 void PsfModel::add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
                                    const GradParamMap& map_grad, ParameterMap& offsets) const {
     for (auto& component : _components) component->add_extra_param_map(channel, map_extra, map_grad, offsets);
@@ -32,7 +33,7 @@ std::unique_ptr<const gauss2d::Gaussians> PsfModel::get_gaussians(const Channel&
     for (auto& component : _components) {
         in.push_back(component->get_gaussians(channel)->get_data());
     }
-    return std::make_unique<gauss2d::Gaussians>(in);
+    return std::make_unique<lsst::gauss2d::Gaussians>(in);
 }
 
 size_t PsfModel::get_n_gaussians(const Channel& channel) const {
@@ -59,14 +60,15 @@ void PsfModel::set_grad_param_factors(const Channel& channel, GradParamFactors& 
     for (auto& component : _components) component->set_grad_param_factors(channel, factors, index);
 }
 
-std::string PsfModel::repr(bool name_keywords) const {
-    std::string str = std::string("PsfModel(") + (name_keywords ? "components=[" : "[");
-    for (const auto& s : _components) str += s->repr(name_keywords) + ",";
+std::string PsfModel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    std::string str = type_name_str<PsfModel>(false, namespace_separator) + "("
+                      + (name_keywords ? "components=[" : "[");
+    for (const auto& s : _components) str += s->repr(name_keywords, namespace_separator) + ",";
     return str + "])";
 }
 
 std::string PsfModel::str() const {
-    std::string str = "PsfModel(components=[";
+    std::string str = type_name_str<PsfModel>(true) + "(components=[";
     for (const auto& s : _components) str += s->str() + ",";
     return str + "])";
 }
@@ -80,8 +82,8 @@ PsfModel::PsfModel(Components& components) {
         auto channels = component->get_integralmodel().get_channels();
         if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
             throw std::invalid_argument("PsfModel components[" + std::to_string(i)
-                                        + "].get_integralmodel().get_channels()=" + str_iter_refw(channels)
-                                        + " must only contain None");
+                                        + "].get_integralmodel().get_channels()="
+                                        + str_iter_ref<true>(channels) + " must only contain None");
         }
         _components.push_back(std::move(component));
         i++;
@@ -89,4 +91,4 @@ PsfModel::PsfModel(Components& components) {
 }
 
 PsfModel::~PsfModel() {}
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

@@ -26,14 +26,14 @@
 
 #include <memory>
 
-#include "gauss2d/fit/componentmixture.h"
-#include "gauss2d/fit/parametricmodel.h"
+#include "lsst/gauss2d/fit/componentmixture.h"
+#include "lsst/gauss2d/fit/parametricmodel.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_componentmixture(py::module &m) {
     auto _c = py::class_<g2f::ComponentMixture, std::shared_ptr<g2f::ComponentMixture>, g2f::ParametricModel>(

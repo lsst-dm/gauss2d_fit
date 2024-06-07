@@ -28,16 +28,16 @@
 #include <memory>
 #include <string>
 
-#include "gauss2d/fit/data.h"
-#include "gauss2d/fit/observation.h"
-#include "gauss2d/fit/parametric.h"
-#include "gauss2d/python/pyimage.h"
+#include "lsst/gauss2d/fit/data.h"
+#include "lsst/gauss2d/fit/observation.h"
+#include "lsst/gauss2d/fit/parametric.h"
+#include "lsst/gauss2d/python/pyimage.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 namespace g2p = gauss2d::python;
 
 typedef g2f::Data<double, g2p::PyImage<double>, g2p::PyImage<bool>> Data;

@@ -2,9 +2,9 @@
 
 #include "doctest.h"
 
-#include "centroidparameters.h"
+#include "lsst/gauss2d/fit/centroidparameters.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("CentroidParameters") {
     const unsigned int DIM = 20;

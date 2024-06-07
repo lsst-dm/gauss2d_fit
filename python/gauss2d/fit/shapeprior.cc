@@ -27,16 +27,16 @@
 
 #include <memory>
 
-#include "gauss2d/fit/parametricellipse.h"
-#include "gauss2d/fit/parametricgaussian1d.h"
-#include "gauss2d/fit/prior.h"
-#include "gauss2d/fit/shapeprior.h"
+#include "lsst/gauss2d/fit/parametricellipse.h"
+#include "lsst/gauss2d/fit/parametricgaussian1d.h"
+#include "lsst/gauss2d/fit/prior.h"
+#include "lsst/gauss2d/fit/shapeprior.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_shapeprior(py::module &m) {
     auto _o = py::class_<g2f::ShapePriorOptions, std::shared_ptr<g2f::ShapePriorOptions>, gauss2d::Object>(

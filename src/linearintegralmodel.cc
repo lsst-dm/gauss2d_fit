@@ -1,11 +1,12 @@
-#include "linearintegralmodel.h"
+#include "lsst/gauss2d/type_name.h"
 
-#include "channel.h"
-#include "param_filter.h"
-#include "parameters.h"
-#include "util.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/util.h"
 
-namespace gauss2d::fit {
+namespace lsst::gauss2d::fit {
 
 std::vector<std::reference_wrapper<const Channel>> LinearIntegralModel::get_channels() const {
     std::vector<std::reference_wrapper<const Channel>> rval = {};
@@ -51,16 +52,17 @@ ParamCRefs& LinearIntegralModel::get_parameters_const(ParamCRefs& params, ParamF
 
 size_t LinearIntegralModel::size() const { return _data.size(); }
 
-std::string LinearIntegralModel::repr(bool name_keywords) const {
-    std::string s = std::string("LinearIntegralModel(") + (name_keywords ? "data=" : "") + "{";
+std::string LinearIntegralModel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    std::string s = type_name_str<LinearIntegralModel>(false, namespace_separator) + "("
+                    + (name_keywords ? "data=" : "") + "{";
     for (const auto& datum : _data) {
-        s += datum.first.get().repr(name_keywords) + ": " + datum.second->repr(name_keywords) + ",";
+        s += datum.first.get().repr(name_keywords, namespace_separator) + ": " + datum.second->repr(name_keywords, namespace_separator) + ",";
     }
     return s + "})";
 }
 
 std::string LinearIntegralModel::str() const {
-    std::string s = "LinearIntegralModel(data={";
+    std::string s = type_name_str<LinearIntegralModel>(true) + "(data={";
     for (const auto& datum : _data) {
         s += datum.first.get().str() + ": " + datum.second->str() + ",";
     }
@@ -91,4 +93,4 @@ LinearIntegralModel::LinearIntegralModel(const Data* data_in) {
 }
 LinearIntegralModel::~LinearIntegralModel(){};
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

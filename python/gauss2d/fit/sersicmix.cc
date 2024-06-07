@@ -27,13 +27,14 @@
 
 #include <memory>
 
-#include "gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_sersicmix(py::module &m) {
     auto _is = py::class_<g2f::IntegralSize, std::shared_ptr<g2f::IntegralSize>, gauss2d::Object>(

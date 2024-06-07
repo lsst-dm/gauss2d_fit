@@ -1,13 +1,12 @@
-#include "channel.h"
-
 #include <functional>
+#include <iostream>
 #include <string>
 
-#include "util.h"
+#include "lsst/gauss2d/type_name.h"
 
-#include <iostream>
+#include "lsst/gauss2d/fit/channel.h"
 
-namespace gauss2d::fit {
+namespace lsst::gauss2d::fit {
 
 /*
 The registry serves several purposes:
@@ -80,11 +79,12 @@ std::shared_ptr<Channel> Channel::make(std::string name) {
 
 const std::shared_ptr<const Channel> Channel::make_const(std::string name) { return make(name); }
 
-std::string Channel::repr(bool name_keywords) const {
-    return std::string("Channel(") + (name_keywords ? "name=" : "") + name + ")";
+std::string Channel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<Channel>(false, namespace_separator) + "(" + (name_keywords ? "name=" : "") + name
+           + ")";
 }
 
-std::string Channel::str() const { return "Channel(name=" + name + ")"; }
+std::string Channel::str() const { return type_name_str<Channel>(true) + "(name=" + name + ")"; }
 
 const std::shared_ptr<const Channel> Channel::NONE_PTR() {
     static const std::shared_ptr<const Channel> _NONE = Channel::make(Channel::NAME_NONE);
@@ -110,4 +110,4 @@ Channel::Channel(std::string name_) : name(name_) {
     }
 }
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

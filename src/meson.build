@@ -27,4 +27,5 @@ gauss2dfitlib = shared_library('gauss2dfit',
                                 include_directories : inc,
                                 dependencies : depends,
                                 install : true,
-                                soversion : '0.1.0')
+                                install_dir : get_option('libdir') / 'lsst',
+                                soversion : meson.project_version())

@@ -27,15 +27,15 @@
 
 #include <memory>
 
-#include "gauss2d/fit/parameters.h"
-#include "gauss2d/fit/parametricgaussian1d.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/parametricgaussian1d.h"
 
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 void bind_parametricgaussian1d(py::module &m) {
     auto _e = py::class_<g2f::ParametricGaussian1D, std::shared_ptr<g2f::ParametricGaussian1D>,
                          gauss2d::Object>(m, "ParametricGaussian1D")

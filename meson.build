@@ -1,7 +1,7 @@
 project(
   'libgauss2dfit',
   'cpp',
-  version : run_command('cat', meson.source_root() + '/VERSION', check: true).stdout().strip(),
+  version : files('VERSION'),
   license : 'GPL-3.0-or-later',
   default_options : ['cpp_std=c++17',],
 )
@@ -15,7 +15,7 @@ endif
 gsl_dep = dependency('gsl', required: false)
 
 if gsl_dep.found()
-    add_project_arguments('-DGAUSS2D_FIT_HAS_GSL', language : 'cpp')
+    add_project_arguments('-DLSST_GAUSS2D_FIT_HAS_GSL', language : 'cpp')
 endif
 
 if use_eups
@@ -31,7 +31,7 @@ if use_eups
         include_directories: parameters_eupsdir + '/build-release/include',
     )
 else
-    gauss2d_dep = dependency('gauss2d')
+    gauss2d_dep = dependency('lsst_gauss2d')
     parameters_dep = dependency('lsst_modelfit_parameters')
 endif
 
@@ -51,8 +51,8 @@ if not use_eups
     if pkg_mod.found()
         pkg_mod.generate(libraries : gauss2dfitlib,
                          version : '0.1',
-                         name : 'libgauss2dfit',
-                         filebase : 'gauss2dfit',
+                         name : 'libgauss2d_fit',
+                         filebase : 'lsst_gauss2d_fit',
                          description : 'Create, manipulate and evaluate 2D Gaussian mixtures and images thereof.')
     endif
 endif

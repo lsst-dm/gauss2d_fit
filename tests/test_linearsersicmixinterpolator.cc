@@ -2,11 +2,11 @@
 
 #include "doctest.h"
 
-#include "linearsersicmixinterpolator.h"
-#include "sersicmix.h"
-#include "util.h"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/util.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("LinearSersicMixInterpolator") {
     std::vector<unsigned short> orders = {4, 8};
@@ -60,7 +60,7 @@ TEST_CASE("LinearSersicMixInterpolator") {
                 CHECK_MESSAGE(close_sigma.isclose, msg);
             }
         }
-        auto knots = gauss2d::fit::get_sersic_mix_knots(order);
+        auto knots = g2f::get_sersic_mix_knots(order);
         double sersicindices[2] = {interpolator.sersicindex_min, interpolator.sersicindex_max};
         g2f::SersicMixValues expected[2] = {knots[0], knots.back()};
         for (size_t i = 0; i < 2; ++i) {

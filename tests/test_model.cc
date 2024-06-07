@@ -1,6 +1,3 @@
-#include <stdexcept>
-#include "componentmixture.h"
-#include "psfmodel.h"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
@@ -8,35 +5,38 @@
 #include <experimental/iterator>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 
-#include "gauss2d/coordinatesystem.h"
-#include "gauss2d/vectorimage.h"
+#include "lsst/gauss2d/coordinatesystem.h"
+#include "lsst/gauss2d/vectorimage.h"
 
-#include "centroidparameters.h"
-#include "channel.h"
-#include "data.h"
-#include "ellipticalcomponent.h"
-#include "fractionalintegralmodel.h"
-#include "gaussiancomponent.h"
-#include "gaussianprior.h"
-#include "integralmodel.h"
-#include "linearintegralmodel.h"
-#include "model.h"
-#include "observation.h"
-#include "param_defs.h"
-#include "param_filter.h"
-#include "parameters.h"
-#include "sersicmixcomponent.h"
-#include "shapeprior.h"
-#include "transforms.h"
-#include "util.h"
+#include "lsst/gauss2d/fit/centroidparameters.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/componentmixture.h"
+#include "lsst/gauss2d/fit/data.h"
+#include "lsst/gauss2d/fit/ellipticalcomponent.h"
+#include "lsst/gauss2d/fit/fractionalintegralmodel.h"
+#include "lsst/gauss2d/fit/gaussiancomponent.h"
+#include "lsst/gauss2d/fit/gaussianprior.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/model.h"
+#include "lsst/gauss2d/fit/observation.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/psfmodel.h"
+#include "lsst/gauss2d/fit/sersicmixcomponent.h"
+#include "lsst/gauss2d/fit/shapeprior.h"
+#include "lsst/gauss2d/fit/transforms.h"
+#include "lsst/gauss2d/fit/util.h"
 
-namespace g2 = gauss2d;
-namespace g2f = g2::fit;
+namespace g2d = lsst::gauss2d;
+namespace g2f = g2d::fit;
 
-typedef g2::VectorImage<double> Image;
-typedef g2::VectorImage<size_t> Indices;
-typedef g2::VectorImage<bool> Mask;
+typedef g2d::VectorImage<double> Image;
+typedef g2d::VectorImage<size_t> Indices;
+typedef g2d::VectorImage<bool> Mask;
 typedef g2f::Observation<double, Image, Mask> Observation;
 typedef g2f::Data<double, Image, Mask> Data;
 typedef g2f::Model<double, Image, Indices, Mask> Model;
@@ -49,14 +49,15 @@ std::shared_ptr<Data> make_data(Channels channels, const size_t n_x, const size_
                                 const size_t dn_y = 0., const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation>> observations;
     double dx_min = 0., dy_min = 0.;
+    auto fill = std::make_unique<double>(0);
+    auto bool_true = std::make_unique<bool>(true);
     for (const auto& channel_ptr : channels) {
-        auto coordsys = std::make_shared<const g2::CoordinateSystem>(1., 1., -1. + dx_min, 2. + dy_min);
-        auto img = std::make_unique<Image>(n_y, n_x, coordsys);
-        img->fill(0);
-        auto err = std::make_unique<Image>(n_y, n_x, coordsys);
-        err->fill(sigma_inv_value);
-        auto mask = std::make_unique<Mask>(n_y, n_x, coordsys);
-        mask->fill(1);
+        auto coordsys = std::make_shared<const g2d::CoordinateSystem>(1., 1., -1. + dx_min, 2. + dy_min);
+        *fill = 0;
+        auto img = std::make_unique<Image>(n_y, n_x, fill.get(), coordsys);
+        *fill = sigma_inv_value;
+        auto err = std::make_unique<Image>(n_y, n_x, fill.get(), coordsys);
+        auto mask = std::make_unique<Mask>(n_y, n_x, bool_true.get(), coordsys);
         auto observation = std::make_shared<Observation>(std::move(img), std::move(err), std::move(mask),
                                                          *channel_ptr);
         observations.emplace_back(observation);
@@ -191,8 +192,8 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                     double value_new = param.get_value_transformed();
                     double value_old = values_transformed[idx_param++];
                     CHECK_MESSAGE(g2f::isclose(value_old, value_new, 1e-10, 1e-12).isclose, param.str(),
-                                  " value_transformed changed from ", g2f::to_string_float(value_old), " to ",
-                                  g2f::to_string_float(value_new),
+                                  " value_transformed changed from ", g2d::to_string_float(value_old), " to ",
+                                  g2d::to_string_float(value_new),
                                   " with compute_hessian(transformed=", std::to_string(transformed), ")");
                 }
                 // Check that the Hessian is not very sensitive to the choice of finite differences
@@ -361,8 +362,8 @@ TEST_CASE("Model") {
                 comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
                                                                  sersic_n);
             }
-            auto ell_g2 = g2::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
-            auto ell_maj = g2::EllipseMajor(ell_g2);
+            auto ell_g2 = g2d::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
+            auto ell_maj = g2d::EllipseMajor(ell_g2);
             double axrat = ell_maj.get_axrat();
             double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat
                                    + std::pow(g2f::ShapePriorOptions::size_maj_floor_default, 2));
@@ -596,8 +597,8 @@ TEST_CASE("Model with priors") {
                                                              std::make_shared<g2f::ReffYParameterD>(1.469544),
                                                              std::make_shared<g2f::RhoParameterD>(-0.020842));
 
-    auto ell_g2 = g2::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
-    auto ell_maj = g2::EllipseMajor(ell_g2);
+    auto ell_g2 = g2d::Ellipse(ellipse_src->get_size_x(), ellipse_src->get_size_y(), ellipse_src->get_rho());
+    auto ell_maj = g2d::EllipseMajor(ell_g2);
     double axrat = ell_maj.get_axrat();
     double size_ell = sqrt(std::pow(ell_maj.get_r_major(), 2) * axrat);
     axrat = sqrt(axrat * axrat + std::pow(g2f::ShapePriorOptions::axrat_floor_default, 2));

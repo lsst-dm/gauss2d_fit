@@ -1,24 +1,24 @@
-#include "sersicmixcomponent.h"
-
 #include <stdexcept>
 #include <string>
 
-#include "gauss2d/centroid.h"
-#include "gauss2d/ellipse.h"
-#include "gauss2d/evaluate.h"
-#include "gauss2d/gaussian.h"
+#include "lsst/gauss2d/centroid.h"
+#include "lsst/gauss2d/ellipse.h"
+#include "lsst/gauss2d/evaluate.h"
+#include "lsst/gauss2d/gaussian.h"
+#include "lsst/gauss2d/type_name.h"
 
-#include "channel.h"
-#include "component.h"
-#include "gaussianmodelintegral.h"
-#include "integralmodel.h"
-#include "linearsersicmixinterpolator.h"
-#include "param_defs.h"
-#include "param_filter.h"
-#include "parametricellipse.h"
-#include "sersicmix.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/gaussianmodelintegral.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/parametricellipse.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/sersicmixcomponent.h"
 
-namespace gauss2d::fit {
+namespace lsst::gauss2d::fit {
 
 class SersicEllipseData : public EllipseData, public QuasiEllipse {
 private:
@@ -55,16 +55,16 @@ public:
         throw std::runtime_error("Can't set on SersicEllipseData");
     }
 
-    std::string repr(bool name_keywords) const override {
-        return std::string("SersicEllipseData(") + (name_keywords ? "size_x=" : "")
-               + _size_x->repr(name_keywords) + ", " + (name_keywords ? "size_y=" : "")
-               + _size_y->repr(name_keywords) + ", " + (name_keywords ? "rho=" : "")
-               + _rho->repr(name_keywords) + ")";
+    std::string repr(bool name_keywords, std::string_view namespace_separator) const override {
+        return type_name_str<SersicEllipseData>(false, namespace_separator) + "("
+               + (name_keywords ? "size_x=" : "") + _size_x->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "size_y=" : "") + _size_y->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords, namespace_separator) + ")";
     }
 
     std::string str() const override {
-        return "SersicEllipseData(size_x=" + _size_x->str() + ", size_y=" + _size_y->str()
-               + ", rho=" + _rho->str() + +")";
+        return type_name_str<SersicEllipseData>(true) + "(size_x=" + _size_x->str()
+               + ", size_y=" + _size_y->str() + ", rho=" + _rho->str() + +")";
     }
 
     SersicEllipseData(const std::shared_ptr<const ReffXParameterD> size_x,
@@ -120,17 +120,20 @@ public:
     double get_value() const override { return get_integralratio() * _integralmodel->get_integral(_channel); }
     void set_value(double value) override { throw std::runtime_error("Can't set on SersicModelIntegral"); }
 
-    std::string repr(bool name_keywords) const override {
-        return std::string("SersicModelIntegral(") + (name_keywords ? "channel=" : "")
-               + _channel.repr(name_keywords) + ", " + (name_keywords ? "integralmodel=" : "")
-               + _integralmodel->repr(name_keywords) + ", " + (name_keywords ? "sersicindex=" : "")
-               + _sersicindex->repr(name_keywords) + ", " + (name_keywords ? "index=" : "")
-               + std::to_string(_index) + ")";
+    std::string repr(bool name_keywords, std::string_view namespace_separator) const override {
+        return type_name_str<SersicModelIntegral>(false, namespace_separator) + ")"
+               + (name_keywords ? "channel=" : "") + _channel.repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "integralmodel=" : "")
+               + _integralmodel->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "sersicindex=" : "")
+               + _sersicindex->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "index=" : "") + std::to_string(_index) + ")";
     }
 
     std::string str() const override {
-        return "SersicModelIntegral(channel=" + _channel.str() + ", integralmodel=" + _integralmodel->str()
-               + ", sersicindex=" + _sersicindex->str() + ", index=" + std::to_string(_index) + ")";
+        return type_name_str<SersicModelIntegral>(true) + "(channel=" + _channel.str()
+               + ", integralmodel=" + _integralmodel->str() + ", sersicindex=" + _sersicindex->str()
+               + ", index=" + std::to_string(_index) + ")";
     }
 
     SersicModelIntegral(const Channel& channel, const std::shared_ptr<const IntegralModel> integralmodel,
@@ -358,7 +361,7 @@ std::unique_ptr<const gauss2d::Gaussians> SersicMixComponent::get_gaussians(cons
     for (auto& component : components) {
         in.push_back(component->get_gaussians(channel)->get_data());
     }
-    return std::make_unique<gauss2d::Gaussians>(in);
+    return std::make_unique<lsst::gauss2d::Gaussians>(in);
 }
 
 size_t SersicMixComponent::get_n_gaussians(const Channel& channel) const {
@@ -452,13 +455,16 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
 
 void SersicMixComponent::set_sersicindex(double value) { this->_sersicindex->set_value(value); }
 
-std::string SersicMixComponent::repr(bool name_keywords) const {
-    return "SersicMixComponent(" + EllipticalComponent::repr(name_keywords) + ", "
-           + (name_keywords ? "sersicindex=" : "") + _sersicindex->repr(name_keywords) + ")";
+std::string SersicMixComponent::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<SersicMixComponent>(false, namespace_separator) + "("
+           + EllipticalComponent::repr(name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "sersicindex=" : "") + _sersicindex->repr(name_keywords, namespace_separator)
+           + ")";
 }
 
 std::string SersicMixComponent::str() const {
-    return "SersicMixComponent(" + EllipticalComponent::str() + ", sersicindex=" + _sersicindex->str() + ")";
+    return type_name_str<SersicMixComponent>(true) + "(" + EllipticalComponent::str()
+           + ", sersicindex=" + _sersicindex->str() + ")";
 }
 
 SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse,
@@ -486,4 +492,4 @@ SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> 
 
 SersicMixComponent::~SersicMixComponent(){};
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

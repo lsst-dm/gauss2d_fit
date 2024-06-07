@@ -1,6 +1,8 @@
-#include "param_defs.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/param_defs.h"
+
+namespace lsst::gauss2d::fit {
 double finite_difference_param(ParamBase& param, double delta) {
     const double value = param.get_value_transformed();
     double value_new = value + delta;
@@ -25,4 +27,4 @@ double finite_difference_param(ParamBase& param, double delta) {
     }
     return delta;
 }
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

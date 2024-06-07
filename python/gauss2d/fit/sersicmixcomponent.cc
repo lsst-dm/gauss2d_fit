@@ -27,10 +27,10 @@
 
 #include <memory>
 
-#include "gauss2d/fit/component.h"
-#include "gauss2d/fit/parameters.h"
-#include "gauss2d/fit/sersicmixcomponent.h"
-#include "gauss2d/fit/sersicparametricellipse.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/sersicmixcomponent.h"
+#include "lsst/gauss2d/fit/sersicparametricellipse.h"
 #include "lsst/modelfit/parameters.h"
 
 #include "parameters.h"
@@ -39,7 +39,7 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_sersicmixcomponent(py::module &m) {
     using T = double;

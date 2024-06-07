@@ -1,6 +1,8 @@
-#include "sersicparametricellipse.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/sersicparametricellipse.h"
+
+namespace lsst::gauss2d::fit {
 template <typename t>
 t& _get_parameters(t& params, ParamFilter* filter, ReffXParameterD& x, ReffYParameterD& y, RhoParameterD& r) {
     insert_param(x, params, filter);
@@ -37,10 +39,10 @@ inline void SersicParametricEllipse::set_rho(double rho) { _rho->set_value(rho);
 inline void SersicParametricEllipse::set_size_x(double size_x) { _size_x->set_value(size_x); }
 inline void SersicParametricEllipse::set_size_y(double size_y) { _size_y->set_value(size_y); }
 
-std::string SersicParametricEllipse::repr(bool name_keywords) const {
+std::string SersicParametricEllipse::repr(bool name_keywords, std::string_view namespace_separator) const {
     return std::string("SersicParametricEllipse(") + (name_keywords ? "size_x=" : "")
-           + _size_x->repr(name_keywords) + ", " + (name_keywords ? "size_y=" : "")
-           + _size_y->repr(name_keywords) + ", " + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords)
+           + _size_x->repr(name_keywords, namespace_separator) + ", " + (name_keywords ? "size_y=" : "")
+           + _size_y->repr(name_keywords, namespace_separator) + ", " + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords, namespace_separator)
            + ")";
 }
 
@@ -61,4 +63,4 @@ SersicParametricEllipse::SersicParametricEllipse(double size_x, double size_y, d
           _size_y(std::make_shared<ReffYParameterD>(size_y)),
           _rho(std::make_shared<RhoParameterD>(rho)){};
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

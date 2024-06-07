@@ -27,14 +27,14 @@
 
 #include <memory>
 
-#include "gauss2d/fit/componentmixture.h"
-#include "gauss2d/fit/source.h"
+#include "lsst/gauss2d/fit/componentmixture.h"
+#include "lsst/gauss2d/fit/source.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_source(py::module &m) {
     auto _s = py::class_<g2f::Source, std::shared_ptr<g2f::Source>, g2f::ComponentMixture>(m, "Source")

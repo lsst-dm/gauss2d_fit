@@ -1,13 +1,13 @@
-#include "param_filter.h"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
 
-#include "channel.h"
-#include "linearintegralmodel.h"
-#include "param_defs.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("LinearIntegralModel") {
     const auto c1 = g2f::Channel::make("1");

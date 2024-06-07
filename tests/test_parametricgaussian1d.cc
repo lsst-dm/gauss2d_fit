@@ -2,13 +2,12 @@
 
 #include "doctest.h"
 
-#include <cmath>
 #include <memory>
 
-#include "parameters.h"
-#include "parametricgaussian1d.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/parametricgaussian1d.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("ParametricGaussian1d") {
     CHECK(g2f::ParametricGaussian1D().str().size() > 0);

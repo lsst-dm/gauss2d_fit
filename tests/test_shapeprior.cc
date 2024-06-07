@@ -5,15 +5,15 @@
 #include <cmath>
 #include <memory>
 
-#include "gaussianparametricellipse.h"
-#include "parameters.h"
-#include "parametricgaussian1d.h"
-#include "shapeprior.h"
-#include "transforms.h"
-#include "util.h"
+#include "lsst/gauss2d/fit/gaussianparametricellipse.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/parametricgaussian1d.h"
+#include "lsst/gauss2d/fit/shapeprior.h"
+#include "lsst/gauss2d/fit/transforms.h"
+#include "lsst/gauss2d/fit/util.h"
 
-namespace g2 = gauss2d;
-namespace g2f = gauss2d::fit;
+namespace g2d = lsst::gauss2d;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("ShapePrior") {
     CHECK_THROWS_AS(g2f::ShapePrior(nullptr), std::invalid_argument);
@@ -27,7 +27,7 @@ TEST_CASE("ShapePrior") {
     double stddev_axrat = 0.1;
 
     auto ellipse = std::make_shared<g2f::GaussianParametricEllipse>();
-    auto ellipse_mean = std::make_shared<g2::Ellipse>(g2::EllipseMajor(mean_size, mean_axrat, 0));
+    auto ellipse_mean = std::make_shared<g2d::Ellipse>(g2d::EllipseMajor(mean_size, mean_axrat, 0));
     ellipse->set_xyr(ellipse_mean->get_xyr());
 
     CHECK(g2f::ShapePrior(ellipse).str().size() > 0);

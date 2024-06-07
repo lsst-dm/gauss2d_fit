@@ -2,9 +2,9 @@
 
 #include "doctest.h"
 
-#include "sersicmix.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("SersicMixtures") {
     std::vector<unsigned short> orders = {4, 8};

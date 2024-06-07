@@ -26,16 +26,16 @@
 
 #include <memory>
 
-#include "gauss2d/fit/data.h"
-#include "gauss2d/fit/integralmodel.h"
-#include "gauss2d/fit/linearintegralmodel.h"
-#include "gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/data.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/parameters.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_linearintegralmodel(py::module &m) {
     auto _p = py::class_<g2f::LinearIntegralModel, std::shared_ptr<g2f::LinearIntegralModel>,

@@ -27,13 +27,13 @@
 
 #include <memory>
 
-#include "gauss2d/fit/channel.h"
-#include "gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/param_filter.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_param_filter(py::module &m) {
     auto _p = py::class_<g2f::ParamFilter, std::shared_ptr<g2f::ParamFilter>>(m, "ParamFilter")

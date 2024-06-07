@@ -5,13 +5,13 @@
 #include <cmath>
 #include <memory>
 
-#include "gaussianprior.h"
-#include "parameters.h"
-#include "transforms.h"
-#include "util.h"
+#include "lsst/gauss2d/fit/gaussianprior.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/transforms.h"
+#include "lsst/gauss2d/fit/util.h"
 
-namespace g2 = gauss2d;
-namespace g2f = gauss2d::fit;
+namespace g2d = lsst::gauss2d;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("GaussianPrior") {
     auto param = std::make_shared<g2f::IntegralParameterD>();

@@ -4,12 +4,12 @@
 
 #include <memory>
 
-#include "channel.h"
-#include "component.h"
-#include "gaussiancomponent.h"
-#include "source.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/gaussiancomponent.h"
+#include "lsst/gauss2d/fit/source.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("Source") {
     const auto& C = g2f::Channel::NONE();

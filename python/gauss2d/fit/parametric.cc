@@ -26,14 +26,14 @@
 
 #include <memory>
 
-#include "gauss2d/object.h"
-#include "gauss2d/fit/parametric.h"
+#include "lsst/gauss2d/object.h"
+#include "lsst/gauss2d/fit/parametric.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 void bind_parametric(py::module &m) {
     auto _p = py::class_<g2f::Parametric, std::shared_ptr<g2f::Parametric>, gauss2d::Object>(m, "Parametric");

@@ -1,11 +1,13 @@
-#ifdef GAUSS2D_FIT_HAS_GSL
+#ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
 #include <stdexcept>
 #include <vector>
 
-#include "gslinterpolator.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/gslinterpolator.h"
+
+namespace lsst::gauss2d::fit {
 
 void _check_idx(size_t idx, size_t size) {
     if (!(idx < size)) {
@@ -13,7 +15,7 @@ void _check_idx(size_t idx, size_t size) {
     }
 }
 
-std::string GSLInterpolator::repr(bool name_keywords) const {
+std::string GSLInterpolator::repr(bool name_keywords, std::string_view namespace_separator) const {
     return std::string("GSLInterpolator(") + (name_keywords ? "n_knots=" : "") + std::to_string(_n_knots)
            + ")";
 }
@@ -56,6 +58,6 @@ GSLInterpolator::~GSLInterpolator() {
     gsl_interp_accel_free(_acc);
 }
 
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit
 
-#endif  // #ifdef GAUSS2D_FIT_HAS_GSL
+#endif  // #ifdef LSST_GAUSS2D_FIT_HAS_GSL
