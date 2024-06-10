@@ -20,6 +20,7 @@
 #include "lsst/gauss2d/fit/gaussianprior.h"
 #include "lsst/gauss2d/fit/integralmodel.h"
 #include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
 #include "lsst/gauss2d/fit/model.h"
 #include "lsst/gauss2d/fit/observation.h"
 #include "lsst/gauss2d/fit/param_defs.h"
@@ -332,6 +333,9 @@ TEST_CASE("Model") {
 
     Model::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
+
+    std::vector<std::shared_ptr<g2f::SersicMixComponentIndexParameterD>> sersic_linear_interp{};
+
     for (size_t i = 0; i < 2; ++i) {
         std::vector<std::shared_ptr<g2f::Component>> comps;
         for (size_t c = 0; c < 2; ++c) {
@@ -355,6 +359,11 @@ TEST_CASE("Model") {
                 auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameterD>(
                         0.5 + 3.5 * c, nullptr, transform_log10);
                 sersic_n->set_free(free_sersicindex);
+                if (sersic_n->get_free()) {
+                    if (sersic_n->get_interptype() == g2f::InterpType::linear) {
+                        sersic_linear_interp.emplace_back(sersic_n);
+                    }
+                }
                 auto reff_x = std::make_shared<g2f::ReffXParameterD>(c + 0.5, nullptr, transform_log10);
                 auto reff_y = std::make_shared<g2f::ReffYParameterD>(c + 1.5, nullptr, transform_log10);
                 auto ellipse_s = std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y);
@@ -460,6 +469,30 @@ TEST_CASE("Model") {
     CHECK(map_grad->size() == n_gauss);
     CHECK(factors_extra->size() == n_gauss);
     CHECK(factors_grad->size() == n_gauss);
+
+    /*
+     * Sersic indices with linear interpolators cannot pass loglike_grad
+     * validation at (or very near) knot values - the finite diff straddles
+     * the knot whereas the linear interpolation is exactly right only for
+     * values larger than the knot
+     */
+
+    auto interpolator_linear = g2f::LinearSersicMixInterpolator(g2f::SERSICMIX_ORDER_DEFAULT);
+    auto& knots = interpolator_linear.knots;
+    for (auto& sersic : sersic_linear_interp) {
+        const double sersicindex = sersic->get_value();
+        auto found = sersicindex == interpolator_linear.sersicindex_min
+                             ? ++knots.begin()
+                             : ((sersicindex == interpolator_linear.sersicindex_max)
+                                        ? --knots.end()
+                                        : std::upper_bound(knots.begin(), knots.end(), sersicindex));
+        double n_high = (found)->sersicindex;
+        double n_low = (--found)->sersicindex;
+        double n_diff = (n_high - n_low);
+        if ((sersicindex - n_low) / n_diff < 0.1) {
+            sersic->set_value(n_low + n_diff * 0.5);
+        }
+    }
 
     // TODO: This should pass without setting skip_rho
     verify_model(*model, channels, params_src_free, true, true);
