@@ -1,4 +1,4 @@
-import gauss2d.fit as g2f
+import lsst.gauss2d.fit as g2f
 
 
 def test_bindings():

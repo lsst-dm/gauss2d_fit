@@ -155,7 +155,7 @@ public:
 // This is the gauss2d convention; see evaluator.h
 static const std::array<size_t, N_PARAMS_GAUSS2D> IDX_ORDER = {0, 1, 3, 4, 5, 2};
 
-// TODO: This could derive from gauss2d::Gaussian, but would that serve any purpose?
+// TODO: This could derive from lsst::gauss2d::Gaussian, but would that serve any purpose?
 // TODO: This was intended to derive from QuasiEllipticalComponent, but there also
 // seems to be no need to implement all of its functions
 class SersicMixComponent::SersicMixGaussianComponent {
@@ -168,11 +168,11 @@ public:
     const SersicEllipseData& get_ellipse() const { return *_ellipsedata; }
     const SersicModelIntegral& get_integralmodel() const { return *_integralmodel; }
 
-    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel) const {
-        gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
+    std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const {
+        lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
                 std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
                 std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
-        return std::make_unique<const gauss2d::Gaussians>(gaussians);
+        return std::make_unique<const lsst::gauss2d::Gaussians>(gaussians);
     }
 
     SersicMixGaussianComponent(std::shared_ptr<SersicEllipseData> ellipsedata = nullptr,
@@ -353,8 +353,8 @@ void SersicMixComponent::add_grad_param_factors(const Channel& channel, GradPara
     }
 }
 
-std::unique_ptr<const gauss2d::Gaussians> SersicMixComponent::get_gaussians(const Channel& channel) const {
-    std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
+std::unique_ptr<const lsst::gauss2d::Gaussians> SersicMixComponent::get_gaussians(const Channel& channel) const {
+    std::vector<std::optional<const lsst::gauss2d::Gaussians::Data>> in;
     // TODO: This isn't sufficient; need to implement get_n_components
     const auto& components = _gaussians.at(channel);
     in.reserve(components.size());

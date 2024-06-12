@@ -8,11 +8,11 @@
 #include "parametric.h"
 
 namespace lsst::gauss2d::fit{
-typedef std::vector<std::array<size_t, gauss2d::N_EXTRA_MAP>> ExtraParamMap;
-typedef std::array<double, gauss2d::N_EXTRA_FACTOR> ExtraParamFactorValues;
+typedef std::vector<std::array<size_t, lsst::gauss2d::N_EXTRA_MAP>> ExtraParamMap;
+typedef std::array<double, lsst::gauss2d::N_EXTRA_FACTOR> ExtraParamFactorValues;
 typedef std::vector<ExtraParamFactorValues> ExtraParamFactors;
-typedef std::vector<std::array<size_t, gauss2d::N_PARAMS_GAUSS2D>> GradParamMap;
-typedef std::vector<std::array<double, gauss2d::N_PARAMS_GAUSS2D>> GradParamFactors;
+typedef std::vector<std::array<size_t, lsst::gauss2d::N_PARAMS_GAUSS2D>> GradParamMap;
+typedef std::vector<std::array<double, lsst::gauss2d::N_PARAMS_GAUSS2D>> GradParamFactors;
 
 typedef std::map<ParamBaseCRef, size_t> ParameterMap;
 
@@ -82,7 +82,7 @@ public:
      * @param channel The Channel to return Gaussians for.
      * @return The Gaussians controlled by this model.
      */
-    virtual std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel) const = 0;
+    virtual std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const = 0;
     /// Return the number of Gaussian sub-components controlled by this model.
     virtual size_t get_n_gaussians(const Channel& channel) const = 0;
 };

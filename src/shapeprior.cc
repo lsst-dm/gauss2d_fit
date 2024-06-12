@@ -107,9 +107,9 @@ std::string ShapePriorOptions::str() const {
 }
 
 PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const {
-    const auto ellipse = gauss2d::Ellipse(this->_ellipse->get_size_x(), this->_ellipse->get_size_y(),
+    const auto ellipse = lsst::gauss2d::Ellipse(this->_ellipse->get_size_x(), this->_ellipse->get_size_y(),
                                           this->_ellipse->get_rho());
-    const auto ellipse_major = gauss2d::EllipseMajor(ellipse);
+    const auto ellipse_major = lsst::gauss2d::EllipseMajor(ellipse);
 
     double size_maj = ellipse_major.get_r_major();
     double axrat = size_maj == 0 ? 0 : ellipse_major.get_axrat();

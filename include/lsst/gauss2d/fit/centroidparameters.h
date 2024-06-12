@@ -12,7 +12,7 @@ namespace lsst::gauss2d::fit {
 /**
  * A Centroid with Parameters for x and y
  */
-class CentroidParameters : public gauss2d::CentroidData, public Parametric {
+class CentroidParameters : public lsst::gauss2d::CentroidData, public Parametric {
 private:
     std::shared_ptr<CentroidXParameterD> _x;
     std::shared_ptr<CentroidYParameterD> _y;

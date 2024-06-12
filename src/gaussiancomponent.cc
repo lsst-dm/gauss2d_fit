@@ -113,11 +113,11 @@ void GaussianComponent::add_grad_param_factors(const Channel& channel, GradParam
     factors.push_back({1, 1, 1, 1, 1, 1});
 }
 
-std::unique_ptr<const gauss2d::Gaussians> GaussianComponent::get_gaussians(const Channel& channel) const {
-    gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
+std::unique_ptr<const lsst::gauss2d::Gaussians> GaussianComponent::get_gaussians(const Channel& channel) const {
+    lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
             std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
             std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
-    return std::make_unique<const gauss2d::Gaussians>(gaussians);
+    return std::make_unique<const lsst::gauss2d::Gaussians>(gaussians);
 }
 
 size_t GaussianComponent::get_n_gaussians(const Channel& channel) const { return 1; };

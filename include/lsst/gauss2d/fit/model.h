@@ -28,6 +28,15 @@ static const std::string ERRMSG_PARAMS
         = "Were params fixed/freed since calling compute_*/evaluate?"
           "Or does your PSF model have free parameters?";
 
+/// Valid modes to initialize lsst::gauss2d::GaussianEvaluator instances for.
+enum class EvaluatorMode {
+    image,          ///< Compute the model images only
+    loglike,        ///< Compute the log likelihood only
+    loglike_image,  ///< Compute the model images and log likelihood
+    loglike_grad,   ///< Compute the gradients of the log likelihood
+    jacobian        ///< Compute the model Jacobian
+};
+
 struct HessianOptions {
     /*
      * @param return_negative Whether the matrix should have all negative terms.
@@ -39,6 +48,10 @@ struct HessianOptions {
     double findiff_frac = 1e-4;
     double findiff_add = 1e-4;
 };
+
+typedef std::vector<std::shared_ptr<PsfModel>> PsfModels;
+typedef std::vector<std::shared_ptr<Source>> Sources;
+typedef std::vector<std::shared_ptr<Prior>> Priors;
 
 /*
     A Model is a collection of Sources used to represent a model of the
@@ -69,18 +82,6 @@ public:
             GaussiansMap;
     typedef Data<T, Image, Mask> ModelData;
     typedef typename ModelData::Observation Observation;
-    typedef std::vector<std::shared_ptr<PsfModel>> PsfModels;
-    typedef std::vector<std::shared_ptr<Source>> Sources;
-    typedef std::vector<std::shared_ptr<Prior>> Priors;
-
-    /// Valid forms of evaluation to setup GaussianEvaluator instances for.
-    enum class EvaluatorMode {
-        image,          ///< Compute the model images only
-        loglike,        ///< Compute the log likelihood only
-        loglike_image,  ///< Compute the model images and log likelihood
-        loglike_grad,   ///< Compute the gradients of the log likelihood
-        jacobian        ///< Compute the model Jacobian
-    };
 
     /**
      * Construct a Model instance from Data, PsfModels, Sources and Priors.
@@ -108,7 +109,7 @@ public:
             if (psfmodel == nullptr)
                 throw std::invalid_argument("Model psfmodels[" + std::to_string(i) + "] can't be null");
             _psfcomps.push_back(psfmodel->get_gaussians());
-            _psfmodels.push_back(std::move(psfmodel));
+            _psfmodels.push_back(psfmodel);
             i++;
         }
 
@@ -117,7 +118,7 @@ public:
         for (auto& prior : priors) {
             if (prior == nullptr)
                 throw std::invalid_argument("Model priors[" + std::to_string(i) + "] can't be null");
-            _priors.push_back(std::move(prior));
+            _priors.push_back(prior);
             i++;
         }
 
@@ -126,7 +127,7 @@ public:
         for (auto& source : sources) {
             if (source == nullptr)
                 throw std::invalid_argument("Model Sources[" + std::to_string(i) + "] can't be null");
-            _sources.push_back(std::move(source));
+            _sources.push_back(source);
             i++;
         }
 
@@ -145,7 +146,7 @@ private:
     GradParamFactors _factors_grad = {};
     std::vector<std::weak_ptr<Image>> _factors_grad_in;
     GaussiansMap _gaussians_srcs;
-    std::vector<std::shared_ptr<ImageArray<double, Image>>> _grads;
+    std::vector<std::shared_ptr<ImageArray<T, Image>>> _grads;
     bool _is_setup = false;
     std::vector<double> _likelihood_const_terms = {};
     std::vector<std::weak_ptr<Indices>> _map_extra_in;
@@ -155,7 +156,7 @@ private:
     ParameterMap _offsets_params = {};
     std::vector<std::shared_ptr<Image>> _outputs = {};
     std::vector<std::shared_ptr<Prior>> _priors = {};
-    std::vector<std::unique_ptr<const gauss2d::Gaussians>> _psfcomps;
+    std::vector<std::unique_ptr<const lsst::gauss2d::Gaussians>> _psfcomps;
     PsfModels _psfmodels;
     std::vector<std::shared_ptr<Image>> _outputs_prior = {};
     std::shared_ptr<Image> _residuals_prior = nullptr;
@@ -232,7 +233,7 @@ private:
                         if (print) {
                             std::cout << "factors_extra[" << row << "]=[";
                         }
-                        for (size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
+                        for (size_t col = 0; col < lsst::gauss2d::N_EXTRA_FACTOR; ++col) {
                             factors_extra_in->set_value_unchecked(row, col, _factors_extra[row][col]);
                             if (print) {
                                 std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
@@ -241,7 +242,7 @@ private:
                         if (print) {
                             std::cout << "]\nfactors_grad[" << row << "]=[";
                         }
-                        for (size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
+                        for (size_t col = 0; col < lsst::gauss2d::N_PARAMS_GAUSS2D; ++col) {
                             factors_grad_in->set_value_unchecked(row, col, _factors_grad[row][col]);
                             if (print) {
                                 std::cout << factors_grad_in->get_value_unchecked(row, col) << ",";
@@ -323,7 +324,7 @@ private:
      * @note Different modes require different lengths of outputs. See setup_evaluators for details.
      */
     std::pair<std::unique_ptr<Evaluator>,
-              std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<double, Image>>>>
+              std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<T, Image>>>>
     _make_evaluator(const size_t idx_obs, EvaluatorMode mode = EvaluatorMode::image,
                     std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                     std::shared_ptr<Image> residual = nullptr, bool print = false) {
@@ -427,9 +428,9 @@ private:
             }
         }
 
-        std::shared_ptr<ImageArray<double, Image>> grads;
+        std::shared_ptr<ImageArray<T, Image>> grads;
         if (is_mode_jacobian) {
-            typename ImageArray<double, Image>::Data arrays{};
+            typename ImageArray<T, Image>::Data arrays{};
             const size_t n_free = _n_params_free + 1;
 
             for (size_t idx_img = 0; idx_img < n_free; ++idx_img) {
@@ -455,9 +456,9 @@ private:
                 }
                 arrays.emplace_back(image);
             }
-            grads = std::make_shared<ImageArray<double, Image>>(&arrays);
+            grads = std::make_shared<ImageArray<T, Image>>(&arrays);
         } else if (is_mode_loglike_grad) {
-            typename ImageArray<double, Image>::Data arrays{};
+            typename ImageArray<T, Image>::Data arrays{};
             if (print) {
                 std::cout << "Setting grads[" << idx_obs
                           << "] to image of n_cols=_n_params_free + 1=" << _n_params_free + 1
@@ -466,7 +467,7 @@ private:
             auto image = has_outputs ? outputs_obs->at(0)
                                      : std::make_shared<Image>(1, _n_params_free + 1, nullptr, coordsys);
             arrays.emplace_back(image);
-            grads = std::make_shared<ImageArray<double, Image>>(&arrays);
+            grads = std::make_shared<ImageArray<T, Image>>(&arrays);
         } else {
             grads = nullptr;
         }
@@ -479,7 +480,7 @@ private:
         // Ensure grads & output aren't nullptr after move
         auto grads2 = grads;
         auto output2 = output;
-        std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<double, Image>>> second
+        std::pair<std::shared_ptr<Image>, std::shared_ptr<ImageArray<T, Image>>> second
                 = {std::move(output2), std::move(grads2)};
 
         auto test = Evaluator(gaussians, data_eval, sigma_inv, output, residual, grads, map_grad_in,
@@ -513,13 +514,13 @@ private:
         }
         auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, nullptr, coordsys)
                                      : map_extra_weak.lock();
-        auto map_grad_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D,
-                                                                nullptr, coordsys)
+        auto map_grad_mut = expired ? std::make_shared<Indices>(
+                                    n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
                                     : map_grad_weak.lock();
         auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, nullptr, coordsys)
                                          : factors_extra_weak.lock();
-        auto factors_grad_mut = expired ? std::make_shared<Image>(n_gaussians_conv, gauss2d::N_PARAMS_GAUSS2D,
-                                                                  nullptr, coordsys)
+        auto factors_grad_mut = expired ? std::make_shared<Image>(
+                                        n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
                                         : factors_grad_weak.lock();
         ;
 
@@ -585,7 +586,7 @@ private:
             if constexpr (print) std::cout << "map_extra=[" << std::endl;
             for (size_t idx_row = 0; idx_row < map_extra.size(); idx_row++) {
                 const auto& row = map_extra[idx_row];
-                for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; col++) {
+                for (size_t col = 0; col < lsst::gauss2d::N_EXTRA_MAP; col++) {
                     const auto value_mut = map_extra_mut->get_value_unchecked(idx_row, col);
                     if ((idx_err < 2) && (row[col] != value_mut))
                         errmsgs[idx_err++] = "map_extra[" + std::to_string(idx_row) + "]["
@@ -603,7 +604,7 @@ private:
             }
             for (size_t idx_row = 0; idx_row < map_grad.size(); idx_row++) {
                 const auto& row = map_grad[idx_row];
-                for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; col++) {
+                for (size_t col = 0; col < lsst::gauss2d::N_EXTRA_MAP; col++) {
                     const auto value_mut = map_grad_mut->get_value_unchecked(idx_row, col);
                     if ((idx_err < 4) && (row[col] != value_mut))
                         errmsgs[idx_err++] = "map_grad[" + std::to_string(idx_row) + "]["
@@ -638,13 +639,13 @@ private:
                 std::cout << "factors/maps: {\n";
             }
             for (size_t row = 0; row < n_gaussians_conv; ++row) {
-                for (size_t col = 0; col < gauss2d::N_EXTRA_MAP; ++col) {
+                for (size_t col = 0; col < lsst::gauss2d::N_EXTRA_MAP; ++col) {
                     map_extra_mut->set_value_unchecked(row, col, (map_extra)[row][col]);
                 }
-                for (size_t col = 0; col < gauss2d::N_EXTRA_FACTOR; ++col) {
+                for (size_t col = 0; col < lsst::gauss2d::N_EXTRA_FACTOR; ++col) {
                     factors_extra_mut->set_value_unchecked(row, col, (factors_extra)[row][col]);
                 }
-                for (size_t col = 0; col < gauss2d::N_PARAMS_GAUSS2D; ++col) {
+                for (size_t col = 0; col < lsst::gauss2d::N_PARAMS_GAUSS2D; ++col) {
                     map_grad_mut->set_value_unchecked(row, col, (map_grad)[row][col]);
                     factors_grad_mut->set_value_unchecked(row, col, (factors_grad)[row][col]);
                 }
@@ -760,7 +761,7 @@ public:
         }
         if (verify) {
             std::string errmsg;
-            this->setup_evaluators(Model::EvaluatorMode::loglike);
+            this->setup_evaluators(g2f::EvaluatorMode::loglike);
             auto loglike = this->evaluate();
 
             auto params = this->get_parameters_new(&filter_free);
@@ -830,13 +831,13 @@ public:
         params_free = nonconsecutive_unique<ParamBaseRef>(params_free);
         const size_t n_params_free = params_free.size();
 
-        std::vector<std::shared_ptr<const parameters::Transform<T>>> transforms = {};
+        std::vector<std::shared_ptr<const parameters::Transform<double>>> transforms = {};
         transforms.reserve(n_params_free);
         if (!transformed) {
             for (auto& paramref : params_free) {
                 auto& param = paramref.get();
                 transforms.emplace_back(param.get_transform_ptr());
-                T value = param.get_value();
+                double value = param.get_value();
                 param.set_transform(nullptr);
                 if (param.get_value() != value) {
                     throw std::logic_error("Param " + param.str() + " changed value from "
@@ -992,7 +993,7 @@ public:
             size_t idx_param = 0;
             for (auto& paramref : params_free) {
                 auto& param = paramref.get();
-                T value = param.get_value();
+                double value = param.get_value();
                 param.set_transform(transforms[idx_param]);
                 if (param.get_value() != value) {
                     throw std::logic_error("Param " + param.str() + " changed value from "
@@ -1055,8 +1056,8 @@ public:
 
     EvaluatorMode get_mode() const { return _mode; }
 
-    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel) const override {
-        std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
+    std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const override {
+        std::vector<std::optional<const lsst::gauss2d::Gaussians::Data>> in;
         // TODO: Rethink this; it's not sufficient unless sources are single component gaussians
         in.reserve(_sources.size());
 

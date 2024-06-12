@@ -25,8 +25,8 @@ void Source::add_grad_param_factors(const Channel& channel, GradParamFactors& fa
 
 Components Source::get_components() const { return _components; }
 
-std::unique_ptr<const gauss2d::Gaussians> Source::get_gaussians(const Channel& channel) const {
-    std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
+std::unique_ptr<const lsst::gauss2d::Gaussians> Source::get_gaussians(const Channel& channel) const {
+    std::vector<std::optional<const lsst::gauss2d::Gaussians::Data>> in;
     // TODO: This isn't sufficient; need to implement get_n_components
     in.reserve(_components.size());
     for (auto& component : _components) {

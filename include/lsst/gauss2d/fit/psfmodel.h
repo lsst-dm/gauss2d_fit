@@ -35,7 +35,7 @@ public:
     void add_grad_param_factors(const Channel& channel, GradParamFactors& factor) const override;
 
     Components get_components() const override;
-    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel
+    std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel
                                                             = Channel::NONE()) const override;
     size_t get_n_gaussians(const Channel& channel = Channel::NONE()) const override;
 

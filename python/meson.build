@@ -1,7 +1,8 @@
 project(
-    'gauss2dfit',
+    'libgauss2dfit_python',
     'cpp',
     default_options : ['cpp_std=c++17',],
+    license : 'GPL-3.0-or-later',
     version : run_command('cat', meson.source_root() + '/VERSION', check: true).stdout().strip(),
 )
 
@@ -11,8 +12,8 @@ eups = find_program('eups', required: false)
 use_eups = eups.found()
 
 if use_eups
-	gauss2dfit_eups = run_command('eups', 'list', '-d', 'gauss2dfit', check: false)
-	use_eups = gauss2dfit_eups.returncode() == 0
+	gauss2dfit_eupsdir = run_command('sh', '-c', 'echo $GAUSS2DFIT_DIR', check: false, capture: true)
+	use_eups = gauss2dfit_eupsdir.returncode() == 0
 endif
 
 gsl_dep = dependency('gsl', required: false)
@@ -31,14 +32,16 @@ if use_eups
     gauss2d_python_dep = declare_dependency(
         include_directories: gauss2d_eupsdir + '/python/lib/build-release/include',
     )
-    gauss2dfit_eupsdir = gauss2dfit_eups.stdout().strip()
-    parameters_eupsdir = run_command('sh', '-c', 'echo $MODELFIT_PARAMETERS_DIR', check: true).stdout().strip()
+    gauss2dfit_eupsdir = gauss2dfit_eups.stdout().strip() / 'build-release/'
+    parameters_eupsdir = run_command(
+        'sh', '-c', 'echo $MODELFIT_PARAMETERS_DIR', check: true
+    ).stdout().strip() / 'build-release'
     # TODO: Can this dependency be extracted from '../meson.build' somehow
     gauss2dfit_dep = declare_dependency(
-        dependencies: [cpp.find_library('gauss2dfit', dirs: [gauss2dfit_eupsdir + '/build-release/lib64']),],
+        dependencies: [cpp.find_library('gauss2dfit', dirs: [gauss2dfit_eupsdir / 'lib64']),],
         include_directories: [
-            gauss2dfit_eupsdir + '/build-release/include',
-            parameters_eupsdir + '/build-release/include',
+            gauss2dfit_eupsdir / 'include',
+            parameters_eupsdir / 'include',
         ]
     )
 else
@@ -52,10 +55,11 @@ pymod = import('python')
 python = pymod.find_installation(
     'python3',
     required : true,
-    modules: ['lsst-gauss2d', 'pytest'],
+    modules: ['lsst.gauss2d', 'pytest'],
 )
-subdir('gauss2d/fit')
-subdir('tests')
+subdir('lsst')
+# Run tests - not sure why workdir is required, but it is
+test('pytest', python, args : ['-m', 'pytest', 'tests'], workdir : meson.source_root())
 
 if not use_eups
 	pip_cmd = [

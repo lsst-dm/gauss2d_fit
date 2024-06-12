@@ -43,7 +43,7 @@ void bind_psfmodel(py::module &m) {
                       .def_property_readonly("components", &g2f::PsfModel::get_components)
                       .def("gaussians",
                            [](const g2f::PsfModel &p, const g2f::Channel &c) {
-                               return std::shared_ptr<const gauss2d::Gaussians>(p.get_gaussians(c));
+                               return std::shared_ptr<const lsst::gauss2d::Gaussians>(p.get_gaussians(c));
                            })
                       .def("parameters", &g2f::PsfModel::get_parameters, "parameters"_a = g2f::ParamRefs(),
                            "paramfilter"_a = nullptr)

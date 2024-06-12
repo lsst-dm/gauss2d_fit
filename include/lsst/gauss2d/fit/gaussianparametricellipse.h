@@ -10,9 +10,9 @@
 
 namespace lsst::gauss2d::fit{
 /**
- * A Parameter-based implementation of gauss2d::EllipseData and ParametricEllipse.
+ * A Parameter-based implementation of lsst::gauss2d::EllipseData and ParametricEllipse.
  */
-class GaussianParametricEllipse : public gauss2d::EllipseData, public ParametricEllipse {
+class GaussianParametricEllipse : public lsst::gauss2d::EllipseData, public ParametricEllipse {
 private:
     std::shared_ptr<SigmaXParameterD> _sigma_x;
     std::shared_ptr<SigmaYParameterD> _sigma_y;

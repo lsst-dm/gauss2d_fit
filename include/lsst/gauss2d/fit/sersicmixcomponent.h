@@ -97,7 +97,7 @@ public:
     void add_grad_param_map(const Channel& channel, GradParamMap& map, ParameterMap& offsets) const override;
     void add_grad_param_factors(const Channel& channel, GradParamFactors& factor) const override;
 
-    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel) const override;
+    std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const override;
     size_t get_n_gaussians(const Channel& channel) const override;
 
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;

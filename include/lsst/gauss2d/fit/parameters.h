@@ -12,7 +12,7 @@
 
 namespace parameters = lsst::modelfit::parameters;
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 class UnitNone : public parameters::Unit {
 public:

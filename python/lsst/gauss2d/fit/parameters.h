@@ -120,7 +120,7 @@ auto declare_parameter(py::module &m, std::string name, std::string suffix = g2f
                                   std::shared_ptr<const parameters::Transform<T>>,
                                   std::shared_ptr<const parameters::Unit>, bool, std::string>(),
                          "value"_a = Class::_get_default(), "limits"_a = nullptr, "transform"_a = nullptr,
-                         "unit"_a = gauss2d::fit::unit_none, "fixed"_a = false, "label"_a = "")
+                         "unit"_a = lsst::gauss2d::fit::unit_none, "fixed"_a = false, "label"_a = "")
                     .def("__repr__", [](const C &self) { return self.repr(true, "."); }));
 }
 

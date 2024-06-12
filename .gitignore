@@ -6,7 +6,7 @@ build-release
 python/build
 python/build-release
 python/builddir
-python/gauss2dfit.egg-info/
+python/lsst/lsst_gauss2d_fit.egg-info/
 
 # IDE folders and files
 .cache/

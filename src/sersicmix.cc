@@ -37,8 +37,7 @@ std::string SersicMixValues::str() const {
 
 const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(unsigned short order) {
 #ifdef LSST_GAUSS2D_FIT_HAS_GSL
-    static auto interpolator = std::make_shared<LinearSersicMixInterpolator>(order);
-    // static auto interpolator = std::make_shared<GSLSersicMixInterpolator>(order);
+    static auto interpolator = std::make_shared<GSLSersicMixInterpolator>(order);
 #else
     static auto interpolator = std::make_shared<LinearSersicMixInterpolator>(order);
 #endif

@@ -11,7 +11,7 @@
 #include "param_defs.h"
 #include "parametric.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /*
     A Data is a collection of Observations that a consistent Model can be
@@ -31,7 +31,7 @@ namespace lsst::gauss2d::fit{
 template <typename T, typename I, typename M>
 class Data : public Chromatic, public Parametric {
 public:
-    using Observation = gauss2d::fit::Observation<T, I, M>;
+    using Observation = lsst::gauss2d::fit::Observation<T, I, M>;
     using ObservationCRef = std::reference_wrapper<const Observation>;
 
 private:
@@ -67,7 +67,8 @@ public:
     /// Get the number of member Observation
     size_t size() const { return _observations.size(); }
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override {
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override {
         std::string str = std::string("Data(") + (name_keywords ? "observations=[" : "[");
         for (auto exp_it = this->cbegin(); exp_it != this->cend(); ++exp_it) {
             str += (*exp_it).get().repr(name_keywords, namespace_separator) + ",";

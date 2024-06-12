@@ -37,7 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_sersicmix(py::module &m) {
-    auto _is = py::class_<g2f::IntegralSize, std::shared_ptr<g2f::IntegralSize>, gauss2d::Object>(
+    auto _is = py::class_<g2f::IntegralSize, std::shared_ptr<g2f::IntegralSize>, lsst::gauss2d::Object>(
                        m, "IntegralSize")
                        .def(py::init<const double, const double>(), "integral"_a = 0, "sigma"_a = 0)
                        .def_readonly("integral", &g2f::IntegralSize::integral)
@@ -48,7 +48,7 @@ void bind_sersicmix(py::module &m) {
     auto _smi = py::class_<g2f::SersicMixInterpolator, std::shared_ptr<g2f::SersicMixInterpolator>>(
             m, "SersicMixInterpolator");
 
-    auto _smv = py::class_<g2f::SersicMixValues, std::shared_ptr<g2f::SersicMixValues>, gauss2d::Object>(
+    auto _smv = py::class_<g2f::SersicMixValues, std::shared_ptr<g2f::SersicMixValues>, lsst::gauss2d::Object>(
                         m, "SersicMixValues")
                         .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
                         .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)

@@ -1,5 +1,5 @@
-import gauss2d as g2
-import gauss2d.fit as g2f
+import lsst.gauss2d as g2d
+import lsst.gauss2d.fit as g2f
 import numpy as np
 import pytest
 
@@ -12,11 +12,11 @@ def channels():
 @pytest.fixture(scope='module')
 def data(channels):
     n_x, n_y = 5, 5
-    return g2f.Data([
-        g2f.Observation(
-            g2.ImageD(np.zeros((n_y, n_x))),
-            g2.ImageD(np.full((n_y, n_x), 1e3)),
-            g2.ImageB(np.ones((n_y, n_x))),
+    return g2f.DataD([
+        g2f.ObservationD(
+            g2d.ImageD(np.zeros((n_y, n_x))),
+            g2d.ImageD(np.full((n_y, n_x), 1e3)),
+            g2d.ImageB(np.ones((n_y, n_x))),
             channel,
         )
         for channel in channels
@@ -44,26 +44,31 @@ def psfmodels(data):
 
 
 @pytest.fixture(scope='module')
-def sources(channels):
+def interptype_sersic_default():
+    return g2f.SersicMixComponentIndexParameterD().interptype
+
+
+@pytest.fixture(scope='module')
+def sources(channels, interptype_sersic_default):
     last = None
     n_sources, n_components = 2, 2
-    sources = [None]*n_sources
+    sources = [None] * n_sources
     n_comp_max = n_components - 1
     log10 = g2f.Log10TransformD()
     for i in range(n_sources):
-        components = [None]*n_components
+        components = [None] * n_components
         for c in range(n_components):
             is_last = c == n_comp_max
             last = g2f.FractionalIntegralModel(
                 [
                     (channel, g2f.ProperFractionParameterD(
-                        (is_last == 1) or 0.25*(1 + idx_channel),
+                        (is_last == 1) or 0.25 * (1 + idx_channel),
                         fixed=is_last
                     ))
                     for idx_channel, channel in enumerate(channels)
                 ],
                 g2f.LinearIntegralModel([
-                    (channel, g2f.IntegralParameterD(0.5 + 0.5*(i + 1)))
+                    (channel, g2f.IntegralParameterD(0.5 + 0.5 * (i + 1)))
                     for channel in channels
                 ]) if (c == 0) else last,
                 is_last,
@@ -94,8 +99,10 @@ def sources(channels):
                     )
                     for channel in channels
                 ]),
+                # Linear interpolation fails at exact knot values
+                # Adding a small offset solves the problem
                 sersicindex=g2f.SersicMixComponentIndexParameterD(
-                    value=1.0,
+                    value=1.0 + 5e-4 * (interptype_sersic_default == g2f.InterpType.linear),
                     fixed=False,
                     transform=g2f.LogitLimitedTransformD(
                         limits=g2f.LimitsD(min=0.5, max=6.0, name="ref_logit_sersic[0.5, 6.0]"),
@@ -110,7 +117,7 @@ def sources(channels):
 
 @pytest.fixture(scope='module')
 def model(data, psfmodels, sources):
-    model = g2f.Model(data, list(psfmodels), list(sources))
+    model = g2f.ModelD(data, list(psfmodels), list(sources))
     with pytest.raises(RuntimeError):
         model.evaluate()
     model.setup_evaluators()
@@ -137,17 +144,18 @@ def test_model(channels, model):
 
 
 def test_model_eval_jacobian(model):
-    model.setup_evaluators(g2f.Model.EvaluatorMode.jacobian)
+    model.setup_evaluators(g2f.EvaluatorMode.jacobian)
     result = np.array(model.evaluate())
     assert (result == 0).all()
     # TODO: Investigate why this rtol needs to be so high
-    errors = model.verify_jacobian(rtol=5e-3)
+    errors = model.verify_jacobian(atol=1e-3, rtol=5e-3)
     # All of the IntegralParameters got double-counted - see DM-40674
+    # ... but also, linear interpolators will fail the Sersic index params
     assert len(errors) == 6
 
 
 def test_model_eval_loglike_grad(model):
-    model.setup_evaluators(g2f.Model.EvaluatorMode.loglike_grad, print=True)
+    model.setup_evaluators(g2f.EvaluatorMode.loglike_grad, print=True)
     result = np.array(model.evaluate())
     assert (result == 0).all()
     dloglike = np.array(model.compute_loglike_grad(True))

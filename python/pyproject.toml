@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lsst-gauss2d-fit"
 authors = [
-    {name="Rubin Observatory Data Management", email="dm-admin@lists.lsst.org"},
+    { name = "Rubin Observatory DataD Management", email = "dm-admin@lists.lsst.org" },
 ]
 description = "Python (pybind11) bindings for gauss2dfit"
 requires-python = ">=3.8"
@@ -38,7 +38,7 @@ test = [
 py-modules = []
 
 [tool.setuptools.dynamic]
-version = {attr = "lsst.gauss2d.__version__"}
+version = { attr = "lsst.gauss2d.__version__" }
 
 # This appears to be necessary for extend_path to find lsst in sys.modules
 [tool.setuptools.packages.find]

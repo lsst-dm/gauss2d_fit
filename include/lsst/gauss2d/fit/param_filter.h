@@ -43,7 +43,7 @@ inline void insert_param(g2f::ParamBase& param, t& params, ParamFilter* filter =
 
 /// Same as insert_param, but only inserting if filter has a null or matching Channel.
 template <typename t>
-void insert_param_channel(const gauss2d::fit::Channel& channel, g2f::ParamBase& param, t& params,
+void insert_param_channel(const lsst::gauss2d::fit::Channel& channel, g2f::ParamBase& param, t& params,
                           ParamFilter* filter) {
     if ((filter == nullptr) || (filter->channel == std::nullopt) || (filter->channel == channel)) {
         insert_param(param, params, filter);

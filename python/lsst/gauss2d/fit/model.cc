@@ -32,35 +32,23 @@
 #include "lsst/gauss2d/gaussian.h"
 #include "lsst/gauss2d/fit/model.h"
 #include "lsst/gauss2d/fit/parametricmodel.h"
-#include "lsst/gauss2d/python/pyimage.h"
+#include "lsst/gauss2d/python/image.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace g2f = lsst::gauss2d::fit;
-namespace g2p = gauss2d::python;
+namespace g2p = lsst::gauss2d::python;
 
-typedef g2p::PyImage<double> Image;
-typedef g2f::Model<double, Image, g2p::PyImage<size_t>, g2p::PyImage<bool>> Model;
-
-void bind_model(py::module &m) {
-    auto _h = py::class_<g2f::HessianOptions, std::shared_ptr<g2f::HessianOptions>>(m, "HessianOptions")
-                      .def(py::init<bool, double, double>(), "return_negative"_a = true,
-                           "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4)
-                      .def_readwrite("return_negative", &g2f::HessianOptions::return_negative)
-                      .def_readwrite("findiff_frac", &g2f::HessianOptions::return_negative)
-                      .def_readwrite("findiff_add", &g2f::HessianOptions::return_negative);
-    auto model = py::class_<Model, std::shared_ptr<Model>, g2f::ParametricModel>(m, "Model");
-    auto _e = py::enum_<Model::EvaluatorMode>(model, "EvaluatorMode")
-                      .value("image", Model::EvaluatorMode::image)
-                      .value("loglike", Model::EvaluatorMode::loglike)
-                      .value("loglike_image", Model::EvaluatorMode::loglike_image)
-                      .value("loglike_grad", Model::EvaluatorMode::loglike_grad)
-                      .value("jacobian", Model::EvaluatorMode::jacobian)
-                      .export_values();
-    model.def(py::init<std::shared_ptr<const Model::ModelData>, Model::PsfModels &, Model::Sources &,
-                       Model::Priors &>(),
-              "data"_a, "psfmodels"_a, "sources"_a, "priors"_a = Model::Priors{})
+template <typename T>
+void declare_model(py::module &m, std::string str_type) {
+    typedef g2p::Image<T> Image;
+    typedef g2f::Model<T, Image, g2p::Image<size_t>, g2p::Image<bool>> Model;
+    std::string pyclass_name = std::string("Model") + str_type;
+    auto model = py::class_<Model, std::shared_ptr<Model>, g2f::ParametricModel>(m, pyclass_name.c_str());
+    model.def(py::init<std::shared_ptr<const typename Model::ModelData>, g2f::PsfModels &, g2f::Sources &,
+                       g2f::Priors &>(),
+              "data"_a, "psfmodels"_a, "sources"_a, "priors"_a = g2f::Priors{})
             .def("compute_loglike_grad", &Model::compute_loglike_grad, "include_prior"_a = false,
                  "print"_a = false, "verify"_a = false, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4,
                  "rtol"_a = 1e-3, "atol"_a = 1e-3)
@@ -77,7 +65,7 @@ void bind_model(py::module &m) {
             .def(
                     "gaussians",
                     [](const Model &m, const g2f::Channel &c) {
-                        return std::shared_ptr<const gauss2d::Gaussians>(m.get_gaussians(c));
+                        return std::shared_ptr<const lsst::gauss2d::Gaussians>(m.get_gaussians(c));
                     },
                     "channel"_a)
             .def_property_readonly("mode", &Model::get_mode)
@@ -88,8 +76,7 @@ void bind_model(py::module &m) {
             .def_property_readonly("priors", &Model::get_priors)
             .def_property_readonly("psfmodels", &Model::get_psfmodels)
             .def_property_readonly("sources", &Model::get_sources)
-            .def("setup_evaluators", &Model::setup_evaluators,
-                 "evaluatormode"_a = Model::EvaluatorMode::image,
+            .def("setup_evaluators", &Model::setup_evaluators, "evaluatormode"_a = g2f::EvaluatorMode::image,
                  "outputs"_a = std::vector<std::vector<std::shared_ptr<Image>>>{},
                  "residuals"_a = std::vector<std::shared_ptr<Image>>{},
                  "outputs_prior"_a = std::vector<std::shared_ptr<Image>>{},
@@ -98,4 +85,22 @@ void bind_model(py::module &m) {
                  "rtol"_a = 1e-3, "atol"_a = 1e-3)
             .def("__repr__", [](const Model &self) { return self.repr(true); })
             .def("__str__", &Model::str);
+}
+
+void bind_model(py::module &m) {
+    auto _e = py::enum_<g2f::EvaluatorMode>(m, "EvaluatorMode")
+                      .value("image", g2f::EvaluatorMode::image)
+                      .value("loglike", g2f::EvaluatorMode::loglike)
+                      .value("loglike_image", g2f::EvaluatorMode::loglike_image)
+                      .value("loglike_grad", g2f::EvaluatorMode::loglike_grad)
+                      .value("jacobian", g2f::EvaluatorMode::jacobian)
+                      .export_values();
+    auto _h = py::class_<g2f::HessianOptions, std::shared_ptr<g2f::HessianOptions>>(m, "HessianOptions")
+                      .def(py::init<bool, double, double>(), "return_negative"_a = true,
+                           "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4)
+                      .def_readwrite("return_negative", &g2f::HessianOptions::return_negative)
+                      .def_readwrite("findiff_frac", &g2f::HessianOptions::return_negative)
+                      .def_readwrite("findiff_add", &g2f::HessianOptions::return_negative);
+    declare_model<double>(m, "D");
+    declare_model<float>(m, "F");
 }

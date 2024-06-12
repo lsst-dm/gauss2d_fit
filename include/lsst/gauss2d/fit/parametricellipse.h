@@ -43,7 +43,7 @@ public:
     virtual std::shared_ptr<SizeXParameterD> get_size_x_param_ptr() = 0;
     virtual std::shared_ptr<SizeYParameterD> get_size_y_param_ptr() = 0;
 
-    // No set because it would be ambiguous with gauss2d::set
+    // No set because it would be ambiguous with lsst::gauss2d::set
     // TODO: Consider disambiguating
     virtual void set_rho(double rho) = 0;
     virtual void set_size_x(double size_x) = 0;

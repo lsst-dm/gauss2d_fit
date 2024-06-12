@@ -22,8 +22,8 @@ ParamCRefs& GaussianParametricEllipse::get_parameters_const(ParamCRefs& params, 
     return _get_parameters<ParamCRefs>(params, filter, *_sigma_x, *_sigma_y, *_rho);
 }
 
-double GaussianParametricEllipse::get_hwhm_x() const { return gauss2d::M_SIGMA_HWHM * _sigma_x->get_value(); }
-double GaussianParametricEllipse::get_hwhm_y() const { return gauss2d::M_SIGMA_HWHM * _sigma_y->get_value(); }
+double GaussianParametricEllipse::get_hwhm_x() const { return lsst::gauss2d::M_SIGMA_HWHM * _sigma_x->get_value(); }
+double GaussianParametricEllipse::get_hwhm_y() const { return lsst::gauss2d::M_SIGMA_HWHM * _sigma_y->get_value(); }
 double GaussianParametricEllipse::get_rho() const { return _rho->get_value(); }
 double GaussianParametricEllipse::get_sigma_x() const { return _sigma_x->get_value(); }
 double GaussianParametricEllipse::get_sigma_y() const { return _sigma_y->get_value(); }

@@ -38,7 +38,7 @@ namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussianparametricellipse(py::module &m) {
     auto _e = py::class_<g2f::GaussianParametricEllipse, std::shared_ptr<g2f::GaussianParametricEllipse>,
-                         gauss2d::EllipseData, g2f::ParametricEllipse>(m, "GaussianParametricEllipse")
+                         lsst::gauss2d::EllipseData, g2f::ParametricEllipse>(m, "GaussianParametricEllipse")
                       .def(py::init<double, double, double>(), "sigma_x"_a = 0, "sigma_y"_a = 0, "rho"_a = 0)
                       .def(py::init<std::shared_ptr<g2f::SigmaXParameterD>,
                                     std::shared_ptr<g2f::SigmaYParameterD>,

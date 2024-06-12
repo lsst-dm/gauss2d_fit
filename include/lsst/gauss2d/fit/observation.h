@@ -34,8 +34,8 @@ namespace lsst::gauss2d::fit {
 template <typename T, typename I, typename M>
 class Observation : public Parametric {
 public:
-    using Image = gauss2d::Image<T, I>;
-    using Mask = gauss2d::Image<bool, M>;
+    using Image = lsst::gauss2d::Image<T, I>;
+    using Mask = lsst::gauss2d::Image<bool, M>;
 
 private:
     std::shared_ptr<Image> _image;

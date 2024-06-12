@@ -27,7 +27,8 @@
 #include <memory>
 
 #include "lsst/gauss2d/object.h"
-#include "lsst/gauss2d/fit/parametric.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/prior.h"
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -35,6 +36,17 @@ using namespace pybind11::literals;
 
 namespace g2f = lsst::gauss2d::fit;
 
-void bind_parametric(py::module &m) {
-    auto _p = py::class_<g2f::Parametric, std::shared_ptr<g2f::Parametric>, gauss2d::Object>(m, "Parametric");
+void bind_prior(py::module &m) {
+    auto _e = py::class_<g2f::PriorEvaluation, std::shared_ptr<g2f::PriorEvaluation>, lsst::gauss2d::Object>(
+                      m, "PriorEvaluation")
+                      .def(py::init<double, std::vector<double>,
+                                    std::map<g2f::ParamBaseCRef, std::vector<double>>>(),
+                           "loglike"_a, "residuals"_a = std::vector<double>{},
+                           "jacobians"_a = std::map<g2f::ParamBaseCRef, std::vector<double>>{})
+                      .def_readonly("loglike", &g2f::PriorEvaluation::loglike)
+                      .def_readonly("jacobians", &g2f::PriorEvaluation::jacobians)
+                      .def_readonly("residuals", &g2f::PriorEvaluation::residuals)
+                      .def("__repr__", [](const g2f::PriorEvaluation &self) { return self.repr(true); })
+                      .def("__str__", &g2f::PriorEvaluation::str);
+    auto _p = py::class_<g2f::Prior, std::shared_ptr<g2f::Prior>, lsst::gauss2d::Object>(m, "Prior");
 }
