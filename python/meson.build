@@ -12,7 +12,7 @@ eups = find_program('eups', required: false)
 use_eups = eups.found()
 
 if use_eups
-	gauss2dfit_eupsdir = run_command('sh', '-c', 'echo $GAUSS2DFIT_DIR', check: false, capture: true)
+	gauss2dfit_eupsdir = run_command('sh', '-c', 'echo $GAUSS2D_FIT_DIR', check: false, capture: true)
 	use_eups = gauss2dfit_eupsdir.returncode() == 0
 endif
 

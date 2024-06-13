@@ -8,6 +8,11 @@ python/build-release
 python/builddir
 python/lsst/lsst_gauss2d_fit.egg-info/
 
+# SCons
+config.log
+.sconf_temp
+.sconsign.dblite
+
 # IDE folders and files
 .cache/
 .idea/
@@ -50,4 +55,3 @@ compile_commands.json
 
 # Tests
 python/tests/__pycache__/
-
