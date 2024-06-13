@@ -8,17 +8,11 @@
 #include "param_defs.h"
 #include "prior.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * A 1D Gaussian prior for a single Parameter.
  */
 class GaussianPrior : public Prior {
-private:
-    std::shared_ptr<const ParamBase> _param;
-    double _mean;
-    double _stddev;
-    bool _transformed;
-
 public:
     /**
      * Construct a GaussianPrior from a Parameter and mean/std. deviation.
@@ -28,7 +22,9 @@ public:
      * @param stddev The standard deviation of the prior.
      * @param transformed Whether the prior is based on the transformed value of param.
      */
-    GaussianPrior(std::shared_ptr<const ParamBase> param, double mean, double stddev, bool transformed);
+    explicit GaussianPrior(std::shared_ptr<const ParamBase> param, double mean, double stddev,
+                           bool transformed);
+    ~GaussianPrior();
 
     PriorEvaluation evaluate(bool calc_jacobians = false, bool normalize_loglike = false) const override;
 
@@ -45,10 +41,15 @@ public:
 
     size_t size() const override;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    ~GaussianPrior();
+private:
+    std::shared_ptr<const ParamBase> _param;
+    double _mean;
+    double _stddev;
+    bool _transformed;
 };
 }  // namespace lsst::gauss2d::fit
 

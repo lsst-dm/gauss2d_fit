@@ -11,21 +11,18 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * A wrapper for GSL 1D interpolators.
  */
 class GSLInterpolator : public Object {
-private:
-    gsl_interp_accel* _acc;
-    gsl_spline* _spline;
-    size_t _n_knots;
-    std::vector<double> _x;
-    std::vector<double> _y;
-
 public:
-    const InterpType interp_type;
+    explicit GSLInterpolator(std::vector<double> x, std::vector<double> y,
+                             InterpType interp_type = INTERPTYPE_DEFAULT);
+    ~GSLInterpolator();
+
+    const InterpType get_interp_type() const;
     static constexpr InterpType INTERPTYPE_DEFAULT = InterpType::cspline;
 
     /// Get the interpolant value for a knot of the given index
@@ -40,12 +37,18 @@ public:
     /// Get the number of knots
     size_t size() const;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    explicit GSLInterpolator(std::vector<double> x, std::vector<double> y,
-                             InterpType interp_type = INTERPTYPE_DEFAULT);
-    ~GSLInterpolator();
+private:
+    gsl_interp_accel* _acc;
+    gsl_spline* _spline;
+
+    const InterpType _interp_type;
+    size_t _n_knots;
+    std::vector<double> _x;
+    std::vector<double> _y;
 };
 
 }  // namespace lsst::gauss2d::fit

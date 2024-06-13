@@ -7,7 +7,7 @@
 #include "componentmixture.h"
 #include "param_filter.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * @brief An association of physically-related Component instances.
  *
@@ -20,10 +20,9 @@ namespace lsst::gauss2d::fit{
  *
  */
 class Source : public ComponentMixture {
-private:
-    Components _components = {};
-
 public:
+    explicit Source(Components& components);
+
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
                              ParameterMap& offsets) const override;
     void add_extra_param_factors(const Channel& channel, ExtraParamFactors& factors) const override;
@@ -42,10 +41,12 @@ public:
     void set_grad_param_factors(const Channel& channel, GradParamFactors& factors,
                                 size_t index) const override;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    explicit Source(Components& components);
+private:
+    Components _components = {};
 };
 
 }  // namespace lsst::gauss2d::fit

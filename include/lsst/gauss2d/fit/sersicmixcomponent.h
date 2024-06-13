@@ -11,20 +11,19 @@
 #include "sersicmix.h"
 #include "sersicparametricellipse.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * A SersicIndexParameter for a Gaussian mixture Component.
  */
 class SersicMixComponentIndexParameterD : public SersicIndexParameterD {
-private:
-    std::vector<IntegralSize> _integralsizes;
-    std::vector<IntegralSize> _integralsizes_derivs;
-    const std::shared_ptr<const SersicMixInterpolator> _interpolator;
-
-    /// Add the values for a given Sersic index
-    void _set_ratios(double sersicindex);
-
 public:
+    /// See docs for Parameter
+    explicit SersicMixComponentIndexParameterD(
+            double value = _get_default(), std::shared_ptr<const parameters::Limits<double>> limits = nullptr,
+            std::shared_ptr<const parameters::Transform<double>> transform = nullptr,
+            std::shared_ptr<const parameters::Unit> unit = nullptr, bool fixed = false,
+            std::string label = "", std::shared_ptr<const SersicMixInterpolator> interpolator = nullptr);
+
     /// Return the integral ratio for a given Gaussian sub-component index
     double get_integralratio(unsigned short index) const;
     /// Return the integral ratio derivative for a given Gaussian sub-component index
@@ -45,12 +44,13 @@ public:
     void set_value(double value) override;
     void set_value_transformed(double value_transformed) override;
 
-    /// See docs for Parameter
-    explicit SersicMixComponentIndexParameterD(
-            double value = _get_default(), std::shared_ptr<const parameters::Limits<double>> limits = nullptr,
-            std::shared_ptr<const parameters::Transform<double>> transform = nullptr,
-            std::shared_ptr<const parameters::Unit> unit = nullptr, bool fixed = false,
-            std::string label = "", std::shared_ptr<const SersicMixInterpolator> interpolator = nullptr);
+private:
+    std::vector<IntegralSize> _integralsizes;
+    std::vector<IntegralSize> _integralsizes_derivs;
+    const std::shared_ptr<const SersicMixInterpolator> _interpolator;
+
+    /// Add the values for a given Sersic index
+    void _set_ratios(double sersicindex);
 };
 
 // TODO: Revisit the necessity of this class
@@ -59,13 +59,12 @@ public:
  */
 class SersicParametricEllipseHolder {
 public:
-    std::shared_ptr<SersicParametricEllipse> _ellipsedata;
-
     /// This constructor does not need to be called by users.
     explicit SersicParametricEllipseHolder(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr)
             : _ellipsedata(std::move(ellipse)) {
         if (_ellipsedata == nullptr) _ellipsedata = std::make_shared<SersicParametricEllipse>();
     }
+    std::shared_ptr<SersicParametricEllipse> _ellipsedata;
 };
 
 // TODO: Add ref to derivation of weights, when published
@@ -84,13 +83,13 @@ public:
  *       for a useful summary of various properties of the Sersic profile.
  */
 class SersicMixComponent : private SersicParametricEllipseHolder, public EllipticalComponent {
-private:
-    class SersicMixGaussianComponent;
-    std::shared_ptr<SersicMixComponentIndexParameterD> _sersicindex;
-    std::map<std::reference_wrapper<const Channel>, std::vector<std::unique_ptr<SersicMixGaussianComponent>>>
-            _gaussians;
-
 public:
+    explicit SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr,
+                                std::shared_ptr<CentroidParameters> centroid = nullptr,
+                                std::shared_ptr<IntegralModel> integralmodel = nullptr,
+                                std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex = nullptr);
+    ~SersicMixComponent();
+
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
                              ParameterMap& offsets) const override;
     void add_extra_param_factors(const Channel& channel, ExtraParamFactors& factors) const override;
@@ -116,14 +115,15 @@ public:
                                 size_t index) const override;
     void set_sersicindex(double value);
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    explicit SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr,
-                                std::shared_ptr<CentroidParameters> centroid = nullptr,
-                                std::shared_ptr<IntegralModel> integralmodel = nullptr,
-                                std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex = nullptr);
-    ~SersicMixComponent();
+private:
+    class SersicMixGaussianComponent;
+    std::shared_ptr<SersicMixComponentIndexParameterD> _sersicindex;
+    std::map<std::reference_wrapper<const Channel>, std::vector<std::unique_ptr<SersicMixGaussianComponent>>>
+            _gaussians;
 };
 }  // namespace lsst::gauss2d::fit
 

@@ -7,7 +7,7 @@
 #include "componentmixture.h"
 #include "param_filter.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * @brief A Gaussian mixture model of a point spread function.
  *
@@ -24,10 +24,10 @@ namespace lsst::gauss2d::fit{
  *
  */
 class PsfModel : public ComponentMixture {
-private:
-    Components _components = {};
-
 public:
+    explicit PsfModel(Components& components);
+    ~PsfModel();
+    
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
                              ParameterMap& offsets) const override;
     void add_extra_param_factors(const Channel& channel, ExtraParamFactors& factors) const override;
@@ -36,7 +36,7 @@ public:
 
     Components get_components() const override;
     std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel
-                                                            = Channel::NONE()) const override;
+                                                                  = Channel::NONE()) const override;
     size_t get_n_gaussians(const Channel& channel = Channel::NONE()) const override;
 
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
@@ -47,11 +47,12 @@ public:
     void set_grad_param_factors(const Channel& channel, GradParamFactors& factor,
                                 size_t index) const override;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    explicit PsfModel(Components& components);
-    ~PsfModel();
+private:
+    Components _components = {};
 };
 
 }  // namespace lsst::gauss2d::fit

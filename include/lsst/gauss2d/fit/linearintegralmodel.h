@@ -8,7 +8,7 @@
 #include "parameters.h"
 #include "integralmodel.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * An IntegralModel with a single linear IntegralParameterD per Channel.
@@ -19,14 +19,16 @@ public:
             ChannelIntegralParameterD;
     typedef std::vector<ChannelIntegralParameterD> Data;
 
-private:
-    Data _data = {};
-    // This could be unordered, but std::hash<std::string> won't take const strings
-    // ... and it doesn't seem to be worth the effort to work around
-    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameterD>> _map = {};
-    struct Shared_enabler;
+    /**
+     * Construct a LinearIntegralModel from input Data.
+     *
+     * @param data_in A map of IntegralParameterD shared_ptr to move for each Channel.
+     *
+     * @note No default initialization is provided, so data_in must not be null.
+     */
+    explicit LinearIntegralModel(const Data *data_in);
+    ~LinearIntegralModel();
 
-public:
     /// Get the IntegralParameterD for the given Channel
     std::shared_ptr<IntegralParameterD> at(const Channel &channel);
     /// Get the (const) IntegralParameterD for the given Channel
@@ -49,22 +51,20 @@ public:
     /// Return the size of Data (number of Channel/IntegralParameterD instances)
     size_t size() const;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
     const bool operator<(const IntegralModel &m) const { return &(*this) < &m; };
     const bool operator==(const IntegralModel &m) const { return &(*this) == &m; };
     const bool operator!=(const IntegralModel &m) const { return &(*this) != &m; };
 
-    /**
-     * Construct a LinearIntegralModel from input Data.
-     *
-     * @param data_in A map of IntegralParameterD shared_ptr to move for each Channel.
-     *
-     * @note No default initialization is provided, so data_in must not be null.
-     */
-    LinearIntegralModel(const Data *data_in);
-    ~LinearIntegralModel();
+private:
+    Data _data = {};
+    // This could be unordered, but std::hash<std::string> won't take const strings
+    // ... and it doesn't seem to be worth the effort to work around
+    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<IntegralParameterD>> _map = {};
+    struct Shared_enabler;
 };
 
 }  // namespace lsst::gauss2d::fit

@@ -7,30 +7,13 @@
 #include "param_filter.h"
 #include "parametricellipse.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * A Component with an elliptically-symmetric intensity profile.
  */
 class EllipticalComponent : public Component {
-protected:
-    std::shared_ptr<ParametricEllipse> _ellipse;
-    std::shared_ptr<CentroidParameters> _centroid;
-    std::shared_ptr<IntegralModel> _integralmodel;
-
 public:
-    /// Get the centroid Parameter container
-    const CentroidParameters& get_centroid() const;
-    /// Get the ellipse Parameter container
-    const ParametricEllipse& get_ellipse() const;
-    const IntegralModel& get_integralmodel() const override;
-
-    ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
-    ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
-
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
-    std::string str() const override;
-
     /**
      * Construct an EllipticalComponent from Parameter containers
      *
@@ -41,6 +24,23 @@ public:
     explicit EllipticalComponent(std::shared_ptr<ParametricEllipse> ellipse,
                                  std::shared_ptr<CentroidParameters> centroid = nullptr,
                                  std::shared_ptr<IntegralModel> integralmodel = nullptr);
+    /// Get the centroid Parameter container
+    const CentroidParameters& get_centroid() const;
+    /// Get the ellipse Parameter container
+    const ParametricEllipse& get_ellipse() const;
+    const IntegralModel& get_integralmodel() const override;
+
+    ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
+    ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
+
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string str() const override;
+
+protected:
+    std::shared_ptr<ParametricEllipse> _ellipse;
+    std::shared_ptr<CentroidParameters> _centroid;
+    std::shared_ptr<IntegralModel> _integralmodel;
 };
 
 }  // namespace lsst::gauss2d::fit

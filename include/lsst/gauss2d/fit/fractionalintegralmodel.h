@@ -12,7 +12,7 @@
 #include "parameters.h"
 #include "integralmodel.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * @brief An IntegralModel that returns a Parameter-dependent fraction
  * of the flux of another IntegralModel.
@@ -33,32 +33,11 @@ public:
             ChannelIntegralParameterD;
     typedef std::vector<ChannelIntegralParameterD> Data;
 
-private:
-    Data _data = {};
-    // This could be unordered, but std::hash<std::string> won't take const strings
-    // (see also linearintegralmodel.h)
-    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameterD>> _map = {};
+    explicit FractionalIntegralModel(const FractionalIntegralModel&) = delete;
+    FractionalIntegralModel& operator=(const FractionalIntegralModel&) = delete;
 
-    // TODO: See if all raw pointers can be changed to reference_wrappers or weak_ptrs
-    std::shared_ptr<const FractionalIntegralModel> _find_parent(std::shared_ptr<const IntegralModel> model);
-    const std::shared_ptr<const IntegralModel> _model;
-    std::shared_ptr<const FractionalIntegralModel> _parent;
-    static inline std::map<std::reference_wrapper<const FractionalIntegralModel>,
-                           std::reference_wrapper<const IntegralModel>>
-            _registry = {};
-    static inline std::map<std::reference_wrapper<const IntegralModel>,
-                           std::weak_ptr<FractionalIntegralModel>>
-            _registry_rev = {};
+    ~FractionalIntegralModel();
 
-    struct Shared_enabler;
-
-    bool _is_final;
-
-    // not giving a nullptr default data_in because the map needs to match the model's channels
-    FractionalIntegralModel(std::optional<const Data> data, std::shared_ptr<const IntegralModel> model,
-                            bool is_final);
-
-public:
     std::shared_ptr<ProperFractionParameterD> at(const Channel& channel);
     std::shared_ptr<const ProperFractionParameterD> at(const Channel& channel) const;
 
@@ -113,13 +92,34 @@ public:
 
     size_t size() const;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    FractionalIntegralModel(const FractionalIntegralModel&) = delete;
-    FractionalIntegralModel& operator=(const FractionalIntegralModel&) = delete;
+private:
+    Data _data = {};
+    // This could be unordered, but std::hash<std::string> won't take const strings
+    // (see also linearintegralmodel.h)
+    std::map<std::reference_wrapper<const Channel>, std::shared_ptr<ProperFractionParameterD>> _map = {};
 
-    ~FractionalIntegralModel();
+    // TODO: See if all raw pointers can be changed to reference_wrappers or weak_ptrs
+    std::shared_ptr<const FractionalIntegralModel> _find_parent(std::shared_ptr<const IntegralModel> model);
+    const std::shared_ptr<const IntegralModel> _model;
+    std::shared_ptr<const FractionalIntegralModel> _parent;
+    static inline std::map<std::reference_wrapper<const FractionalIntegralModel>,
+                           std::reference_wrapper<const IntegralModel>>
+            _registry = {};
+    static inline std::map<std::reference_wrapper<const IntegralModel>,
+                           std::weak_ptr<FractionalIntegralModel>>
+            _registry_rev = {};
+
+    struct Shared_enabler;
+
+    bool _is_final;
+
+    // not giving a nullptr default data_in because the map needs to match the model's channels
+    FractionalIntegralModel(std::optional<const Data> data, std::shared_ptr<const IntegralModel> model,
+                            bool is_final);
 };
 
 }  // namespace lsst::gauss2d::fit

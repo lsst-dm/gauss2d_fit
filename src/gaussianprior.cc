@@ -30,6 +30,21 @@
 #include "lsst/gauss2d/fit/gaussianprior.h"
 
 namespace lsst::gauss2d::fit {
+GaussianPrior::GaussianPrior(std::shared_ptr<const ParamBase> param, double mean, double stddev,
+                             bool transformed)
+        : _param(std::move(param)), _transformed(transformed) {
+    if (_param == nullptr) throw std::invalid_argument("param must not be null");
+    set_mean(mean);
+    set_stddev(stddev);
+    double loglike = this->evaluate().loglike;
+    if (!std::isfinite(loglike)) {
+        throw std::invalid_argument(this->str() + " has non-finite loglike=" + std::to_string(loglike)
+                                    + " on init");
+    }
+}
+
+GaussianPrior::~GaussianPrior(){};
+
 PriorEvaluation GaussianPrior::evaluate(bool calc_jacobians, bool normalize) const {
     double residual
             = ((_transformed ? _param->get_value_transformed() : _param->get_value()) - _mean) / _stddev;
@@ -83,19 +98,4 @@ std::string GaussianPrior::str() const {
     return type_name_str<GaussianPrior>(true) + "(param=" + _param->str() + ", mean=" + to_string_float(_mean)
            + ", stddev=" + std::to_string(_stddev) + ", transformed=" + to_string_float(_transformed) + ")";
 }
-
-GaussianPrior::GaussianPrior(std::shared_ptr<const ParamBase> param, double mean, double stddev,
-                             bool transformed)
-        : _param(std::move(param)), _transformed(transformed) {
-    if (_param == nullptr) throw std::invalid_argument("param must not be null");
-    set_mean(mean);
-    set_stddev(stddev);
-    double loglike = this->evaluate().loglike;
-    if (!std::isfinite(loglike)) {
-        throw std::invalid_argument(this->str() + " has non-finite loglike=" + std::to_string(loglike)
-                                    + " on init");
-    }
-}
-
-GaussianPrior::~GaussianPrior(){};
 }  // namespace lsst::gauss2d::fit

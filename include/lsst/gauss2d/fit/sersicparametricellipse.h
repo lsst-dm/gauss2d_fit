@@ -8,17 +8,24 @@
 #include "parameters.h"
 #include "parametricellipse.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * A ParametericEllipse with effective radius Parameters.
  */
 class SersicParametricEllipse : public ParametricEllipse {
-private:
-    std::shared_ptr<ReffXParameterD> _size_x;
-    std::shared_ptr<ReffYParameterD> _size_y;
-    std::shared_ptr<RhoParameterD> _rho;
-
 public:
+    /**
+     * Construct a SersicParametricEllipse with existing Parameter instances.
+     *
+     * @param size_x The x-axis effective radius parameter.
+     * @param size_y The y-axis effective radius parameter.
+     * @param rho The correlation (rho) parameter.
+     */
+    explicit SersicParametricEllipse(std::shared_ptr<ReffXParameterD> size_x,
+                                     std::shared_ptr<ReffYParameterD> size_y,
+                                     std::shared_ptr<RhoParameterD> rho = nullptr);
+    explicit SersicParametricEllipse(double size_x = 0, double size_y = 0, double rho = 0);
+
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
     ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 
@@ -41,19 +48,14 @@ public:
     void set_size_x(double size_x) override;
     void set_size_y(double size_y) override;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    /**
-     * Construct a SersicParametricEllipse with existing Parameter instances.
-     *
-     * @param size_x The x-axis effective radius parameter.
-     * @param size_y The y-axis effective radius parameter.
-     * @param rho The correlation (rho) parameter.
-     */
-    SersicParametricEllipse(std::shared_ptr<ReffXParameterD> size_x, std::shared_ptr<ReffYParameterD> size_y,
-                            std::shared_ptr<RhoParameterD> rho = nullptr);
-    explicit SersicParametricEllipse(double size_x = 0, double size_y = 0, double rho = 0);
+private:
+    std::shared_ptr<ReffXParameterD> _size_x;
+    std::shared_ptr<ReffYParameterD> _size_y;
+    std::shared_ptr<RhoParameterD> _rho;
 };
 }  // namespace lsst::gauss2d::fit
 

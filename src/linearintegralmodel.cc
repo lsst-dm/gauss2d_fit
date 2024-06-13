@@ -8,6 +8,30 @@
 
 namespace lsst::gauss2d::fit {
 
+// not giving a nullptr default because users should explicitly use the null Channel
+LinearIntegralModel::LinearIntegralModel(const Data* data_in) {
+    if (data_in != nullptr) {
+        size_t idx = 0;
+        for (const auto& datum : *data_in) {
+            if (datum.second == nullptr) {
+                throw std::runtime_error("LinearIntegralModel data[" + std::to_string(idx)
+                                         + "] can't be null");
+            }
+            if (_map.find(datum.first) != _map.end()) {
+                throw std::runtime_error("LinearIntegralModel data[" + std::to_string(idx)
+                                         + "] channel=" + datum.first.get().str() + " duplicated");
+            }
+            _data.emplace_back(datum.first, datum.second);
+            _map.insert(_data.back());
+            idx++;
+        }
+    } else {
+        _data.emplace_back(Channel::NONE(), std::make_shared<IntegralParameterD>(1));
+        _map.insert(_data.back());
+    }
+}
+LinearIntegralModel::~LinearIntegralModel(){};
+
 std::vector<std::reference_wrapper<const Channel>> LinearIntegralModel::get_channels() const {
     std::vector<std::reference_wrapper<const Channel>> rval = {};
     for (auto& datum : _data) rval.emplace_back(datum.first);
@@ -56,7 +80,8 @@ std::string LinearIntegralModel::repr(bool name_keywords, std::string_view names
     std::string s = type_name_str<LinearIntegralModel>(false, namespace_separator) + "("
                     + (name_keywords ? "data=" : "") + "{";
     for (const auto& datum : _data) {
-        s += datum.first.get().repr(name_keywords, namespace_separator) + ": " + datum.second->repr(name_keywords, namespace_separator) + ",";
+        s += datum.first.get().repr(name_keywords, namespace_separator) + ": "
+             + datum.second->repr(name_keywords, namespace_separator) + ",";
     }
     return s + "})";
 }
@@ -68,29 +93,5 @@ std::string LinearIntegralModel::str() const {
     }
     return s + "})";
 }
-
-// not giving a nullptr default because users should explicitly use the null Channel
-LinearIntegralModel::LinearIntegralModel(const Data* data_in) {
-    if (data_in != nullptr) {
-        size_t idx = 0;
-        for (const auto& datum : *data_in) {
-            if (datum.second == nullptr) {
-                throw std::runtime_error("LinearIntegralModel data[" + std::to_string(idx)
-                                         + "] can't be null");
-            }
-            if (_map.find(datum.first) != _map.end()) {
-                throw std::runtime_error("LinearIntegralModel data[" + std::to_string(idx)
-                                         + "] channel=" + datum.first.get().str() + " duplicated");
-            }
-            _data.emplace_back(datum.first, datum.second);
-            _map.insert(_data.back());
-            idx++;
-        }
-    } else {
-        _data.emplace_back(Channel::NONE(), std::make_shared<IntegralParameterD>(1));
-        _map.insert(_data.back());
-    }
-}
-LinearIntegralModel::~LinearIntegralModel(){};
 
 }  // namespace lsst::gauss2d::fit

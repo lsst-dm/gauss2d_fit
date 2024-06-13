@@ -7,31 +7,33 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * A single-channel GaussianIntegral referencing a Parametric IntegralModel.
  */
 class GaussianModelIntegral : public GaussianIntegral {
-protected:
-    const Channel& _channel;
-    const std::shared_ptr<const IntegralModel> _integralmodel;
-
 public:
-    double get_value() const override;
-    void set_value(double value) override;
-
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
-    std::string str() const override;
-
     /**
      * Construct a GaussianModelIntegral instance for one Channel.
      *
      * @param channel The Channel for the integral.
      * @param integralmodel An IntegralModel valid for channel.
      */
-    GaussianModelIntegral(const Channel& channel, const std::shared_ptr<const IntegralModel> integralmodel);
+    explicit GaussianModelIntegral(const Channel& channel,
+                                   const std::shared_ptr<const IntegralModel> integralmodel);
     ~GaussianModelIntegral();
+
+    double get_value() const override;
+    void set_value(double value) override;
+
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string str() const override;
+
+protected:
+    const Channel& _channel;
+    const std::shared_ptr<const IntegralModel> _integralmodel;
 };
 
 }  // namespace lsst::gauss2d::fit

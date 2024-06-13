@@ -17,6 +17,12 @@ static const std::array<size_t, N_PARAMS_GAUSS2D> IDX_ORDER = {0, 1, 3, 4, 5, 2}
 static const size_t N_PARAMS_INTEGRAL_MAX = 2;
 static const size_t N_PARAMS_EXTRA_INTEGRAL_MAX = N_PARAMS_INTEGRAL_MAX - 1;
 
+GaussianComponent::GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse,
+                                     std::shared_ptr<CentroidParameters> centroid,
+                                     std::shared_ptr<IntegralModel> integralmodel)
+        : GaussianParametricEllipseHolder(std::move(ellipse)),
+          EllipticalComponent(_ellipsedata, centroid, integralmodel) {}
+
 ParamCRefs GaussianComponent::_get_parameters_grad(const Channel& channel) const {
     ParamCRefs params;
     ParamFilter filter{};
@@ -113,7 +119,8 @@ void GaussianComponent::add_grad_param_factors(const Channel& channel, GradParam
     factors.push_back({1, 1, 1, 1, 1, 1});
 }
 
-std::unique_ptr<const lsst::gauss2d::Gaussians> GaussianComponent::get_gaussians(const Channel& channel) const {
+std::unique_ptr<const lsst::gauss2d::Gaussians> GaussianComponent::get_gaussians(
+        const Channel& channel) const {
     lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
             std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
             std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
@@ -182,11 +189,5 @@ std::string GaussianComponent::repr(bool name_keywords, std::string_view namespa
 std::string GaussianComponent::str() const {
     return type_name_str<GaussianComponent>(true) + "(" + EllipticalComponent::str() + ")";
 }
-
-GaussianComponent::GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse,
-                                     std::shared_ptr<CentroidParameters> centroid,
-                                     std::shared_ptr<IntegralModel> integralmodel)
-        : GaussianParametricEllipseHolder(std::move(ellipse)),
-          EllipticalComponent(_ellipsedata, centroid, integralmodel) {}
 
 }  // namespace lsst::gauss2d::fit

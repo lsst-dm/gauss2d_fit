@@ -106,9 +106,27 @@ std::string ShapePriorOptions::str() const {
            + ", axrat_floor=" + to_string_float(_axrat_floor) + ")";
 }
 
+ShapePrior::ShapePrior(std::shared_ptr<const ParametricEllipse> ellipse,
+                       std::shared_ptr<ParametricGaussian1D> prior_size,
+                       std::shared_ptr<ParametricGaussian1D> prior_axrat,
+                       std::shared_ptr<ShapePriorOptions> options)
+        : _ellipse(std::move(ellipse)),
+          _prior_size(std::move(prior_size)),
+          _prior_axrat(std::move(prior_axrat)),
+          _options(std::move((options == nullptr) ? std::make_shared<ShapePriorOptions>() : options)) {
+    if (_ellipse == nullptr) throw std::invalid_argument("ellipse param must not be null");
+    double loglike = this->evaluate().loglike;
+    if (!std::isfinite(loglike)) {
+        throw std::invalid_argument(this->str() + " has non-finite loglike=" + std::to_string(loglike)
+                                    + " on init");
+    }
+}
+
+ShapePrior::~ShapePrior() {}
+
 PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const {
     const auto ellipse = lsst::gauss2d::Ellipse(this->_ellipse->get_size_x(), this->_ellipse->get_size_y(),
-                                          this->_ellipse->get_rho());
+                                                this->_ellipse->get_rho());
     const auto ellipse_major = lsst::gauss2d::EllipseMajor(ellipse);
 
     double size_maj = ellipse_major.get_r_major();
@@ -233,23 +251,5 @@ std::string ShapePrior::str() const {
            + ", prior_size=" + str_ptr(_prior_size.get()) + ", prior_axrat=" + str_ptr(_prior_axrat.get())
            + ", options=" + _options->str() + ")";
 }
-
-ShapePrior::ShapePrior(std::shared_ptr<const ParametricEllipse> ellipse,
-                       std::shared_ptr<ParametricGaussian1D> prior_size,
-                       std::shared_ptr<ParametricGaussian1D> prior_axrat,
-                       std::shared_ptr<ShapePriorOptions> options)
-        : _ellipse(std::move(ellipse)),
-          _prior_size(std::move(prior_size)),
-          _prior_axrat(std::move(prior_axrat)),
-          _options(std::move((options == nullptr) ? std::make_shared<ShapePriorOptions>() : options)) {
-    if (_ellipse == nullptr) throw std::invalid_argument("ellipse param must not be null");
-    double loglike = this->evaluate().loglike;
-    if (!std::isfinite(loglike)) {
-        throw std::invalid_argument(this->str() + " has non-finite loglike=" + std::to_string(loglike)
-                                    + " on init");
-    }
-}
-
-ShapePrior::~ShapePrior() {}
 
 }  // namespace lsst::gauss2d::fit

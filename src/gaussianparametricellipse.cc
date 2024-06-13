@@ -14,6 +14,17 @@ t& _get_parameters(t& params, ParamFilter* filter, SigmaXParameterD& x, SigmaYPa
     return params;
 }
 
+GaussianParametricEllipse::GaussianParametricEllipse(std::shared_ptr<SigmaXParameterD> sigma_x,
+                                                     std::shared_ptr<SigmaYParameterD> sigma_y,
+                                                     std::shared_ptr<RhoParameterD> rho)
+        : _sigma_x(sigma_x == nullptr ? std::make_shared<SigmaXParameterD>(0) : std::move(sigma_x)),
+          _sigma_y(sigma_y == nullptr ? std::make_shared<SigmaYParameterD>(0) : std::move(sigma_y)),
+          _rho(rho == nullptr ? std::make_shared<RhoParameterD>(0) : std::move(rho)){};
+GaussianParametricEllipse::GaussianParametricEllipse(double sigma_x, double sigma_y, double rho)
+        : _sigma_x(std::make_shared<SigmaXParameterD>(sigma_x)),
+          _sigma_y(std::make_shared<SigmaYParameterD>(sigma_y)),
+          _rho(std::make_shared<RhoParameterD>(rho)){};
+
 ParamRefs& GaussianParametricEllipse::get_parameters(ParamRefs& params, ParamFilter* filter) const {
     return _get_parameters<ParamRefs>(params, filter, *_sigma_x, *_sigma_y, *_rho);
 }
@@ -22,8 +33,12 @@ ParamCRefs& GaussianParametricEllipse::get_parameters_const(ParamCRefs& params, 
     return _get_parameters<ParamCRefs>(params, filter, *_sigma_x, *_sigma_y, *_rho);
 }
 
-double GaussianParametricEllipse::get_hwhm_x() const { return lsst::gauss2d::M_SIGMA_HWHM * _sigma_x->get_value(); }
-double GaussianParametricEllipse::get_hwhm_y() const { return lsst::gauss2d::M_SIGMA_HWHM * _sigma_y->get_value(); }
+double GaussianParametricEllipse::get_hwhm_x() const {
+    return lsst::gauss2d::M_SIGMA_HWHM * _sigma_x->get_value();
+}
+double GaussianParametricEllipse::get_hwhm_y() const {
+    return lsst::gauss2d::M_SIGMA_HWHM * _sigma_y->get_value();
+}
 double GaussianParametricEllipse::get_rho() const { return _rho->get_value(); }
 double GaussianParametricEllipse::get_sigma_x() const { return _sigma_x->get_value(); }
 double GaussianParametricEllipse::get_sigma_y() const { return _sigma_y->get_value(); }
@@ -88,16 +103,5 @@ std::string GaussianParametricEllipse::str() const {
     return type_name_str<GaussianParametricEllipse>(true) + "(sigma_x=" + _sigma_x->str()
            + ", sigma_y=" + _sigma_y->str() + ", rho=" + _rho->str() + ")";
 }
-
-GaussianParametricEllipse::GaussianParametricEllipse(std::shared_ptr<SigmaXParameterD> sigma_x,
-                                                     std::shared_ptr<SigmaYParameterD> sigma_y,
-                                                     std::shared_ptr<RhoParameterD> rho)
-        : _sigma_x(sigma_x == nullptr ? std::make_shared<SigmaXParameterD>(0) : std::move(sigma_x)),
-          _sigma_y(sigma_y == nullptr ? std::make_shared<SigmaYParameterD>(0) : std::move(sigma_y)),
-          _rho(rho == nullptr ? std::make_shared<RhoParameterD>(0) : std::move(rho)){};
-GaussianParametricEllipse::GaussianParametricEllipse(double sigma_x, double sigma_y, double rho)
-        : _sigma_x(std::make_shared<SigmaXParameterD>(sigma_x)),
-          _sigma_y(std::make_shared<SigmaYParameterD>(sigma_y)),
-          _rho(std::make_shared<RhoParameterD>(rho)){};
 
 }  // namespace lsst::gauss2d::fit

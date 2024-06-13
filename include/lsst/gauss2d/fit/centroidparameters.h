@@ -13,10 +13,6 @@ namespace lsst::gauss2d::fit {
  * A Centroid with Parameters for x and y
  */
 class CentroidParameters : public lsst::gauss2d::CentroidData, public Parametric {
-private:
-    std::shared_ptr<CentroidXParameterD> _x;
-    std::shared_ptr<CentroidYParameterD> _y;
-
 public:
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
     ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
@@ -37,7 +33,8 @@ public:
     void set_y(double y) override;
     void set_xy(const std::array<double, 2>& xy) override;
 
-    std::string repr(bool name_keywords = false, std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
     /**
@@ -50,6 +47,10 @@ public:
                                 std::shared_ptr<CentroidYParameterD> y = nullptr);
     /// Construct a CentroidParameters with default-constructed Parameters set to x/y values
     CentroidParameters(double x, double y);
+
+private:
+    std::shared_ptr<CentroidXParameterD> _x;
+    std::shared_ptr<CentroidYParameterD> _y;
 };
 }  // namespace lsst::gauss2d::fit
 

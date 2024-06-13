@@ -10,7 +10,7 @@
 #include "param_filter.h"
 #include <memory>
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 // TODO: Revisit the necessity of this class
 // Its purpose is to have the GaussianParametricEllipse stored here and initialized first in
 // GaussianComponent's constructor
@@ -28,10 +28,18 @@ public:
  * A Component consisting of a 2D Gaussian.
  */
 class GaussianComponent : private GaussianParametricEllipseHolder, public EllipticalComponent {
-private:
-    ParamCRefs _get_parameters_grad(const Channel& channel) const;
-
 public:
+    /**
+     * Construct a GaussianComponent from ellipse, centroid and integral parameters.
+     *
+     * @param ellipse The GaussianParametricEllipse value; default-initialized if null.
+     * @param centroid The CentroidParameters value; default-initialized if null.
+     * @param integralmodel The IntegralModel value; default-initialized if null.
+     */
+    explicit GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr,
+                               std::shared_ptr<CentroidParameters> centroid = nullptr,
+                               std::shared_ptr<IntegralModel> integralmodel = nullptr);
+
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
                              ParameterMap& offsets) const override;
     void add_extra_param_factors(const Channel& channel, ExtraParamFactors& factors) const override;
@@ -79,19 +87,12 @@ public:
     void set_grad_param_factors(const Channel& channel, GradParamFactors& factors,
                                 size_t index) const override;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    /**
-     * Construct a GaussianComponent from ellipse, centroid and integral parameters.
-     *
-     * @param ellipse The GaussianParametricEllipse value; default-initialized if null.
-     * @param centroid The CentroidParameters value; default-initialized if null.
-     * @param integralmodel The IntegralModel value; default-initialized if null.
-     */
-    explicit GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr,
-                               std::shared_ptr<CentroidParameters> centroid = nullptr,
-                               std::shared_ptr<IntegralModel> integralmodel = nullptr);
+private:
+    ParamCRefs _get_parameters_grad(const Channel& channel) const;
 };
 }  // namespace lsst::gauss2d::fit
 

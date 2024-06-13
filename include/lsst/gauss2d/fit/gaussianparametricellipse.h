@@ -8,17 +8,31 @@
 #include "parameters.h"
 #include "parametricellipse.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * A Parameter-based implementation of lsst::gauss2d::EllipseData and ParametricEllipse.
  */
 class GaussianParametricEllipse : public lsst::gauss2d::EllipseData, public ParametricEllipse {
-private:
-    std::shared_ptr<SigmaXParameterD> _sigma_x;
-    std::shared_ptr<SigmaYParameterD> _sigma_y;
-    std::shared_ptr<RhoParameterD> _rho;
-
 public:
+    /**
+     * Construct a GaussianParametricEllipse from Parameter instances.
+     *
+     * @param sigma_x The SigmaXParameter to reference.
+     * @param sigma_y The SigmaYParameter to reference.
+     * @param rho The RhoParameter to reference. Default-initialized if null.
+     */
+    explicit GaussianParametricEllipse(std::shared_ptr<SigmaXParameterD> sigma_x,
+                                       std::shared_ptr<SigmaYParameterD> sigma_y,
+                                       std::shared_ptr<RhoParameterD> rho = nullptr);
+    /**
+     * Construct a GaussianParametricEllipse from values.
+     *
+     * @param sigma_x The value of the otherwise default-initialized SigmaXParameter.
+     * @param sigma_y The value of the otherwise default-initialized SigmaYParameter.
+     * @param rho The value of the otherwise default-initialized RhoParameter.
+     */
+    explicit GaussianParametricEllipse(double sigma_x = 0, double sigma_y = 0, double rho = 0);
+
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
     ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 
@@ -61,27 +75,14 @@ public:
     void set_hxyr(const std::array<double, 3>& hxyr) override;
     void set_xyr(const std::array<double, 3>& xyr) override;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    /**
-     * Construct a GaussianParametricEllipse from Parameter instances.
-     *
-     * @param sigma_x The SigmaXParameter to reference.
-     * @param sigma_y The SigmaYParameter to reference.
-     * @param rho The RhoParameter to reference. Default-initialized if null.
-     */
-    GaussianParametricEllipse(std::shared_ptr<SigmaXParameterD> sigma_x,
-                              std::shared_ptr<SigmaYParameterD> sigma_y,
-                              std::shared_ptr<RhoParameterD> rho = nullptr);
-    /**
-     * Construct a GaussianParametricEllipse from values.
-     *
-     * @param sigma_x The value of the otherwise default-initialized SigmaXParameter.
-     * @param sigma_y The value of the otherwise default-initialized SigmaYParameter.
-     * @param rho The value of the otherwise default-initialized RhoParameter.
-     */
-    explicit GaussianParametricEllipse(double sigma_x = 0, double sigma_y = 0, double rho = 0);
+private:
+    std::shared_ptr<SigmaXParameterD> _sigma_x;
+    std::shared_ptr<SigmaYParameterD> _sigma_y;
+    std::shared_ptr<RhoParameterD> _rho;
 };
 }  // namespace lsst::gauss2d::fit
 

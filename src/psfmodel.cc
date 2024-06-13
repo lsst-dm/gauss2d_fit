@@ -8,6 +8,26 @@
 #include "lsst/gauss2d/fit/source.h"
 
 namespace lsst::gauss2d::fit {
+
+PsfModel::PsfModel(Components& components) {
+    size_t i = 0;
+    _components.reserve(components.size());
+    for (auto& component : components) {
+        if (component == nullptr)
+            throw std::invalid_argument("PsfModel components[" + std::to_string(i) + "] can't be null");
+        auto channels = component->get_integralmodel().get_channels();
+        if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
+            throw std::invalid_argument("PsfModel components[" + std::to_string(i)
+                                        + "].get_integralmodel().get_channels()="
+                                        + str_iter_ref<true>(channels) + " must only contain None");
+        }
+        _components.push_back(std::move(component));
+        i++;
+    }
+}
+
+PsfModel::~PsfModel() {}
+
 void PsfModel::add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
                                    const GradParamMap& map_grad, ParameterMap& offsets) const {
     for (auto& component : _components) component->add_extra_param_map(channel, map_extra, map_grad, offsets);
@@ -73,22 +93,4 @@ std::string PsfModel::str() const {
     return str + "])";
 }
 
-PsfModel::PsfModel(Components& components) {
-    size_t i = 0;
-    _components.reserve(components.size());
-    for (auto& component : components) {
-        if (component == nullptr)
-            throw std::invalid_argument("PsfModel components[" + std::to_string(i) + "] can't be null");
-        auto channels = component->get_integralmodel().get_channels();
-        if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
-            throw std::invalid_argument("PsfModel components[" + std::to_string(i)
-                                        + "].get_integralmodel().get_channels()="
-                                        + str_iter_ref<true>(channels) + " must only contain None");
-        }
-        _components.push_back(std::move(component));
-        i++;
-    }
-}
-
-PsfModel::~PsfModel() {}
 }  // namespace lsst::gauss2d::fit

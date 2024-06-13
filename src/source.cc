@@ -6,6 +6,17 @@
 #include "lsst/gauss2d/fit/source.h"
 
 namespace lsst::gauss2d::fit {
+Source::Source(Components& components) {
+    _components.reserve(components.size());
+    size_t i = 0;
+    for (auto& component : components) {
+        if (component == nullptr)
+            throw std::invalid_argument("Source components[" + std::to_string(i) + "] can't be null");
+        _components.push_back(std::move(component));
+        i++;
+    }
+}
+
 void Source::add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
                                  const GradParamMap& map_grad, ParameterMap& offsets) const {
     for (auto& component : _components) component->add_extra_param_map(channel, map_extra, map_grad, offsets);
@@ -77,16 +88,4 @@ std::string Source::str() const {
     for (const auto& c : _components) s += c->str() + ",";
     return s + "])";
 }
-
-Source::Source(Components& components) {
-    _components.reserve(components.size());
-    size_t i = 0;
-    for (auto& component : components) {
-        if (component == nullptr)
-            throw std::invalid_argument("Source components[" + std::to_string(i) + "] can't be null");
-        _components.push_back(std::move(component));
-        i++;
-    }
-}
-
 }  // namespace lsst::gauss2d::fit

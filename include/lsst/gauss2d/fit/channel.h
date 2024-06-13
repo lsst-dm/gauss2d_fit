@@ -30,19 +30,8 @@ class Channel : public Object {
 public:
     typedef std::map<std::string, std::shared_ptr<const Channel>> Registry;
 
-private:
-    /**
-     * @brief Channel's private constructor.
-     *
-     * This constructor is private to force all newly-made Channels to be registered.
-     *
-     * @param name The name of the channel
-     */
-    explicit Channel(std::string name);
-
-    struct Shared_enabler;
-
-public:
+    Channel(const Channel &) = delete;
+    Channel &operator=(const Channel &) = delete;
     /**
      * Delete a channel with a given name.
      *
@@ -99,8 +88,17 @@ public:
     const bool operator==(const Channel &c) const;
     const bool operator!=(const Channel &c) const;
 
-    Channel(const Channel &) = delete;
-    Channel &operator=(const Channel &) = delete;
+private:
+    /**
+     * @brief Channel's private constructor.
+     *
+     * This constructor is private to force all newly-made Channels to be registered.
+     *
+     * @param name The name of the channel
+     */
+    explicit Channel(std::string name);
+
+    struct Shared_enabler;
 };
 
 inline bool operator<(const std::reference_wrapper<const Channel> &lhs,

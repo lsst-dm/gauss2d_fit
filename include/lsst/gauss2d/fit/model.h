@@ -91,7 +91,8 @@ public:
      * @param sources A vector of Source models.
      * @param priors A vector of Prior likelihoods.
      */
-    Model(std::shared_ptr<const ModelData> data, PsfModels& psfmodels, Sources& sources, Priors& priors)
+    explicit Model(std::shared_ptr<const ModelData> data, PsfModels& psfmodels, Sources& sources,
+                   Priors& priors)
             : _data(std::move(data)),
               _size(_data == nullptr ? 0 : _data->size()),
               _size_priors(priors.size()) {

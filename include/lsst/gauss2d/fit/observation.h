@@ -37,13 +37,32 @@ public:
     using Image = lsst::gauss2d::Image<T, I>;
     using Mask = lsst::gauss2d::Image<bool, M>;
 
-private:
-    std::shared_ptr<Image> _image;
-    std::shared_ptr<Image> _sigma_inv;
-    std::shared_ptr<Mask> _mask_inv;
-    const Channel &_channel;
+    /**
+     * Construct an Observation instance.
+     *
+     * @param image The Image to assign to _image.
+     * @param sigma_inv The Image to assign to _sigma_inv. Must have identical dimensions as image.
+     * @param mask_inv The mask Image to assign to _mask.
+     * @param channel The channel of every Observation.
+     */
+    explicit Observation(std::shared_ptr<Image> image, std::shared_ptr<Image> sigma_inv,
+                         std::shared_ptr<Mask> mask_inv, const Channel &channel = Channel::NONE())
+            : _image(std::move(image)),
+              _sigma_inv(std::move(sigma_inv)),
+              _mask_inv(std::move(mask_inv)),
+              _channel(channel) {
+        if ((_image == nullptr) || (_sigma_inv == nullptr) || (_mask_inv == nullptr)) {
+            throw std::invalid_argument("Must supply non-null image, variance and mask");
+        }
+        std::string msg;
+        bool passed = images_compatible<T, I, T, I>(*_image, *_sigma_inv, true, &msg);
+        passed &= images_compatible<T, I, bool, M>(*_image, *_mask_inv, true, &msg);
+        if (passed != (msg.empty()))
+            throw std::logic_error("Observation images_compatible=" + std::to_string(passed)
+                                   + " != msg != '' (=" + msg + ")");
+        if (!passed) throw std::invalid_argument("image/variance/mask incompatible: " + msg);
+    }
 
-public:
     /// Get this->_channel
     const Channel &get_channel() const { return _channel; }
     /// Get this->_image
@@ -92,31 +111,11 @@ public:
                 && (this->get_sigma_inverse() == other.get_sigma_inverse()));
     }
 
-    /**
-     * Construct an Observation instance.
-     *
-     * @param image The Image to assign to _image.
-     * @param sigma_inv The Image to assign to _sigma_inv. Must have identical dimensions as image.
-     * @param mask_inv The mask Image to assign to _mask.
-     * @param channel The channel of every Observation.
-     */
-    Observation(std::shared_ptr<Image> image, std::shared_ptr<Image> sigma_inv,
-                std::shared_ptr<Mask> mask_inv, const Channel &channel = Channel::NONE())
-            : _image(std::move(image)),
-              _sigma_inv(std::move(sigma_inv)),
-              _mask_inv(std::move(mask_inv)),
-              _channel(channel) {
-        if ((_image == nullptr) || (_sigma_inv == nullptr) || (_mask_inv == nullptr)) {
-            throw std::invalid_argument("Must supply non-null image, variance and mask");
-        }
-        std::string msg;
-        bool passed = images_compatible<T, I, T, I>(*_image, *_sigma_inv, true, &msg);
-        passed &= images_compatible<T, I, bool, M>(*_image, *_mask_inv, true, &msg);
-        if (passed != (msg.empty()))
-            throw std::logic_error("Observation images_compatible=" + std::to_string(passed)
-                                   + " != msg != '' (=" + msg + ")");
-        if (!passed) throw std::invalid_argument("image/variance/mask incompatible: " + msg);
-    }
+private:
+    std::shared_ptr<Image> _image;
+    std::shared_ptr<Image> _sigma_inv;
+    std::shared_ptr<Mask> _mask_inv;
+    const Channel &_channel;
 };
 
 }  // namespace lsst::gauss2d::fit

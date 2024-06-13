@@ -34,14 +34,27 @@ public:
     using Observation = lsst::gauss2d::fit::Observation<T, I, M>;
     using ObservationCRef = std::reference_wrapper<const Observation>;
 
-private:
-    // This could be unordered, but std::hash<std::string> won't take const strings
-    std::set<std::reference_wrapper<const Channel>> _channels = {};
-    std::vector<std::reference_wrapper<const Channel>> _channels_ordered = {};
-    std::vector<std::shared_ptr<const Observation>> _observation_ptrs = {};
-    std::vector<ObservationCRef> _observations = {};
+    /**
+     * Construct a Data instance
+     *
+     * @param observations The Observation pointers to include. Must not be null.
+     */
+    explicit Data(std::vector<std::shared_ptr<const Observation>> observations) {
+        _observations.reserve(observations.size());
+        _observation_ptrs.reserve(observations.size());
 
-public:
+        for (const auto& observation : observations) {
+            if (observation == nullptr) throw std::invalid_argument("Can't store null Observation");
+            const auto& channel = observation->get_channel();
+            if (_channels.find(channel) == _channels.end()) {
+                _channels_ordered.push_back(channel);
+                _channels.insert(channel);
+            }
+            _observations.push_back(ObservationCRef(*observation));
+            _observation_ptrs.push_back(observation);
+        }
+    }
+
     inline auto at(size_t i) const { return _observations.at(i); }
     inline auto begin() const { return _observations.begin(); }
     inline auto end() const { return _observations.end(); }
@@ -85,26 +98,12 @@ public:
         return str;
     }
 
-    /**
-     * Construct a Data instance
-     *
-     * @param observations The Observation pointers to include. Must not be null.
-     */
-    explicit Data(std::vector<std::shared_ptr<const Observation>> observations) {
-        _observations.reserve(observations.size());
-        _observation_ptrs.reserve(observations.size());
-
-        for (const auto& observation : observations) {
-            if (observation == nullptr) throw std::invalid_argument("Can't store null Observation");
-            const auto& channel = observation->get_channel();
-            if (_channels.find(channel) == _channels.end()) {
-                _channels_ordered.push_back(channel);
-                _channels.insert(channel);
-            }
-            _observations.push_back(ObservationCRef(*observation));
-            _observation_ptrs.push_back(std::move(observation));
-        }
-    }
+private:
+    // This could be unordered, but std::hash<std::string> won't take const strings
+    std::set<std::reference_wrapper<const Channel>> _channels = {};
+    std::vector<std::reference_wrapper<const Channel>> _channels_ordered = {};
+    std::vector<std::shared_ptr<const Observation>> _observation_ptrs = {};
+    std::vector<ObservationCRef> _observations = {};
 };
 
 }  // namespace lsst::gauss2d::fit

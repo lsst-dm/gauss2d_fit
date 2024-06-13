@@ -7,7 +7,7 @@
 
 #include "lsst/modelfit/parameters.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 
@@ -109,14 +109,13 @@ struct LogitTransform : public Transform {
 };
 
 class LogitLimitedTransform : public Transform {
-private:
-    std::shared_ptr<parameters::Limits<double>> _limits;
-    double _factor;
-    double _range;
-
-    inline void _set_range() { _range = _limits->get_max() - _limits->get_min(); }
-
 public:
+    explicit LogitLimitedTransform(std::shared_ptr<parameters::Limits<double>> limits, double factor = 1) {
+        set_limits(std::move(limits));
+        set_factor(factor);
+        _set_range();
+    }
+
     std::string description() const override { return "Logit limited (to finite range) transform"; }
     std::string repr(bool name_keywords = false,
                      const std::string_view& namespace_separator
@@ -148,11 +147,12 @@ public:
         _set_range();
     }
 
-    explicit LogitLimitedTransform(std::shared_ptr<parameters::Limits<double>> limits, double factor = 1) {
-        set_limits(std::move(limits));
-        set_factor(factor);
-        _set_range();
-    }
+private:
+    std::shared_ptr<parameters::Limits<double>> _limits;
+    double _factor;
+    double _range;
+
+    inline void _set_range() { _range = _limits->get_max() - _limits->get_min(); }
 };
 
 template <class T>

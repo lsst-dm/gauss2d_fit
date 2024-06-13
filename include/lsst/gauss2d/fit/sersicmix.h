@@ -9,7 +9,7 @@
 #include "interpolation.h"
 #include "lsst/gauss2d/object.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 static const unsigned short SERSICMIX_ORDER_DEFAULT = 4;
 
@@ -18,12 +18,14 @@ static const unsigned short SERSICMIX_ORDER_DEFAULT = 4;
  */
 class IntegralSize : public Object {
 public:
+    explicit IntegralSize(double integral_, double sigma_);
+
     const double integral;
     const double sigma;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
-    IntegralSize(double integral_, double sigma_);
 };
 
 /**
@@ -52,18 +54,20 @@ const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_d
  */
 class SersicMixValues : public Object {
 public:
-    const double sersicindex;
-    const std::vector<IntegralSize> values;
-
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
-    std::string str() const override;
     /**
      * Construct a SersicMixValues.
      *
      * @param sersicindex The value of the Sersic index.
      * @param values The vector of IntegralSize values for the Sersic index.
      */
-    SersicMixValues(double sersicindex, std::vector<IntegralSize> values);
+    explicit SersicMixValues(double sersicindex, std::vector<IntegralSize> values);
+
+    const double sersicindex;
+    const std::vector<IntegralSize> values;
+
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string str() const override;
 };
 
 inline bool operator<(const SersicMixValues &lhs, const SersicMixValues &rhs) {

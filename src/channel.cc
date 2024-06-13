@@ -25,6 +25,23 @@ struct Channel::Shared_enabler : public Channel {
     Shared_enabler(Args &&...args) : Channel(std::forward<Args>(args)...) {}
 };
 
+Channel::Channel(std::string name_) : name(name_) {
+    static bool none_made = false;
+    if (name_ == NAME_NONE) {
+        if (none_made) {
+            throw std::invalid_argument("Channel('None') always exists and cannot be re-made");
+        } else {
+            none_made = true;
+        }
+    } else {
+        auto found = _registry.find(name);
+        if (found != _registry.end()) {
+            throw std::invalid_argument("Channel(name=" + name + ") already exists as "
+                                        + found->second->str());
+        }
+    }
+}
+
 const bool Channel::operator<(const Channel &c) const { return name < c.name; }
 
 const bool Channel::operator==(const Channel &c) const { return name == c.name; }
@@ -92,22 +109,5 @@ const std::shared_ptr<const Channel> Channel::NONE_PTR() {
 }
 
 const Channel &Channel::NONE() { return *NONE_PTR(); }
-
-Channel::Channel(std::string name_) : name(name_) {
-    static bool none_made = false;
-    if (name_ == NAME_NONE) {
-        if (none_made) {
-            throw std::invalid_argument("Channel('None') always exists and cannot be re-made");
-        } else {
-            none_made = true;
-        }
-    } else {
-        auto found = _registry.find(name);
-        if (found != _registry.end()) {
-            throw std::invalid_argument("Channel(name=" + name + ") already exists as "
-                                        + found->second->str());
-        }
-    }
-}
 
 }  // namespace lsst::gauss2d::fit
