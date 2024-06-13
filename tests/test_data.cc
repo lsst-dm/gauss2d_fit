@@ -31,9 +31,9 @@ TEST_CASE("Data") {
     auto data = std::make_shared<DataD>(observations);
     g2f::ParamCRefs params{};
     // no parameters yet (until background model added)
-    CHECK(data->get_parameters_const(params).size() == 0);
+    CHECK_EQ(data->get_parameters_const(params).size(), 0);
     const ObservationD& observation_data = data->at(0).get();
-    CHECK(&observation == &observation_data);
-    CHECK(observation == observation_data);
-    CHECK(data->str() != "");
+    CHECK_EQ(&observation, &observation_data);
+    CHECK_EQ(observation, observation_data);
+    CHECK_NE(data->str(), "");
 }

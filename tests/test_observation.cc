@@ -34,10 +34,12 @@ TEST_CASE("Observation") {
     auto observation = std::make_shared<ObservationD>(std::make_unique<ImageD>(N_Y, N_X),
                                                       std::make_unique<ImageD>(N_Y, N_X),
                                                       std::make_unique<Mask>(N_Y, N_X));
-    CHECK(lsst::gauss2d::images_compatible<double, ImageD, double, ImageD>(observation->get_image(),
-                                                                           observation->get_sigma_inverse()));
-    CHECK(lsst::gauss2d::images_compatible<double, ImageD, bool, Mask>(observation->get_image(),
-                                                                       observation->get_mask_inverse()));
+    CHECK_EQ(lsst::gauss2d::images_compatible<double, ImageD, double, ImageD>(
+                     observation->get_image(), observation->get_sigma_inverse()),
+             true);
+    CHECK_EQ(lsst::gauss2d::images_compatible<double, ImageD, bool, Mask>(observation->get_image(),
+                                                                          observation->get_mask_inverse()),
+             true);
     CHECK_NE(observation->str(), "");
     g2f::ParamCRefs params{};
     // no parameters yet

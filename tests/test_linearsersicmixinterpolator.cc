@@ -13,16 +13,16 @@ TEST_CASE("LinearSersicMixInterpolator") {
     for (const auto order : orders) {
         auto interpolator = g2f::LinearSersicMixInterpolator(order);
         CHECK(interpolator.get_interptype() == g2f::InterpType::linear);
-        CHECK(interpolator.sersicindex_max > interpolator.sersicindex_min);
+        CHECK(interpolator.get_sersicindex_max() > interpolator.get_sersicindex_min());
         CHECK_THROWS_AS(interpolator.get_integralsizes(0.499), std::invalid_argument);
-        CHECK_THROWS_AS(interpolator.get_integralsizes(interpolator.sersicindex_max + 1e-10),
+        CHECK_THROWS_AS(interpolator.get_integralsizes(interpolator.get_sersicindex_max() + 1e-10),
                         std::invalid_argument);
 
-        double diff = interpolator.sersicindex_max - interpolator.sersicindex_min;
+        double diff = interpolator.get_sersicindex_max() - interpolator.get_sersicindex_min();
 
         for (const double factor : {0., 0.5, 1.}) {
             double delta = 1e-6;
-            const double sersicindex = interpolator.sersicindex_min + diff * factor;
+            const double sersicindex = interpolator.get_sersicindex_min() + diff * factor;
             auto result = interpolator.get_integralsizes(sersicindex);
             CHECK(result.size() == order);
             for (size_t ord = 0; ord < order; ++ord) {
@@ -35,7 +35,7 @@ TEST_CASE("LinearSersicMixInterpolator") {
                 delta = -delta;
                 factor_new = factor + delta;
             }
-            const double sersicindex_new = interpolator.sersicindex_min + diff * factor_new;
+            const double sersicindex_new = interpolator.get_sersicindex_min() + diff * factor_new;
             const double dsersicindex = sersicindex_new - sersicindex;
             auto result_new = interpolator.get_integralsizes(sersicindex_new);
 
@@ -61,7 +61,7 @@ TEST_CASE("LinearSersicMixInterpolator") {
             }
         }
         auto knots = g2f::get_sersic_mix_knots(order);
-        double sersicindices[2] = {interpolator.sersicindex_min, interpolator.sersicindex_max};
+        double sersicindices[2] = {interpolator.get_sersicindex_min(), interpolator.get_sersicindex_max()};
         g2f::SersicMixValues expected[2] = {knots[0], knots.back()};
         for (size_t i = 0; i < 2; ++i) {
             double sersicindex = sersicindices[i];

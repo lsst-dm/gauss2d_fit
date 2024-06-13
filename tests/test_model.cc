@@ -503,12 +503,12 @@ TEST_CASE("Model") {
      */
 
     auto interpolator_linear = g2f::LinearSersicMixInterpolator(g2f::SERSICMIX_ORDER_DEFAULT);
-    auto& knots = interpolator_linear.knots;
+    const auto& knots = interpolator_linear.get_knots();
     for (auto& sersic : sersic_linear_interp) {
         const double sersicindex = sersic->get_value();
-        auto found = sersicindex == interpolator_linear.sersicindex_min
+        auto found = sersicindex == interpolator_linear.get_sersicindex_min()
                              ? ++knots.begin()
-                             : ((sersicindex == interpolator_linear.sersicindex_max)
+                             : ((sersicindex == interpolator_linear.get_sersicindex_max())
                                         ? --knots.end()
                                         : std::upper_bound(knots.begin(), knots.end(), sersicindex));
         double n_high = (found)->sersicindex;
