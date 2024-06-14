@@ -36,7 +36,8 @@
 
 PYBIND11_MODULE(_gauss2d_fit, m) {
     m.doc() = "Gauss2DFit Python bindings";
-    py::module::import("gauss2d");
+    // Is this necessary? Apparently not
+    // py::module::import("lsst.gauss2d");
 
     // Abstract types MUST go first
     bind_chromatic(m);
@@ -52,7 +53,6 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
 #ifdef LSST_GAUSS2D_FIT_HAS_GSL
     bind_gsl(m);
 #endif
-
     bind_centroidparameters(m);
     bind_channel(m);
     bind_data(m);

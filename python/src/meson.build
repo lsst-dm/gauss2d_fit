@@ -1,4 +1,5 @@
-subdir_gauss2d_fit = 'gauss2d/fit'
+suffix_gauss2d_fit = 'gauss2d/fit'
+subdir_gauss2d_fit = 'lsst' / suffix_gauss2d_fit
 
 sources = [
     subdir_gauss2d_fit / 'centroidparameters.cc',
@@ -47,10 +48,10 @@ endif
 
 if use_eups
     # meson.current_build_dir() would be ideal but it seems to delete the file?
-    kwargs = {'install_dir': meson.build_root() + '/lib/gauss2d/fit'}
+    kwargs = {'install_dir': meson.build_root() / 'lib' / suffix_gauss2d_fit}
 else
     # Folder relative to site-packages to install to
-    kwargs = {'subdir': 'lsst' / subdir_gauss2d_fit}
+    kwargs = {'subdir': subdir_gauss2d_fit}
 endif
 
 module = python.extension_module(

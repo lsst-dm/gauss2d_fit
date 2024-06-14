@@ -6,7 +6,7 @@ build-release
 python/build
 python/build-release
 python/builddir
-python/lsst/lsst_gauss2d_fit.egg-info/
+python/src/lsst_gauss2d_fit.egg-info/
 
 # SCons
 config.log
