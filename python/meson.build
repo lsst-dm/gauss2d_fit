@@ -3,7 +3,7 @@ project(
     'cpp',
     default_options : ['cpp_std=c++17',],
     license : 'GPL-3.0-or-later',
-    version : run_command('cat', meson.source_root() + '/VERSION', check: true).stdout().strip(),
+    version : run_command('cat', meson.source_root() / 'VERSION', check: true).stdout().strip(),
 )
 
 add_project_arguments('-DVERSION=@0@'.format(meson.project_version()), language : 'cpp')
@@ -26,19 +26,19 @@ if use_eups
     gauss2d_eupsdir = run_command('sh', '-c', 'echo $GAUSS2D_DIR', check: true).stdout().strip()
     cpp = meson.get_compiler('cpp')
     gauss2d_dep = declare_dependency(
-        dependencies: [cpp.find_library('gauss2d', dirs: [gauss2d_eupsdir + '/build-release/lib64']),],
+        dependencies: [cpp.find_library('gauss2d', dirs: [gauss2d_eupsdir + '/build-release/lib64/lsst']),],
         include_directories: gauss2d_eupsdir + '/build-release/include',
     )
     gauss2d_python_dep = declare_dependency(
         include_directories: gauss2d_eupsdir + '/python/lib/build-release/include',
     )
-    gauss2dfit_eupsdir = gauss2dfit_eups.stdout().strip() / 'build-release/'
+    gauss2dfit_eupsdir = gauss2dfit_eupsdir.stdout().strip() / 'build-release/'
     parameters_eupsdir = run_command(
         'sh', '-c', 'echo $MODELFIT_PARAMETERS_DIR', check: true
     ).stdout().strip() / 'build-release'
     # TODO: Can this dependency be extracted from '../meson.build' somehow
     gauss2dfit_dep = declare_dependency(
-        dependencies: [cpp.find_library('gauss2dfit', dirs: [gauss2dfit_eupsdir / 'lib64']),],
+        dependencies: [cpp.find_library('gauss2dfit', dirs: [gauss2dfit_eupsdir / 'lib64/lsst']),],
         include_directories: [
             gauss2dfit_eupsdir / 'include',
             parameters_eupsdir / 'include',

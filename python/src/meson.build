@@ -1,5 +1,4 @@
-suffix_gauss2d_fit = 'gauss2d/fit'
-subdir_gauss2d_fit = 'lsst' / suffix_gauss2d_fit
+subdir_gauss2d_fit = 'lsst/gauss2d/fit'
 
 sources = [
     subdir_gauss2d_fit / 'centroidparameters.cc',
@@ -43,12 +42,12 @@ kwargs = {}
 eups = find_program('eups', required: false)
 use_eups = eups.found()
 if use_eups
-	use_eups = run_command('eups', 'list', '-d', 'gauss2dfit', check: false).returncode() == 0
+	use_eups = run_command('eups', 'list', '-d', 'gauss2d_fit', check: false).returncode() == 0
 endif
 
 if use_eups
     # meson.current_build_dir() would be ideal but it seems to delete the file?
-    kwargs = {'install_dir': meson.build_root() / 'lib' / suffix_gauss2d_fit}
+    kwargs = {'install_dir': meson.build_root() / 'lib' / subdir_gauss2d_fit}
 else
     # Folder relative to site-packages to install to
     kwargs = {'subdir': subdir_gauss2d_fit}
