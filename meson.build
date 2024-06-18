@@ -57,9 +57,6 @@ if not use_eups
     endif
 endif
 
-# Build package docs (optional)
-subdir('doc')
-
 # Build doxygen docs (done by eupspkg install if use_eups)
 if not use_eups
     pymod = import('python')
