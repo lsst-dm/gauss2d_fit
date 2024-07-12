@@ -1,7 +1,7 @@
 Gauss2DFit
 ##########
 
-*gauss2dfit* is a package for defining and evaluating 2D Gaussian mixture
+*gauss2d_fit* is a package for defining and evaluating 2D Gaussian mixture
 models on imaging data. It is being developed primarily for use in astronomy -
 specifically, by
 `Vera C. Rubin Observatory Data Management <https://www.lsst.org/about/dm>`_
@@ -10,7 +10,7 @@ and the
 `MultiProFit <https://github.com/lsst-dm/multiprofit/>`_ source modelling
 package - but it can be used for any kind of image or domain.
 
-*gauss2dfit* is provided in two parts; a C++ shared library (libgauss2dfit) and
+*gauss2d_fit* is provided in two parts; a C++ shared library (libgauss2d_fit) and
 optional Python bindings. Both depend on the base package
 `gauss2d <https://github.com/lsst-dm/gauss2d/>`, as well as the
 `modelfit_parameters <https://github.com/lsst/modelfit_parameters/>` package
@@ -19,7 +19,7 @@ for defining parameters with limits and transformations.
 Building the Package
 ####################
 
-*gauss2dfit* is built with `Meson <https://github.com/mesonbuild>`_. It can
+*gauss2d_fit* is built with `Meson <https://github.com/mesonbuild>`_. It can
 be built as a standalone package or as an eups-managed Science Pipelines
 package.
 

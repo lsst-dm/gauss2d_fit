@@ -1,5 +1,5 @@
 /*
- * This file is part of gauss2dfit.
+ * This file is part of gauss2d_fit.
  *
  * Developed for the LSST Data Management System.
  * This product includes software developed by the LSST Project

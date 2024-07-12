@@ -61,7 +61,7 @@ module = python.extension_module(
         python.dependency(), # Add Python.h as dependency
         gauss2d_dep,
         gauss2d_python_dep,
-        gauss2dfit_dep,
+        gauss2d_fit_dep,
         pybind11_dep,
     ],
     kwargs: kwargs

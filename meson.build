@@ -1,5 +1,5 @@
 project(
-  'libgauss2dfit',
+  'libgauss2d_fit',
   'cpp',
   version : files('VERSION'),
   license : 'GPL-3.0-or-later',
@@ -49,7 +49,7 @@ subdir('tests')
 if not use_eups
     pkg_mod = import('pkgconfig')
     if pkg_mod.found()
-        pkg_mod.generate(libraries : gauss2dfitlib,
+        pkg_mod.generate(libraries : gauss2d_fitlib,
                          version : '0.1',
                          name : 'libgauss2d_fit',
                          filebase : 'lsst_gauss2d_fit',

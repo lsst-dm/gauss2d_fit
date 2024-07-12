@@ -7,7 +7,7 @@ name = "lsst-gauss2d-fit"
 authors = [
     { name = "Rubin Observatory DataD Management", email = "dm-admin@lists.lsst.org" },
 ]
-description = "Python (pybind11) bindings for gauss2dfit"
+description = "Python (pybind11) bindings for gauss2d_fit"
 requires-python = ">=3.8"
 classifiers = [
     "Intended Audience :: Science/Research",

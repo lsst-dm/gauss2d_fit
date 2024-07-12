@@ -633,7 +633,7 @@ private:
             }
         } else {
             /*
-                Maps are stored as vectors in gauss2dfit (to avoid unnecessary templating)
+                Maps are stored as vectors in gauss2d_fit (to avoid unnecessary templating)
                 The inputs to gauss2d's Evaluator are templated Images, so copy the values
             */
             if constexpr (print) {

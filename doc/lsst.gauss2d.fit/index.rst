@@ -6,9 +6,9 @@
 lsst.gauss2d.fit
 ###############
 
-gauss2dfit is a submodule for gauss2d that implements a 2D Gaussian mixture
+gauss2d_fit is a submodule for gauss2d that implements a 2D Gaussian mixture
 model class, along with its constituent parts, including parameters and data.
-The Model class can evaluate the likelihood and gradients thereof. gauss2dfit
+The Model class can evaluate the likelihood and gradients thereof. gauss2d_fit
 does not yet provide optimizers, although support for GSL fitters is planned.
 Users should turn to `MultiProFit <https://github.com/lsst-dm/multiprofit>`_
 for access to Python (scipy) optimizers.
