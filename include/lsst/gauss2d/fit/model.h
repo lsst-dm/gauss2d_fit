@@ -877,10 +877,11 @@ public:
             size_t idx_param = 0;
             for (auto& paramref : params_free) {
                 auto& param = paramref.get();
-                const double value = param.get_value_transformed();
+                const double value_init = param.get_value();
+                const double value_transformed = param.get_value_transformed();
                 // Make the finite differencing go away from the possible peak likelihood
                 // This is probably a good idea even if return_negative isn't necessary
-                double diff = std::copysign(std::abs(value * opt.findiff_frac) + opt.findiff_add,
+                double diff = std::copysign(std::abs(value_transformed * opt.findiff_frac) + opt.findiff_add,
                                             -loglike_grad[idx_param]);
                 diff = finite_difference_param(param, diff);
                 double diffabs = std::abs(diff);
@@ -892,7 +893,7 @@ public:
                     dll_dx *= opt.return_negative ? (1 - 2 * (dll_dx > 0)) / diffabs : 1 / diff;
                     hessian->set_value_unchecked(idx_param, idx_col, dll_dx);
                 }
-                param.set_value_transformed(value);
+                param.set_value(value_init);
                 idx_param++;
             }
         } else {
