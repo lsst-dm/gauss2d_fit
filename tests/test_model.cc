@@ -208,7 +208,8 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
         }
         for (unsigned int include_prior = 0; include_prior <= 1; ++include_prior) {
             for (unsigned int transformed = 0; transformed <= 1; ++transformed) {
-                auto hessian = model.compute_hessian(transformed, include_prior);
+                g2f::HessianOptions opt{true, 1e-5, 1e-5};
+                auto hessian = model.compute_hessian(transformed, include_prior, opt);
                 size_t idx_param = 0;
                 for (const auto& paramref : params_free) {
                     const auto& param = paramref.get();
@@ -223,14 +224,28 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                 // Check that the Hessian is not very sensitive to the choice of finite differences
                 // (should be skipped for float)
                 if (do_hess_diff) {
-                    g2f::HessianOptions opt{false, 1e-10, 1e-10};
-                    auto hessian2 = model.compute_hessian(transformed, include_prior, opt);
+                    g2f::HessianOptions opt_transformed{false, 1e-10, 1e-10};
+                    auto hessian2 = model.compute_hessian(transformed, include_prior, opt_transformed);
+
+                    idx_param = 0;
+                    for (const auto& paramref : params_free) {
+                        const auto& param = paramref.get();
+                        double value_new = param.get_value_transformed();
+                        double value_old = values_transformed[idx_param++];
+                        auto isclose = g2f::isclose(value_old, value_new, 1e-10, 1e-12);
+                        CHECK_MESSAGE(isclose.isclose, param.str(), " !isclose (isclose=", isclose.str(),
+                                      "; value_transformed changed from ",
+                                      g2d::to_string_float(value_old, 10), " to ",
+                                      g2d::to_string_float(value_new, 10),
+                                      " with compute_hessian(transformed=", std::to_string(transformed), ")");
+                    }
                     const auto n_cols = hessian->get_n_cols();
                     const auto n_rows = hessian->get_n_rows();
                     for (size_t row = 0; row < n_rows; ++row) {
                         for (size_t col = 0; col < n_cols; ++col) {
                             double value = hessian->get_value(row, col);
-                            if (row == col) {
+                            bool is_diag = row == col;
+                            if (is_diag) {
                                 CHECK_MESSAGE((value <= 0), "hessian[", row, ",", col, "] == 0 (", value,
                                               ")");
                             }
@@ -253,6 +268,31 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                             if (!((skip_rho && (name_row == g2f::RhoParameterD::_name))
                                   || (skip_rho && (name_col == g2f::RhoParameterD::_name)))) {
                                 double value2 = hessian2->get_value(row, col);
+                                if (is_diag) {
+                                    /*
+                                     The Hessian should also be negative for optimal parameter values.
+                                     Of course, with random noise the initial values aren't exactly
+                                     optimal, unless the noise is tiny.
+                                     In practice one Gaussian component seems to fail - are the RNGs
+                                     different on different platforms even with the same GCC?
+                                     TODO: Investigate failures. Fedora with gcc 12.2.0-19 and 12.3.0-13:
+                                     hessian2[6,6] == 0 (1.99087e-10) for SigmaXParameterD(value=2.50057...
+                                     ... but on Centos with gcc 12.3.0-3:
+                                     hessian2[7,7] == 0 (2.25412e-08) for SigmaYParameterD(value=2.49942...
+                                     ... and same for the next RhoParameterD
+                                    */
+                                    double threshold = 0;
+                                    if (name_row == g2f::SigmaXParameterD::_name
+                                        || name_row == g2f::SigmaYParameterD::_name
+                                        || name_row == g2f::RhoParameterD::_name) {
+                                        threshold = 1e-6;
+                                    }
+                                    CHECK_MESSAGE((value2 <= threshold), "hessian2[", row, ",", col,
+                                                  "] == 0 (", value2, ") for ", param_str_row.str());
+                                } else {
+                                    // hessian was evaluated with return_negative, so flip sign if positive
+                                    value2 *= (1 - 2 * (value2 > 0));
+                                }
                                 auto isclose = g2f::isclose(value, value2, hess_rtol_p, hess_rtol_p / 10);
                                 CHECK_MESSAGE(isclose.isclose, "hessian[", row, ",", col, "]=(", value,
                                               ")!= hessian2 value=(", value2,
