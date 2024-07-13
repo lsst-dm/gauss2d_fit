@@ -5,7 +5,7 @@
 
 #include "lsst/modelfit/parameters.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 using ParamBase = lsst::modelfit::parameters::ParameterBase<double>;
 using ParamBaseCRef = std::reference_wrapper<const ParamBase>;
 using ParamCRefs = std::vector<ParamBaseCRef>;

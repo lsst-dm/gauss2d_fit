@@ -43,7 +43,7 @@ GaussianPrior::GaussianPrior(std::shared_ptr<const ParamBase> param, double mean
     }
 }
 
-GaussianPrior::~GaussianPrior(){};
+GaussianPrior::~GaussianPrior() {};
 
 PriorEvaluation GaussianPrior::evaluate(bool calc_jacobians, bool normalize) const {
     double residual

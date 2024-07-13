@@ -62,7 +62,7 @@ PriorEvaluation::PriorEvaluation(double loglike_, std::vector<double> residuals_
     }
 }
 
-PriorEvaluation::~PriorEvaluation(){};
+PriorEvaluation::~PriorEvaluation() {};
 
 double PriorEvaluation::compute_dloglike_dx(const ParamBase& param, bool transformed) const {
     double dll_dx = 0;

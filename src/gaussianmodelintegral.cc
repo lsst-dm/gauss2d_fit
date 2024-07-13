@@ -12,7 +12,7 @@ GaussianModelIntegral::GaussianModelIntegral(const Channel& channel,
     if (_integralmodel == nullptr)
         throw std::invalid_argument("GaussianModelIntegral integralmodel can't be null");
 }
-GaussianModelIntegral::~GaussianModelIntegral(){};
+GaussianModelIntegral::~GaussianModelIntegral() {};
 
 double GaussianModelIntegral::get_value() const { return _integralmodel->get_integral(_channel); }
 void GaussianModelIntegral::set_value(double value) {

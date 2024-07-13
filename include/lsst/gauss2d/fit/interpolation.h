@@ -1,7 +1,7 @@
 #ifndef LSST_GAUSS2D_FIT_INTERPOLATION_H
 #define LSST_GAUSS2D_FIT_INTERPOLATION_H
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 enum class InterpType {
     linear,      ///< Linear interpolation.

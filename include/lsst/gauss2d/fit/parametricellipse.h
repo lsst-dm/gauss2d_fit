@@ -8,7 +8,7 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * @brief A Parametric ellipse with two scale sizes.
  *

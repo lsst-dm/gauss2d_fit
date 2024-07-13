@@ -68,7 +68,7 @@ FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
                                     + " != model.get_channels()=" + str_iter_ref<true>(model_keys));
     }
 }
-FractionalIntegralModel::~FractionalIntegralModel(){};
+FractionalIntegralModel::~FractionalIntegralModel() {};
 
 std::shared_ptr<ProperFractionParameterD> FractionalIntegralModel::at(const Channel &channel) {
     return _map.at(channel);
@@ -229,9 +229,7 @@ std::shared_ptr<const FractionalIntegralModel> FractionalIntegralModel::_find_pa
 
 std::shared_ptr<FractionalIntegralModel> FractionalIntegralModel::make(
         std::optional<const Data> data, std::shared_ptr<const IntegralModel> model, bool is_final) {
-    std::shared_ptr<FractionalIntegralModel> ptr
-            = std::make_shared<Shared_enabler>(data, std::move(model), is_final);
-    ;
+    std::shared_ptr<FractionalIntegralModel> ptr = std::make_shared<Shared_enabler>(data, model, is_final);
     _registry.insert({*ptr, *model});
     FractionalIntegralModel::_registry_rev.insert({*model, ptr});
     return ptr;

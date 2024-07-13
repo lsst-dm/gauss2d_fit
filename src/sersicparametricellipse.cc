@@ -16,12 +16,12 @@ SersicParametricEllipse::SersicParametricEllipse(std::shared_ptr<ReffXParameterD
                                                  std::shared_ptr<RhoParameterD> rho)
         : _size_x(size_x == nullptr ? std::make_shared<ReffXParameterD>(0) : std::move(size_x)),
           _size_y(size_y == nullptr ? std::make_shared<ReffYParameterD>(0) : std::move(size_y)),
-          _rho(rho == nullptr ? std::make_shared<RhoParameterD>(0) : std::move(rho)){};
+          _rho(rho == nullptr ? std::make_shared<RhoParameterD>(0) : std::move(rho)) {};
 
 SersicParametricEllipse::SersicParametricEllipse(double size_x, double size_y, double rho)
         : _size_x(std::make_shared<ReffXParameterD>(size_x)),
           _size_y(std::make_shared<ReffYParameterD>(size_y)),
-          _rho(std::make_shared<RhoParameterD>(rho)){};
+          _rho(std::make_shared<RhoParameterD>(rho)) {};
 
 ParamRefs& SersicParametricEllipse::get_parameters(ParamRefs& params, ParamFilter* filter) const {
     return _get_parameters<ParamRefs>(params, filter, *_size_x, *_size_y, *_rho);

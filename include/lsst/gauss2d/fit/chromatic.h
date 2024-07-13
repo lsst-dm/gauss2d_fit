@@ -3,7 +3,7 @@
 
 #include "channel.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 class Chromatic {
 public:

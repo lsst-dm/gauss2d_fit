@@ -515,14 +515,16 @@ private:
         }
         auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, nullptr, coordsys)
                                      : map_extra_weak.lock();
-        auto map_grad_mut = expired ? std::make_shared<Indices>(
-                                    n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
-                                    : map_grad_weak.lock();
+        auto map_grad_mut
+                = expired ? std::make_shared<Indices>(n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D,
+                                                      nullptr, coordsys)
+                          : map_grad_weak.lock();
         auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, nullptr, coordsys)
                                          : factors_extra_weak.lock();
-        auto factors_grad_mut = expired ? std::make_shared<Image>(
-                                        n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
-                                        : factors_grad_weak.lock();
+        auto factors_grad_mut
+                = expired ? std::make_shared<Image>(n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D,
+                                                    nullptr, coordsys)
+                          : factors_grad_weak.lock();
         ;
 
         ExtraParamMap map_extra = {};

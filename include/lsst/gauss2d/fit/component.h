@@ -5,7 +5,7 @@
 #include "integralmodel.h"
 #include "parametricmodel.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * @brief An atomic constituent of a source.
  *

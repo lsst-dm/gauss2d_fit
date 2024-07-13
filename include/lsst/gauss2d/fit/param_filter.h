@@ -9,7 +9,7 @@
 
 namespace g2f = lsst::gauss2d::fit;
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * Options for filtering Parameter instances. Defaults select all.

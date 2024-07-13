@@ -8,7 +8,7 @@
 #include "math.h"
 #include "param_defs.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * Results from the evaluation of a prior probability function.
@@ -23,7 +23,8 @@ public:
 
     double compute_dloglike_dx(const ParamBase& param, bool transformed = true) const;
 
-    std::string repr(bool name_keywords = false,  std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
+    std::string repr(bool name_keywords = false,
+                     std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
     PriorEvaluation(double loglike, std::vector<double> residuals = {}, Jacobians jacobians = {},

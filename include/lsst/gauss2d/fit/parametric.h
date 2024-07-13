@@ -6,7 +6,7 @@
 #include "param_defs.h"
 #include "param_filter.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * A parametric object that can return and filter its Parameter instances.
  */

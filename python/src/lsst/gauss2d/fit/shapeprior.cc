@@ -39,8 +39,8 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_shapeprior(py::module &m) {
-    auto _o = py::class_<g2f::ShapePriorOptions, std::shared_ptr<g2f::ShapePriorOptions>, lsst::gauss2d::Object>(
-                      m, "ShapePriorOptions")
+    auto _o = py::class_<g2f::ShapePriorOptions, std::shared_ptr<g2f::ShapePriorOptions>,
+                         lsst::gauss2d::Object>(m, "ShapePriorOptions")
                       .def(py::init<double, double, double>(),
                            "delta_jacobian"_a = g2f::ShapePriorOptions::delta_jacobian_default,
                            "size_maj_floor"_a = g2f::ShapePriorOptions::size_maj_floor_default,

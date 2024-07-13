@@ -30,7 +30,7 @@ LinearIntegralModel::LinearIntegralModel(const Data* data_in) {
         _map.insert(_data.back());
     }
 }
-LinearIntegralModel::~LinearIntegralModel(){};
+LinearIntegralModel::~LinearIntegralModel() {};
 
 std::vector<std::reference_wrapper<const Channel>> LinearIntegralModel::get_channels() const {
     std::vector<std::reference_wrapper<const Channel>> rval = {};

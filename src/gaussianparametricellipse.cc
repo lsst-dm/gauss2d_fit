@@ -19,11 +19,11 @@ GaussianParametricEllipse::GaussianParametricEllipse(std::shared_ptr<SigmaXParam
                                                      std::shared_ptr<RhoParameterD> rho)
         : _sigma_x(sigma_x == nullptr ? std::make_shared<SigmaXParameterD>(0) : std::move(sigma_x)),
           _sigma_y(sigma_y == nullptr ? std::make_shared<SigmaYParameterD>(0) : std::move(sigma_y)),
-          _rho(rho == nullptr ? std::make_shared<RhoParameterD>(0) : std::move(rho)){};
+          _rho(rho == nullptr ? std::make_shared<RhoParameterD>(0) : std::move(rho)) {};
 GaussianParametricEllipse::GaussianParametricEllipse(double sigma_x, double sigma_y, double rho)
         : _sigma_x(std::make_shared<SigmaXParameterD>(sigma_x)),
           _sigma_y(std::make_shared<SigmaYParameterD>(sigma_y)),
-          _rho(std::make_shared<RhoParameterD>(rho)){};
+          _rho(std::make_shared<RhoParameterD>(rho)) {};
 
 ParamRefs& GaussianParametricEllipse::get_parameters(ParamRefs& params, ParamFilter* filter) const {
     return _get_parameters<ParamRefs>(params, filter, *_sigma_x, *_sigma_y, *_rho);

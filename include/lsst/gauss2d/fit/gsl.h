@@ -9,7 +9,7 @@
 
 #include "interpolation.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 /**
  * See GSL docs for 1D interpolation types, or (as of 2.7):

@@ -9,7 +9,7 @@
 #include "parametric.h"
 #include "parametricmodel.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 /**
  * @brief A Parametric model for the integral of a 2D distribution.
  *
@@ -34,7 +34,8 @@ public:
      *         specified in GaussianEvaluator (L, sigma_x, sigma_y).
      */
     virtual std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(
-            const Channel &channel) const = 0;
+            const Channel &channel) const
+            = 0;
 };
 
 inline bool operator<(const IntegralModel &lhs, const IntegralModel &rhs) { return &lhs < &rhs; }

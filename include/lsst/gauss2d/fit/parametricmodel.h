@@ -7,7 +7,7 @@
 #include "channel.h"
 #include "parametric.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 typedef std::vector<std::array<size_t, lsst::gauss2d::N_EXTRA_MAP>> ExtraParamMap;
 typedef std::array<double, lsst::gauss2d::N_EXTRA_FACTOR> ExtraParamFactorValues;
 typedef std::vector<ExtraParamFactorValues> ExtraParamFactors;
@@ -33,7 +33,8 @@ public:
      * @param offsets A map of index offsets for Parameters that have already been added.
      */
     virtual void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
-                                     const GradParamMap& map_grad, ParameterMap& offsets) const = 0;
+                                     const GradParamMap& map_grad, ParameterMap& offsets) const
+            = 0;
     /**
      * Add extra Parameter gradient factors to an existing vector.
      *
@@ -48,8 +49,8 @@ public:
      * @param map The map to add to.
      * @param offsets A map of index offsets for Parameters that have already been added.
      */
-    virtual void add_grad_param_map(const Channel& channel, GradParamMap& map,
-                                    ParameterMap& offsets) const = 0;
+    virtual void add_grad_param_map(const Channel& channel, GradParamMap& map, ParameterMap& offsets) const
+            = 0;
     /**
      * Add Parameter gradient factors to an existing map.
      *
@@ -65,7 +66,8 @@ public:
      * @param index The index to begin setting factors at.
      */
     virtual void set_extra_param_factors(const Channel& channel, ExtraParamFactors& factors,
-                                         size_t index) const = 0;
+                                         size_t index) const
+            = 0;
     /**
      * Set Parameter gradient factors in an existing map.
      *
@@ -73,8 +75,8 @@ public:
      * @param factors The GradParamFactors to set factors for.
      * @param index The index to begin setting factors at.
      */
-    virtual void set_grad_param_factors(const Channel& channel, GradParamFactors& factors,
-                                        size_t index) const = 0;
+    virtual void set_grad_param_factors(const Channel& channel, GradParamFactors& factors, size_t index) const
+            = 0;
 
     /**
      * Return the vector of Gaussian sub-components controlled by this model.

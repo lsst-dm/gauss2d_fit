@@ -27,7 +27,7 @@ class PsfModel : public ComponentMixture {
 public:
     explicit PsfModel(Components& components);
     ~PsfModel();
-    
+
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
                              ParameterMap& offsets) const override;
     void add_extra_param_factors(const Channel& channel, ExtraParamFactors& factors) const override;

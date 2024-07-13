@@ -102,7 +102,7 @@ public:
         }
     }
 
-    ~SersicModelIntegral(){};
+    ~SersicModelIntegral() {};
 
     std::vector<std::reference_wrapper<const Channel>> get_channels() const override { return {_channel}; }
 
@@ -244,7 +244,7 @@ SersicMixComponentIndexParameterD::SersicMixComponentIndexParameterD(
         : SersicIndexParameterD(value, nullptr, transform, unit, fixed, label),
           _interpolator(std::move(interpolator == nullptr
                                           ? SersicMixComponentIndexParameterD::get_interpolator_default(
-                                                  SERSICMIX_ORDER_DEFAULT)
+                                                    SERSICMIX_ORDER_DEFAULT)
                                           : interpolator)) {
     // TODO: determine if this can be avoided
     set_limits(std::move(limits));
@@ -290,7 +290,7 @@ SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> 
     };
 }
 
-SersicMixComponent::~SersicMixComponent(){};
+SersicMixComponent::~SersicMixComponent() {};
 
 void SersicMixComponent::add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
                                              const GradParamMap& map_grad, ParameterMap& offsets) const {

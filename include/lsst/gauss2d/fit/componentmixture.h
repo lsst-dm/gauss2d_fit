@@ -4,7 +4,7 @@
 #include "component.h"
 #include "parametricmodel.h"
 
-namespace lsst::gauss2d::fit{
+namespace lsst::gauss2d::fit {
 
 // Would consider making this a unique_ptr but pybind11 prevents this:
 // e.g. https://github.com/pybind/pybind11/issues/1132
