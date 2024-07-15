@@ -167,8 +167,9 @@ def test_model_hessian(model):
     for idx in range(2):
         hessians = {is_transformed: model.compute_hessian(transformed=is_transformed, options=options)
                     for is_transformed in (False, True)}
-        # Note that since there is no noise in the image and none of the param values have changed,
-        # the Hessian terms are not all negative - the sign corrections are based on the sign of loglike_grad,
+        # Note that since there is no noise in the image and none of the
+        # param values have changed, the Hessian terms are not all negative -
+        # the sign corrections are based on the sign of loglike_grad,
         # and those are all exactly zero
         assert all(np.isfinite(hessian.data).all() for hessian in hessians.values())
         if idx == 0:

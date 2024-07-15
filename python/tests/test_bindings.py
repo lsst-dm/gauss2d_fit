@@ -9,7 +9,7 @@ def test_bindings():
         if callable(klass):
             try:
                 obj = klass()
-            except ValueError as e:
+            except ValueError:
                 # Likely non-trivial __init__
                 continue
             except TypeError as e:
