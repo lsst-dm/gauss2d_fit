@@ -107,13 +107,13 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
     g2f::ParamFilter filter_free{false, true, true, true};
     params_free = model.get_parameters_new(&filter_free);
     params_free = g2f::nonconsecutive_unique(params_free);
-    CHECK(grads.size() == params_free.size());
+    CHECK_EQ(grads.size(), params_free.size());
 
     model.setup_evaluators(g2f::EvaluatorMode::image);
     auto loglike_img = model.evaluate();
     size_t n_loglike = loglike_img.size();
     for (size_t idx_like = 0; idx_like < n_loglike; ++idx_like) {
-        CHECK(loglike_img[idx_like] == 0);
+        CHECK_EQ(loglike_img[idx_like], 0);
     }
 
     model.setup_evaluators(g2f::EvaluatorMode::loglike);
@@ -134,7 +134,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
             auto outputs = model.get_outputs();
             if (do_jacobian) {
                 auto offsets = model.get_offsets_parameters();
-                CHECK(offsets.size() == params_free.size());
+                CHECK_EQ(offsets.size(), params_free.size());
 
                 auto errors = model.verify_jacobian(findiff_frac, findiff_add, rtol, atol);
                 std::string errormsg = "";
@@ -155,12 +155,12 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                               std::experimental::make_ostream_joiner(ss, "\n"));
                     errormsg = ss.str();
                 }
-                CHECK(errormsg == "");
+                CHECK_EQ(errormsg, "");
             } else {
-                CHECK(outputs.size() == n_channels);
+                CHECK_EQ(outputs.size(), n_channels);
                 for (size_t idx_channel = 1; idx_channel < n_channels; ++idx_channel) {
                     bool values_equal = outputs[0]->get_value(0, 0) == outputs[idx_channel]->get_value(0, 0);
-                    CHECK(values_equal != check_outputs_differ);
+                    CHECK_NE(values_equal, check_outputs_differ);
                 }
             }
         }
@@ -187,8 +187,8 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
         auto output = outputs.at(idx);
         const size_t n_rows = output->get_n_rows();
         const size_t n_cols = output->get_n_cols();
-        CHECK(n_rows == datum.get_n_rows());
-        CHECK(n_cols == datum.get_n_cols());
+        CHECK_EQ(n_rows, datum.get_n_rows());
+        CHECK_EQ(n_cols, datum.get_n_cols());
         for (size_t row = 0; row < n_rows; ++row) {
             for (size_t col = 0; col < n_cols; ++col) {
                 datum.set_value_unchecked(row, col, output->get_value_unchecked(row, col));
@@ -316,7 +316,7 @@ TEST_CASE("Model") {
     auto data = make_data<double>(channels, 11, 13);
     g2f::ParamCRefs params_data{};
     data->get_parameters_const(params_data);
-    CHECK(params_data.size() == 0);
+    CHECK_EQ(params_data.size(), 0);
 
     g2f::PsfModels psfmodels{};
     for (size_t i = 0; i < data->size(); ++i) {
@@ -335,7 +335,7 @@ TEST_CASE("Model") {
         for (size_t idx_comp = 0; idx_comp <= idx_sizefrac_last; ++idx_comp) {
             const auto& sizefrac = sizefracs[idx_comp];
             auto frac = std::make_shared<g2f::ProperFractionParameterD>(sizefrac.second);
-            CHECK(frac->get_value() == sizefrac.second);
+            CHECK_EQ(frac->get_value(), sizefrac.second);
             // Would set this condition if we wanted the other fractions free
             // if(sizefrac.second == 1)
             frac->set_fixed(true);
@@ -344,7 +344,7 @@ TEST_CASE("Model") {
 
             double integral_comp = model_frac->get_integral(g2f::Channel::NONE());
             if (idx_comp == 0) {
-                CHECK(integral_comp == integral_factor * sizefrac.second);
+                CHECK_EQ(integral_comp, integral_factor * sizefrac.second);
             }
 
             integral += integral_comp;
@@ -353,8 +353,8 @@ TEST_CASE("Model") {
                     std::make_shared<g2f::GaussianParametricEllipse>(sizefrac.first, sizefrac.first, 0),
                     nullptr, model_frac);
             auto gaussians = comp->get_gaussians(g2f::Channel::NONE());
-            CHECK(gaussians->size() == 1);
-            CHECK(gaussians->at(0).get_integral_value() == integral_comp);
+            CHECK_EQ(gaussians->size(), 1);
+            CHECK_EQ(gaussians->at(0).get_integral_value(), integral_comp);
 
             g2f::ParamRefs params_comp;
             comp->get_parameters(params_comp);
@@ -362,19 +362,19 @@ TEST_CASE("Model") {
             comps.emplace_back(std::move(comp));
             last = model_frac;
         }
-        CHECK(std::abs(integral - integral_factor) < 1e-12);
+        CHECK_LT(std::abs(integral - integral_factor), 1e-12);
 
         auto psfmodel = std::make_shared<g2f::PsfModel>(comps);
 
         auto params_psf = psfmodel->get_parameters_const_new();
         // 2 comps x (6 gauss + 1 frac) (last constant unity frac omitted)
-        CHECK(params_psf.size() == 14);
+        CHECK_EQ(params_psf.size(), 14);
         for (const auto& param : params_psf) {
-            CHECK(param.get().get_fixed() == true);
+            CHECK_EQ(param.get().get_fixed(), true);
         }
 
         const auto gaussians = psfmodel->get_gaussians();
-        CHECK(gaussians->size() == 2);
+        CHECK_EQ(gaussians->size(), 2);
 
         size_t g = 0;
         for (const auto& gauss : *gaussians) {
@@ -458,8 +458,8 @@ TEST_CASE("Model") {
     }
     auto params_src = sources[0]->get_parameters_const_new();
     auto model = std::make_shared<Model<double>>(data, psfmodels, sources, priors);
-    CHECK(model->str() != "");
-    CHECK(model->get_priors().size() == priors.size());
+    CHECK_NE(model->str(), "");
+    CHECK_EQ(model->get_priors().size(), priors.size());
 
     auto params = model->get_parameters_new();
     // 2 sources x (2 comps x (3 integral, 2 centroid, 3 ellipse)) = 32
@@ -468,30 +468,32 @@ TEST_CASE("Model") {
     // PSF: 3 observations x (2 comp x (1 integral, n frac, 2 centroid, 3 ellipse)) = 45
     // (each comp after second has an extra frac per channel)
     const size_t n_params_psf = 42;
-    CHECK(params.size() == (n_params_src + n_params_psf));
+    CHECK_EQ(params.size(), (n_params_src + n_params_psf));
 
     // PSF: 3 observations x (1 integral + 1 frac + 2 comp x (2 centroid, 3 ellipse)) = 36
     std::set<g2f::ParamBaseCRef> paramset(params.cbegin(), params.cend());
     const size_t n_params_psf_uniq = 36;
-    CHECK(paramset.size() == n_params_src + n_params_psf_uniq);
+    CHECK_EQ(paramset.size(), n_params_src + n_params_psf_uniq);
 
     g2f::ParamFilter filter_free{false, true, true, true};
     params = model->get_parameters_new(&filter_free);
     params = g2f::nonconsecutive_unique(params);
-    CHECK(params.size() == n_params_src);
+    CHECK_EQ(params.size(), n_params_src);
 
     const auto& channel = *channels[0];
 
-    CHECK(model->get_n_gaussians(channel) == 10);
+    CHECK_EQ(model->get_n_gaussians(channel), 10);
     auto gaussians = model->get_gaussians(channel);
     const size_t n_gauss_src = gaussians->size();
     // 2 comps x 1 (gauss) + 2 comps x 4 (sersic)
-    CHECK(n_gauss_src == 10);
+    CHECK_EQ(n_gauss_src, 10);
 
     const auto psfcomps = model->get_psfmodels().at(0)->get_gaussians();
     const size_t n_gauss_psf = psfcomps->size();
-    CHECK(n_gauss_psf == 2);
-    for (size_t p = 0; p < n_gauss_psf; ++p) CHECK(psfcomps->at(p).get_integral_value() > 0);
+    CHECK_EQ(n_gauss_psf, 2);
+    for (size_t p = 0; p < n_gauss_psf; ++p) {
+        CHECK_GT(psfcomps->at(p).get_integral_value(), 0);
+    }
 
     auto map_extra = std::make_shared<g2f::ExtraParamMap>();
     auto map_grad = std::make_shared<g2f::GradParamMap>();
@@ -526,14 +528,14 @@ TEST_CASE("Model") {
     auto n_free = params_src_free.size();
     // 2 sources x (2 comps x (1 integral, 2 centroid, 3 ellipse)) = 24
     // + 1 source x (2 comps x 1 sersicindex) = 26
-    CHECK(n_free == 24 + 2 * free_sersicindex);
+    CHECK_EQ(n_free, 24 + 2 * free_sersicindex);
 
-    CHECK(offsets.size() == n_free);
+    CHECK_EQ(offsets.size(), n_free);
 
-    CHECK(map_extra->size() == n_gauss);
-    CHECK(map_grad->size() == n_gauss);
-    CHECK(factors_extra->size() == n_gauss);
-    CHECK(factors_grad->size() == n_gauss);
+    CHECK_EQ(map_extra->size(), n_gauss);
+    CHECK_EQ(map_grad->size(), n_gauss);
+    CHECK_EQ(factors_extra->size(), n_gauss);
+    CHECK_EQ(factors_grad->size(), n_gauss);
 
     /*
      * Sersic indices with linear interpolators cannot pass loglike_grad
@@ -648,7 +650,7 @@ TEST_CASE("Model PSF") {
     model->get_parameters(params_free, &filter);
     params_free = g2f::nonconsecutive_unique(params_free);
     // 2 cens + 1 fluxfrac + 2*(2sigmas + rho) = 9
-    CHECK(params_free.size() == 9);
+    CHECK_EQ(params_free.size(), 9);
     verify_model(*model, channels, params_free, true, false, true);
 }
 
