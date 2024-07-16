@@ -1,13 +1,12 @@
-#include "channel.h"
-
 #include <functional>
+#include <iostream>
 #include <string>
 
-#include "util.h"
+#include "lsst/gauss2d/type_name.h"
 
-#include <iostream>
+#include "lsst/gauss2d/fit/channel.h"
 
-namespace gauss2d::fit {
+namespace lsst::gauss2d::fit {
 
 /*
 The registry serves several purposes:
@@ -25,6 +24,23 @@ struct Channel::Shared_enabler : public Channel {
     template <typename... Args>
     Shared_enabler(Args &&...args) : Channel(std::forward<Args>(args)...) {}
 };
+
+Channel::Channel(std::string name_) : name(name_) {
+    static bool none_made = false;
+    if (name_ == NAME_NONE) {
+        if (none_made) {
+            throw std::invalid_argument("Channel('None') always exists and cannot be re-made");
+        } else {
+            none_made = true;
+        }
+    } else {
+        auto found = _registry.find(name);
+        if (found != _registry.end()) {
+            throw std::invalid_argument("Channel(name=" + name + ") already exists as "
+                                        + found->second->str());
+        }
+    }
+}
 
 const bool Channel::operator<(const Channel &c) const { return name < c.name; }
 
@@ -80,11 +96,12 @@ std::shared_ptr<Channel> Channel::make(std::string name) {
 
 const std::shared_ptr<const Channel> Channel::make_const(std::string name) { return make(name); }
 
-std::string Channel::repr(bool name_keywords) const {
-    return std::string("Channel(") + (name_keywords ? "name=" : "") + name + ")";
+std::string Channel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<Channel>(false, namespace_separator) + "(" + (name_keywords ? "name=" : "") + name
+           + ")";
 }
 
-std::string Channel::str() const { return "Channel(name=" + name + ")"; }
+std::string Channel::str() const { return type_name_str<Channel>(true) + "(name=" + name + ")"; }
 
 const std::shared_ptr<const Channel> Channel::NONE_PTR() {
     static const std::shared_ptr<const Channel> _NONE = Channel::make(Channel::NAME_NONE);
@@ -93,21 +110,4 @@ const std::shared_ptr<const Channel> Channel::NONE_PTR() {
 
 const Channel &Channel::NONE() { return *NONE_PTR(); }
 
-Channel::Channel(std::string name_) : name(name_) {
-    static bool none_made = false;
-    if (name_ == NAME_NONE) {
-        if (none_made) {
-            throw std::invalid_argument("Channel('None') always exists and cannot be re-made");
-        } else {
-            none_made = true;
-        }
-    } else {
-        auto found = _registry.find(name);
-        if (found != _registry.end()) {
-            throw std::invalid_argument("Channel(name=" + name + ") already exists as "
-                                        + found->second->str());
-        }
-    }
-}
-
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

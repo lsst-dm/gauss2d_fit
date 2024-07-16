@@ -1,34 +1,46 @@
-#include "sersicmixcomponent.h"
-
 #include <stdexcept>
 #include <string>
 
-#include "gauss2d/centroid.h"
-#include "gauss2d/ellipse.h"
-#include "gauss2d/evaluate.h"
-#include "gauss2d/gaussian.h"
+#include "lsst/gauss2d/centroid.h"
+#include "lsst/gauss2d/ellipse.h"
+#include "lsst/gauss2d/evaluate.h"
+#include "lsst/gauss2d/gaussian.h"
+#include "lsst/gauss2d/type_name.h"
 
-#include "channel.h"
-#include "component.h"
-#include "gaussianmodelintegral.h"
-#include "integralmodel.h"
-#include "linearsersicmixinterpolator.h"
-#include "param_defs.h"
-#include "param_filter.h"
-#include "parametricellipse.h"
-#include "sersicmix.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/gaussianmodelintegral.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/parametricellipse.h"
+#include "lsst/gauss2d/fit/sersicmix.h"
+#include "lsst/gauss2d/fit/sersicmixcomponent.h"
 
-namespace gauss2d::fit {
+namespace lsst::gauss2d::fit {
 
 class SersicEllipseData : public EllipseData, public QuasiEllipse {
-private:
-    const std::shared_ptr<const ReffXParameterD> _size_x;
-    const std::shared_ptr<const ReffYParameterD> _size_y;
-    const std::shared_ptr<const RhoParameterD> _rho;
-    const std::shared_ptr<const SersicMixComponentIndexParameterD> _sersicindex;
-    unsigned short _index;
-
 public:
+    SersicEllipseData(const std::shared_ptr<const ReffXParameterD> size_x,
+                      const std::shared_ptr<const ReffYParameterD> size_y,
+                      const std::shared_ptr<const RhoParameterD> rho,
+                      const std::shared_ptr<const SersicMixComponentIndexParameterD> sersicindex,
+                      unsigned short index)
+            : _size_x(std::move(size_x)),
+              _size_y(std::move(size_y)),
+              _rho(std::move(rho)),
+              _sersicindex(std::move(sersicindex)),
+              _index(index) {
+        if ((_size_x == nullptr) || (_size_y == nullptr) || (_rho == nullptr) || (_sersicindex == nullptr)) {
+            throw std::invalid_argument("SersicEllipseData args must not be nullptr");
+        }
+        if (!(_index < _sersicindex->get_order())) {
+            throw std::invalid_argument("index=" + std::to_string(_index) + "!< sersicindex->get_order()="
+                                        + std::to_string(_sersicindex->get_order()));
+        }
+    }
+
     double get_sizeratio() const { return _sersicindex->get_sizeratio(_index); }
 
     double get_sigma_x() const override { return get_sizeratio() * _size_x->get_value(); }
@@ -55,44 +67,43 @@ public:
         throw std::runtime_error("Can't set on SersicEllipseData");
     }
 
-    std::string repr(bool name_keywords) const override {
-        return std::string("SersicEllipseData(") + (name_keywords ? "size_x=" : "")
-               + _size_x->repr(name_keywords) + ", " + (name_keywords ? "size_y=" : "")
-               + _size_y->repr(name_keywords) + ", " + (name_keywords ? "rho=" : "")
-               + _rho->repr(name_keywords) + ")";
+    std::string repr(bool name_keywords, std::string_view namespace_separator) const override {
+        return type_name_str<SersicEllipseData>(false, namespace_separator) + "("
+               + (name_keywords ? "size_x=" : "") + _size_x->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "size_y=" : "") + _size_y->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "rho=" : "") + _rho->repr(name_keywords, namespace_separator) + ")";
     }
 
     std::string str() const override {
-        return "SersicEllipseData(size_x=" + _size_x->str() + ", size_y=" + _size_y->str()
-               + ", rho=" + _rho->str() + +")";
+        return type_name_str<SersicEllipseData>(true) + "(size_x=" + _size_x->str()
+               + ", size_y=" + _size_y->str() + ", rho=" + _rho->str() + +")";
     }
 
-    SersicEllipseData(const std::shared_ptr<const ReffXParameterD> size_x,
-                      const std::shared_ptr<const ReffYParameterD> size_y,
-                      const std::shared_ptr<const RhoParameterD> rho,
-                      const std::shared_ptr<const SersicMixComponentIndexParameterD> sersicindex,
-                      unsigned short index)
-            : _size_x(std::move(size_x)),
-              _size_y(std::move(size_y)),
-              _rho(std::move(rho)),
+private:
+    const std::shared_ptr<const ReffXParameterD> _size_x;
+    const std::shared_ptr<const ReffYParameterD> _size_y;
+    const std::shared_ptr<const RhoParameterD> _rho;
+    const std::shared_ptr<const SersicMixComponentIndexParameterD> _sersicindex;
+    unsigned short _index;
+};
+
+class SersicModelIntegral : public GaussianModelIntegral, public IntegralModel {
+public:
+    SersicModelIntegral(const Channel& channel, const std::shared_ptr<const IntegralModel> integralmodel,
+                        const std::shared_ptr<const SersicMixComponentIndexParameterD> sersicindex,
+                        unsigned short index)
+            : GaussianModelIntegral(channel, integralmodel),
               _sersicindex(std::move(sersicindex)),
               _index(index) {
-        if ((_size_x == nullptr) || (_size_y == nullptr) || (_rho == nullptr) || (_sersicindex == nullptr)) {
-            throw std::invalid_argument("SersicEllipseData args must not be nullptr");
-        }
+        if (_sersicindex == nullptr) throw std::invalid_argument("sersicindex must not be null");
         if (!(_index < _sersicindex->get_order())) {
             throw std::invalid_argument("index=" + std::to_string(_index) + "!< sersicindex->get_order()="
                                         + std::to_string(_sersicindex->get_order()));
         }
     }
-};
 
-class SersicModelIntegral : public GaussianModelIntegral, public IntegralModel {
-private:
-    const std::shared_ptr<const SersicMixComponentIndexParameterD> _sersicindex;
-    unsigned short _index;
+    ~SersicModelIntegral() {};
 
-public:
     std::vector<std::reference_wrapper<const Channel>> get_channels() const override { return {_channel}; }
 
     double get_integral(const Channel& channel) const override {
@@ -120,64 +131,56 @@ public:
     double get_value() const override { return get_integralratio() * _integralmodel->get_integral(_channel); }
     void set_value(double value) override { throw std::runtime_error("Can't set on SersicModelIntegral"); }
 
-    std::string repr(bool name_keywords) const override {
-        return std::string("SersicModelIntegral(") + (name_keywords ? "channel=" : "")
-               + _channel.repr(name_keywords) + ", " + (name_keywords ? "integralmodel=" : "")
-               + _integralmodel->repr(name_keywords) + ", " + (name_keywords ? "sersicindex=" : "")
-               + _sersicindex->repr(name_keywords) + ", " + (name_keywords ? "index=" : "")
-               + std::to_string(_index) + ")";
+    std::string repr(bool name_keywords, std::string_view namespace_separator) const override {
+        return type_name_str<SersicModelIntegral>(false, namespace_separator) + ")"
+               + (name_keywords ? "channel=" : "") + _channel.repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "integralmodel=" : "")
+               + _integralmodel->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "sersicindex=" : "")
+               + _sersicindex->repr(name_keywords, namespace_separator) + ", "
+               + (name_keywords ? "index=" : "") + std::to_string(_index) + ")";
     }
 
     std::string str() const override {
-        return "SersicModelIntegral(channel=" + _channel.str() + ", integralmodel=" + _integralmodel->str()
-               + ", sersicindex=" + _sersicindex->str() + ", index=" + std::to_string(_index) + ")";
+        return type_name_str<SersicModelIntegral>(true) + "(channel=" + _channel.str()
+               + ", integralmodel=" + _integralmodel->str() + ", sersicindex=" + _sersicindex->str()
+               + ", index=" + std::to_string(_index) + ")";
     }
 
-    SersicModelIntegral(const Channel& channel, const std::shared_ptr<const IntegralModel> integralmodel,
-                        const std::shared_ptr<const SersicMixComponentIndexParameterD> sersicindex,
-                        unsigned short index)
-            : GaussianModelIntegral(channel, integralmodel),
-              _sersicindex(std::move(sersicindex)),
-              _index(index) {
-        if (_sersicindex == nullptr) throw std::invalid_argument("sersicindex must not be null");
-        if (!(_index < _sersicindex->get_order())) {
-            throw std::invalid_argument("index=" + std::to_string(_index) + "!< sersicindex->get_order()="
-                                        + std::to_string(_sersicindex->get_order()));
-        }
-    }
-
-    ~SersicModelIntegral(){};
+private:
+    const std::shared_ptr<const SersicMixComponentIndexParameterD> _sersicindex;
+    unsigned short _index;
 };
 
 // This is the gauss2d convention; see evaluator.h
 static const std::array<size_t, N_PARAMS_GAUSS2D> IDX_ORDER = {0, 1, 3, 4, 5, 2};
 
-// TODO: This could derive from gauss2d::Gaussian, but would that serve any purpose?
+// TODO: This could derive from lsst::gauss2d::Gaussian, but would that serve any purpose?
 // TODO: This was intended to derive from QuasiEllipticalComponent, but there also
 // seems to be no need to implement all of its functions
 class SersicMixComponent::SersicMixGaussianComponent {
-private:
-    std::shared_ptr<SersicEllipseData> _ellipsedata;
-    std::shared_ptr<CentroidParameters> _centroid;
-    std::shared_ptr<SersicModelIntegral> _integralmodel;
-
 public:
-    const SersicEllipseData& get_ellipse() const { return *_ellipsedata; }
-    const SersicModelIntegral& get_integralmodel() const { return *_integralmodel; }
-
-    std::unique_ptr<const gauss2d::Gaussians> get_gaussians(const Channel& channel) const {
-        gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
-                std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
-                std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
-        return std::make_unique<const gauss2d::Gaussians>(gaussians);
-    }
-
     SersicMixGaussianComponent(std::shared_ptr<SersicEllipseData> ellipsedata = nullptr,
                                std::shared_ptr<CentroidParameters> centroid = nullptr,
                                std::shared_ptr<SersicModelIntegral> integralmodel = nullptr)
             : _ellipsedata(std::move(ellipsedata)),
               _centroid(std::move(centroid)),
               _integralmodel(std::move(integralmodel)) {}
+
+    const SersicEllipseData& get_ellipse() const { return *_ellipsedata; }
+    const SersicModelIntegral& get_integralmodel() const { return *_integralmodel; }
+
+    std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const {
+        lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
+                std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
+                std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
+        return std::make_unique<const lsst::gauss2d::Gaussians>(gaussians);
+    }
+
+private:
+    std::shared_ptr<SersicEllipseData> _ellipsedata;
+    std::shared_ptr<CentroidParameters> _centroid;
+    std::shared_ptr<SersicModelIntegral> _integralmodel;
 };
 
 void SersicMixComponentIndexParameterD::_set_ratios(double sersicindex) {
@@ -241,7 +244,7 @@ SersicMixComponentIndexParameterD::SersicMixComponentIndexParameterD(
         : SersicIndexParameterD(value, nullptr, transform, unit, fixed, label),
           _interpolator(std::move(interpolator == nullptr
                                           ? SersicMixComponentIndexParameterD::get_interpolator_default(
-                                                  SERSICMIX_ORDER_DEFAULT)
+                                                    SERSICMIX_ORDER_DEFAULT)
                                           : interpolator)) {
     // TODO: determine if this can be avoided
     set_limits(std::move(limits));
@@ -263,6 +266,31 @@ void SersicMixComponentIndexParameterD::set_value_transformed(double value) {
     SersicIndexParameterD::set_value_transformed(value);
     _set_ratios(get_value());
 }
+
+SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse,
+                                       std::shared_ptr<CentroidParameters> centroid,
+                                       std::shared_ptr<IntegralModel> integralmodel,
+                                       std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex)
+        : SersicParametricEllipseHolder(std::move(ellipse)),
+          EllipticalComponent(_ellipsedata, centroid, integralmodel),
+          _sersicindex(sersicindex != nullptr ? std::move(sersicindex)
+                                              : std::make_shared<SersicMixComponentIndexParameterD>()) {
+    for (const Channel& channel : _integralmodel->get_channels()) {
+        auto& gaussians = _gaussians[channel];
+        gaussians.reserve(_sersicindex->get_order());
+        for (size_t index = 0; index < _sersicindex->get_order(); ++index) {
+            auto ell = std::make_shared<SersicEllipseData>(
+                    _ellipsedata->get_reff_x_param_ptr(), _ellipsedata->get_reff_y_param_ptr(),
+                    _ellipsedata->get_rho_param_ptr(), _sersicindex, index);
+            auto integral
+                    = std::make_shared<SersicModelIntegral>(channel, _integralmodel, _sersicindex, index);
+            gaussians.emplace_back(
+                    std::make_unique<SersicMixGaussianComponent>(ell, this->_centroid, integral));
+        }
+    };
+}
+
+SersicMixComponent::~SersicMixComponent() {};
 
 void SersicMixComponent::add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
                                              const GradParamMap& map_grad, ParameterMap& offsets) const {
@@ -350,15 +378,16 @@ void SersicMixComponent::add_grad_param_factors(const Channel& channel, GradPara
     }
 }
 
-std::unique_ptr<const gauss2d::Gaussians> SersicMixComponent::get_gaussians(const Channel& channel) const {
-    std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
+std::unique_ptr<const lsst::gauss2d::Gaussians> SersicMixComponent::get_gaussians(
+        const Channel& channel) const {
+    std::vector<std::optional<const lsst::gauss2d::Gaussians::Data>> in;
     // TODO: This isn't sufficient; need to implement get_n_components
     const auto& components = _gaussians.at(channel);
     in.reserve(components.size());
     for (auto& component : components) {
         in.push_back(component->get_gaussians(channel)->get_data());
     }
-    return std::make_unique<gauss2d::Gaussians>(in);
+    return std::make_unique<lsst::gauss2d::Gaussians>(in);
 }
 
 size_t SersicMixComponent::get_n_gaussians(const Channel& channel) const {
@@ -452,38 +481,16 @@ void SersicMixComponent::set_grad_param_factors(const Channel& channel, GradPara
 
 void SersicMixComponent::set_sersicindex(double value) { this->_sersicindex->set_value(value); }
 
-std::string SersicMixComponent::repr(bool name_keywords) const {
-    return "SersicMixComponent(" + EllipticalComponent::repr(name_keywords) + ", "
-           + (name_keywords ? "sersicindex=" : "") + _sersicindex->repr(name_keywords) + ")";
+std::string SersicMixComponent::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<SersicMixComponent>(false, namespace_separator) + "("
+           + EllipticalComponent::repr(name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "sersicindex=" : "") + _sersicindex->repr(name_keywords, namespace_separator)
+           + ")";
 }
 
 std::string SersicMixComponent::str() const {
-    return "SersicMixComponent(" + EllipticalComponent::str() + ", sersicindex=" + _sersicindex->str() + ")";
+    return type_name_str<SersicMixComponent>(true) + "(" + EllipticalComponent::str()
+           + ", sersicindex=" + _sersicindex->str() + ")";
 }
 
-SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse,
-                                       std::shared_ptr<CentroidParameters> centroid,
-                                       std::shared_ptr<IntegralModel> integralmodel,
-                                       std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex)
-        : SersicParametricEllipseHolder(std::move(ellipse)),
-          EllipticalComponent(_ellipsedata, centroid, integralmodel),
-          _sersicindex(sersicindex != nullptr ? std::move(sersicindex)
-                                              : std::make_shared<SersicMixComponentIndexParameterD>()) {
-    for (const Channel& channel : _integralmodel->get_channels()) {
-        auto& gaussians = _gaussians[channel];
-        gaussians.reserve(_sersicindex->get_order());
-        for (size_t index = 0; index < _sersicindex->get_order(); ++index) {
-            auto ell = std::make_shared<SersicEllipseData>(
-                    _ellipsedata->get_reff_x_param_ptr(), _ellipsedata->get_reff_y_param_ptr(),
-                    _ellipsedata->get_rho_param_ptr(), _sersicindex, index);
-            auto integral
-                    = std::make_shared<SersicModelIntegral>(channel, _integralmodel, _sersicindex, index);
-            gaussians.emplace_back(
-                    std::make_unique<SersicMixGaussianComponent>(ell, this->_centroid, integral));
-        }
-    };
-}
-
-SersicMixComponent::~SersicMixComponent(){};
-
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

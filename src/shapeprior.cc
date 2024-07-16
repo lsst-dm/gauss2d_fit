@@ -1,5 +1,5 @@
 /*
- * This file is part of gauss2dfit.
+ * This file is part of gauss2d_fit.
  *
  * Developed for the LSST Data Management System.
  * This product includes software developed by the LSST Project
@@ -21,16 +21,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "shapeprior.h"
-
-#include "param_defs.h"
-
-#include "gauss2d/ellipse.h"
-
 #include <cmath>
 #include <string>
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/ellipse.h"
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
+
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/shapeprior.h"
+
+namespace lsst::gauss2d::fit {
 ShapePriorOptions::ShapePriorOptions(double delta_jacobian, double size_maj_floor, double axrat_floor)
         : _delta_jacobian(delta_jacobian), _size_maj_floor(size_maj_floor), _axrat_floor(axrat_floor) {
     this->check_delta_jacobian(_delta_jacobian, true);
@@ -92,22 +93,41 @@ void ShapePriorOptions::set_axrat_floor(double axrat_floor) {
     this->_axrat_floor = axrat_floor;
 }
 
-std::string ShapePriorOptions::repr(bool name_keywords) const {
-    return std::string("ShapePriorOptions(") + (name_keywords ? "delta_jacobian=" : "")
-           + std::to_string(_delta_jacobian) + ", " + (name_keywords ? "size_maj_floor=" : "")
-           + std::to_string(_size_maj_floor) + ", " + (name_keywords ? "axrat_floor=" : "")
-           + std::to_string(_axrat_floor) + ")";
+std::string ShapePriorOptions::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<ShapePriorOptions>(false, namespace_separator) + "("
+           + (name_keywords ? "delta_jacobian=" : "") + to_string_float(_delta_jacobian) + ", "
+           + (name_keywords ? "size_maj_floor=" : "") + to_string_float(_size_maj_floor) + ", "
+           + (name_keywords ? "axrat_floor=" : "") + to_string_float(_axrat_floor) + ")";
 }
 
 std::string ShapePriorOptions::str() const {
-    return "ShapePriorOptions(delta_jacobian=" + std::to_string(_delta_jacobian) + ", size_maj_floor="
-           + std::to_string(_size_maj_floor) + ", axrat_floor=" + std::to_string(_axrat_floor) + ")";
+    return type_name_str<ShapePriorOptions>(true) + "(delta_jacobian=" + to_string_float(_delta_jacobian)
+           + ", size_maj_floor=" + to_string_float(_size_maj_floor)
+           + ", axrat_floor=" + to_string_float(_axrat_floor) + ")";
 }
 
+ShapePrior::ShapePrior(std::shared_ptr<const ParametricEllipse> ellipse,
+                       std::shared_ptr<ParametricGaussian1D> prior_size,
+                       std::shared_ptr<ParametricGaussian1D> prior_axrat,
+                       std::shared_ptr<ShapePriorOptions> options)
+        : _ellipse(std::move(ellipse)),
+          _prior_size(std::move(prior_size)),
+          _prior_axrat(std::move(prior_axrat)),
+          _options(std::move((options == nullptr) ? std::make_shared<ShapePriorOptions>() : options)) {
+    if (_ellipse == nullptr) throw std::invalid_argument("ellipse param must not be null");
+    double loglike = this->evaluate().loglike;
+    if (!std::isfinite(loglike)) {
+        throw std::invalid_argument(this->str() + " has non-finite loglike=" + std::to_string(loglike)
+                                    + " on init");
+    }
+}
+
+ShapePrior::~ShapePrior() {}
+
 PriorEvaluation ShapePrior::evaluate(bool calc_jacobians, bool normalize) const {
-    const auto ellipse = gauss2d::Ellipse(this->_ellipse->get_size_x(), this->_ellipse->get_size_y(),
-                                          this->_ellipse->get_rho());
-    const auto ellipse_major = gauss2d::EllipseMajor(ellipse);
+    const auto ellipse = lsst::gauss2d::Ellipse(this->_ellipse->get_size_x(), this->_ellipse->get_size_y(),
+                                                this->_ellipse->get_rho());
+    const auto ellipse_major = lsst::gauss2d::EllipseMajor(ellipse);
 
     double size_maj = ellipse_major.get_r_major();
     double axrat = size_maj == 0 ? 0 : ellipse_major.get_axrat();
@@ -217,34 +237,19 @@ void ShapePrior::set_prior_axrat(std::shared_ptr<ParametricGaussian1D> prior_axr
 
 size_t ShapePrior::size() const { return (this->_prior_size != nullptr) + (this->_prior_axrat != nullptr); };
 
-std::string ShapePrior::repr(bool name_keywords) const {
-    return std::string("ShapePrior(") + (name_keywords ? "ellipse=" : "") + _ellipse->repr(name_keywords)
-           + ", " + (name_keywords ? "prior_size=" : "") + repr_ptr(_prior_size.get(), name_keywords) + ", "
-           + (name_keywords ? "prior_axrat=" : "") + repr_ptr(_prior_axrat.get(), name_keywords) + ", "
-           + (name_keywords ? "options=" : "") + _options->repr(name_keywords) + ")";
+std::string ShapePrior::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<ShapePrior>(false, namespace_separator) + "(" + (name_keywords ? "ellipse=" : "")
+           + _ellipse->repr(name_keywords, namespace_separator) + ", " + (name_keywords ? "prior_size=" : "")
+           + repr_ptr(_prior_size.get(), name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "prior_axrat=" : "")
+           + repr_ptr(_prior_axrat.get(), name_keywords, namespace_separator) + ", "
+           + (name_keywords ? "options=" : "") + _options->repr(name_keywords, namespace_separator) + ")";
 }
 
 std::string ShapePrior::str() const {
-    return "ShapePrior(ellipse=" + _ellipse->str() + ", prior_size=" + str_ptr(_prior_size.get())
-           + ", prior_axrat=" + str_ptr(_prior_axrat.get()) + ", options=" + _options->str() + ")";
+    return type_name_str<ShapePrior>(true) + "(ellipse=" + _ellipse->str()
+           + ", prior_size=" + str_ptr(_prior_size.get()) + ", prior_axrat=" + str_ptr(_prior_axrat.get())
+           + ", options=" + _options->str() + ")";
 }
 
-ShapePrior::ShapePrior(std::shared_ptr<const ParametricEllipse> ellipse,
-                       std::shared_ptr<ParametricGaussian1D> prior_size,
-                       std::shared_ptr<ParametricGaussian1D> prior_axrat,
-                       std::shared_ptr<ShapePriorOptions> options)
-        : _ellipse(std::move(ellipse)),
-          _prior_size(std::move(prior_size)),
-          _prior_axrat(std::move(prior_axrat)),
-          _options(std::move((options == nullptr) ? std::make_shared<ShapePriorOptions>() : options)) {
-    if (_ellipse == nullptr) throw std::invalid_argument("ellipse param must not be null");
-    double loglike = this->evaluate().loglike;
-    if (!std::isfinite(loglike)) {
-        throw std::invalid_argument(this->str() + " has non-finite loglike=" + std::to_string(loglike)
-                                    + " on init");
-    }
-}
-
-ShapePrior::~ShapePrior() {}
-
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

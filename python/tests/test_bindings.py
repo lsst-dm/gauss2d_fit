@@ -1,4 +1,4 @@
-import gauss2d.fit as g2f
+import lsst.gauss2d.fit as g2f
 
 
 def test_bindings():
@@ -9,7 +9,7 @@ def test_bindings():
         if callable(klass):
             try:
                 obj = klass()
-            except ValueError as e:
+            except ValueError:
                 # Likely non-trivial __init__
                 continue
             except TypeError as e:

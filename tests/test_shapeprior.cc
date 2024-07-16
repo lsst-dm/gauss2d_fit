@@ -5,33 +5,33 @@
 #include <cmath>
 #include <memory>
 
-#include "gaussianparametricellipse.h"
-#include "parameters.h"
-#include "parametricgaussian1d.h"
-#include "shapeprior.h"
-#include "transforms.h"
-#include "util.h"
+#include "lsst/gauss2d/fit/gaussianparametricellipse.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/parametricgaussian1d.h"
+#include "lsst/gauss2d/fit/shapeprior.h"
+#include "lsst/gauss2d/fit/transforms.h"
+#include "lsst/gauss2d/fit/util.h"
 
-namespace g2 = gauss2d;
-namespace g2f = gauss2d::fit;
+namespace g2d = lsst::gauss2d;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("ShapePrior") {
     CHECK_THROWS_AS(g2f::ShapePrior(nullptr), std::invalid_argument);
     auto options = std::make_shared<g2f::ShapePriorOptions>();
-    CHECK(options->repr().size() > 0);
-    CHECK(options->repr(true).size() > 0);
-    CHECK(options->str().size() > 0);
+    CHECK_GT(options->repr().size(), 0);
+    CHECK_GT(options->repr(true).size(), 0);
+    CHECK_GT(options->str().size(), 0);
     double mean_size = 16.6;
     double stddev_size = 3.4;
     double mean_axrat = 0.5;
     double stddev_axrat = 0.1;
 
     auto ellipse = std::make_shared<g2f::GaussianParametricEllipse>();
-    auto ellipse_mean = std::make_shared<g2::Ellipse>(g2::EllipseMajor(mean_size, mean_axrat, 0));
+    auto ellipse_mean = std::make_shared<g2d::Ellipse>(g2d::EllipseMajor(mean_size, mean_axrat, 0));
     ellipse->set_xyr(ellipse_mean->get_xyr());
 
-    CHECK(g2f::ShapePrior(ellipse).str().size() > 0);
-    CHECK(g2f::ShapePrior(ellipse, nullptr, nullptr, options).repr().size() > 0);
+    CHECK_GT(g2f::ShapePrior(ellipse).str().size(), 0);
+    CHECK_GT(g2f::ShapePrior(ellipse, nullptr, nullptr, options).repr().size(), 0);
 
     auto limits_axrat_logit = std::make_shared<parameters::Limits<double>>(-1e-10, 1 + 1e-10);
     auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
@@ -46,13 +46,13 @@ TEST_CASE("ShapePrior") {
 
     auto prior_size = g2f::ShapePrior(ellipse, prior_size_params, nullptr, options);
     double loglike_size = prior_size.evaluate().loglike;
-    CHECK(loglike_size != 0);
+    CHECK_NE(loglike_size, 0);
 
     double delta_param = 1e-6;
     double mean_size_trans = prior_size_params->get_mean_parameter().get_value_transformed();
     prior_size_params->get_mean_parameter().set_value_transformed(mean_size_trans + delta_param / 2.);
     double loglike_plus = prior_size.evaluate().loglike;
-    CHECK(loglike_plus < loglike_size);
+    CHECK_LT(loglike_plus, loglike_size);
     prior_size_params->get_mean_parameter().set_value_transformed(mean_size_trans - delta_param / 2.);
     double loglike_minus = prior_size.evaluate().loglike;
     // TODO: Rethink this for product size, if/when implemented
@@ -62,13 +62,13 @@ TEST_CASE("ShapePrior") {
 
     auto prior_axrat = g2f::ShapePrior(ellipse, nullptr, prior_axrat_params, options);
     double loglike_axrat = prior_axrat.evaluate().loglike;
-    CHECK(loglike_axrat != 0);
+    CHECK_NE(loglike_axrat, 0);
 
     delta_param = 1e-4;
     double mean_axrat_trans = prior_axrat_params->get_mean_parameter().get_value_transformed();
     prior_axrat_params->get_mean_parameter().set_value_transformed(mean_axrat_trans + delta_param / 2.);
     loglike_plus = prior_axrat.evaluate().loglike;
-    CHECK(loglike_plus < loglike_axrat);
+    CHECK_LT(loglike_plus, loglike_axrat);
     prior_axrat_params->get_mean_parameter().set_value_transformed(mean_axrat_trans - delta_param / 2.);
     loglike_minus = prior_axrat.evaluate().loglike;
     auto isclose_axrat = g2f::isclose(loglike_plus, loglike_minus, 1e-5, 1e-7);
@@ -77,12 +77,12 @@ TEST_CASE("ShapePrior") {
 
     auto prior = g2f::ShapePrior(ellipse, prior_size_params, prior_axrat_params, options);
 
-    CHECK(g2f::isclose(prior.evaluate().loglike, loglike_axrat + loglike_size, 1e-8, 1e-10).isclose);
+    CHECK_EQ(g2f::isclose(prior.evaluate().loglike, loglike_axrat + loglike_size, 1e-8, 1e-10).isclose, true);
     auto terms = prior.get_loglike_const_terms();
-    CHECK(terms.size() == 2);
-    CHECK(prior.repr().size() > 0);
-    CHECK(prior.repr(true).size() > 0);
-    CHECK(prior.str().size() > 0);
+    CHECK_EQ(terms.size(), 2);
+    CHECK_GT(prior.repr().size(), 0);
+    CHECK_GT(prior.repr(true).size(), 0);
+    CHECK_GT(prior.str().size(), 0);
 
     std::map<g2f::ParamBaseRef, std::vector<double>> param_values_test
             = {{ellipse->get_sigma_x_param(), {0.5, 2.4}},

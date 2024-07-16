@@ -1,4 +1,4 @@
-gauss2dfit_sources = [
+gauss2d_fit_sources = [
     'centroidparameters.cc',
     'channel.cc',
     'ellipticalcomponent.cc',
@@ -22,9 +22,10 @@ gauss2dfit_sources = [
     'source.cc',
     'transforms.cc',
 ]
-gauss2dfitlib = shared_library('gauss2dfit',
-                                gauss2dfit_sources,
+gauss2d_fitlib = shared_library('gauss2d_fit',
+                                gauss2d_fit_sources,
                                 include_directories : inc,
                                 dependencies : depends,
                                 install : true,
-                                soversion : '0.1.0')
+                                install_dir : get_option('libdir') / 'lsst',
+                                soversion : meson.project_version())

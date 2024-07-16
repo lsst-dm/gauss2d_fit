@@ -2,14 +2,14 @@
 
 #include "doctest.h"
 
-#include "channel.h"
-#include "fractionalintegralmodel.h"
-#include "gaussiancomponent.h"
-#include "linearintegralmodel.h"
-#include "param_defs.h"
-#include "source.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/fractionalintegralmodel.h"
+#include "lsst/gauss2d/fit/gaussiancomponent.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/source.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("FractionalIntegralModel") {
     const auto c1 = g2f::Channel::make("1");
@@ -60,7 +60,7 @@ TEST_CASE("FractionalIntegralModel") {
     frac2->at(channel)->set_value(1.);
     CHECK_EQ(frac2->at(channel)->get_value(), 1);
     CHECK_EQ(frac2->get_integral(channel), (1 - frac1));
-    CHECK_EQ(frac->find_model(*integral), nullptr);
+    CHECK_EQ(frac2->find_model(*integral), frac);
 
     std::shared_ptr<g2f::IntegralModel> integral_base = std::make_shared<g2f::LinearIntegralModel>(nullptr);
     CHECK_EQ(std::dynamic_pointer_cast<g2f::FractionalIntegralModel>(integral_base), nullptr);

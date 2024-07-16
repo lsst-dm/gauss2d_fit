@@ -1,12 +1,33 @@
-#include "psfmodel.h"
-
 #include <memory>
 #include <optional>
 
-#include "param_filter.h"
-#include "source.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/psfmodel.h"
+#include "lsst/gauss2d/fit/source.h"
+
+namespace lsst::gauss2d::fit {
+
+PsfModel::PsfModel(Components& components) {
+    size_t i = 0;
+    _components.reserve(components.size());
+    for (auto& component : components) {
+        if (component == nullptr)
+            throw std::invalid_argument("PsfModel components[" + std::to_string(i) + "] can't be null");
+        auto channels = component->get_integralmodel().get_channels();
+        if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
+            throw std::invalid_argument("PsfModel components[" + std::to_string(i)
+                                        + "].get_integralmodel().get_channels()="
+                                        + str_iter_ref<true>(channels) + " must only contain None");
+        }
+        _components.push_back(std::move(component));
+        i++;
+    }
+}
+
+PsfModel::~PsfModel() {}
+
 void PsfModel::add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra,
                                    const GradParamMap& map_grad, ParameterMap& offsets) const {
     for (auto& component : _components) component->add_extra_param_map(channel, map_extra, map_grad, offsets);
@@ -26,13 +47,13 @@ void PsfModel::add_grad_param_factors(const Channel& channel, GradParamFactors& 
 
 Components PsfModel::get_components() const { return _components; }
 
-std::unique_ptr<const gauss2d::Gaussians> PsfModel::get_gaussians(const Channel& channel) const {
-    std::vector<std::optional<const gauss2d::Gaussians::Data>> in;
+std::unique_ptr<const lsst::gauss2d::Gaussians> PsfModel::get_gaussians(const Channel& channel) const {
+    std::vector<std::optional<const lsst::gauss2d::Gaussians::Data>> in;
     in.reserve(_components.size());
     for (auto& component : _components) {
         in.push_back(component->get_gaussians(channel)->get_data());
     }
-    return std::make_unique<gauss2d::Gaussians>(in);
+    return std::make_unique<lsst::gauss2d::Gaussians>(in);
 }
 
 size_t PsfModel::get_n_gaussians(const Channel& channel) const {
@@ -59,34 +80,17 @@ void PsfModel::set_grad_param_factors(const Channel& channel, GradParamFactors& 
     for (auto& component : _components) component->set_grad_param_factors(channel, factors, index);
 }
 
-std::string PsfModel::repr(bool name_keywords) const {
-    std::string str = std::string("PsfModel(") + (name_keywords ? "components=[" : "[");
-    for (const auto& s : _components) str += s->repr(name_keywords) + ",";
+std::string PsfModel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    std::string str = type_name_str<PsfModel>(false, namespace_separator) + "("
+                      + (name_keywords ? "components=[" : "[");
+    for (const auto& s : _components) str += s->repr(name_keywords, namespace_separator) + ",";
     return str + "])";
 }
 
 std::string PsfModel::str() const {
-    std::string str = "PsfModel(components=[";
+    std::string str = type_name_str<PsfModel>(true) + "(components=[";
     for (const auto& s : _components) str += s->str() + ",";
     return str + "])";
 }
 
-PsfModel::PsfModel(Components& components) {
-    size_t i = 0;
-    _components.reserve(components.size());
-    for (auto& component : components) {
-        if (component == nullptr)
-            throw std::invalid_argument("PsfModel components[" + std::to_string(i) + "] can't be null");
-        auto channels = component->get_integralmodel().get_channels();
-        if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
-            throw std::invalid_argument("PsfModel components[" + std::to_string(i)
-                                        + "].get_integralmodel().get_channels()=" + str_iter_refw(channels)
-                                        + " must only contain None");
-        }
-        _components.push_back(std::move(component));
-        i++;
-    }
-}
-
-PsfModel::~PsfModel() {}
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

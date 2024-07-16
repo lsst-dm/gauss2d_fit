@@ -1,16 +1,27 @@
-#include "centroidparameters.h"
-
 #include <memory>
 
-#include "parameters.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/centroidparameters.h"
+
+namespace lsst::gauss2d::fit {
 template <typename t>
 t& _get_parameters(t& params, ParamFilter* filter, CentroidXParameterD& x, CentroidYParameterD& y) {
     insert_param(x, params, filter);
     insert_param(y, params, filter);
     return params;
 }
+
+CentroidParameters::CentroidParameters(std::shared_ptr<CentroidXParameterD> x,
+                                       std::shared_ptr<CentroidYParameterD> y)
+        : CentroidData(),
+          _x(x == nullptr ? std::make_shared<CentroidXParameterD>() : std::move(x)),
+          _y(y == nullptr ? std::make_shared<CentroidYParameterD>() : std::move(y)) {}
+
+CentroidParameters::CentroidParameters(double x, double y)
+        : CentroidData(),
+          _x(std::make_shared<CentroidXParameterD>(x)),
+          _y(std::make_shared<CentroidYParameterD>(y)) {}
 
 ParamRefs& CentroidParameters::get_parameters(ParamRefs& params, ParamFilter* filter) const {
     return _get_parameters<ParamRefs>(params, filter, this->get_x_param(), this->get_y_param());
@@ -37,24 +48,14 @@ void CentroidParameters::set_xy(const std::array<double, 2>& xy) {
     this->set_y(xy[1]);
 }
 
-std::string CentroidParameters::repr(bool name_keywords) const {
-    return std::string("CentroidParameters(") + (name_keywords ? "x=" : "") + _x->repr(name_keywords) + ", "
-           + (name_keywords ? "y=" : "") + _y->repr(name_keywords) + ")";
+std::string CentroidParameters::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<CentroidParameters>(false, namespace_separator) + "(" + (name_keywords ? "x=" : "")
+           + _x->repr(name_keywords, namespace_separator) + ", " + (name_keywords ? "y=" : "")
+           + _y->repr(name_keywords, namespace_separator) + ")";
 }
 
 std::string CentroidParameters::str() const {
-    return "CentroidParameters(x=" + _x->str() + ", y=" + _y->str() + ")";
+    return type_name_str<CentroidParameters>(true) + "(x=" + _x->str() + ", y=" + _y->str() + ")";
 }
 
-CentroidParameters::CentroidParameters(std::shared_ptr<CentroidXParameterD> x,
-                                       std::shared_ptr<CentroidYParameterD> y)
-        : CentroidData(),
-          _x(x == nullptr ? std::make_shared<CentroidXParameterD>() : std::move(x)),
-          _y(y == nullptr ? std::make_shared<CentroidYParameterD>() : std::move(y)) {}
-
-CentroidParameters::CentroidParameters(double x, double y)
-        : CentroidData(),
-          _x(std::make_shared<CentroidXParameterD>(x)),
-          _y(std::make_shared<CentroidYParameterD>(y)) {}
-
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

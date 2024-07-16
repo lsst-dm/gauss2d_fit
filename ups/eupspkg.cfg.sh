@@ -15,16 +15,21 @@ build()
     (build_cc && build_py)
 }
 
+clean()
+{
+    ./clean.sh
+}
+
 config_cc()
 {
-    ([ -d "$GAUSS2DFIT_DIR" ] && ./clean-cc.sh && meson setup --prefix="$GAUSS2DFIT_DIR/build-release" \
+    ([ -d "$GAUSS2D_FIT_DIR" ] && ./clean-cc.sh && meson setup --prefix="$GAUSS2D_FIT_DIR/build-release" \
      --buildtype release build-release)
 }
 
 config_py()
 {
-    ([ -d "$GAUSS2DFIT_DIR" ] && ./clean-py.sh && build_cc \
-     && cd python && meson setup --prefix="$GAUSS2DFIT_DIR/python/build-release" --buildtype release build-release)
+    ([ -d "$GAUSS2D_FIT_DIR" ] && ./clean-py.sh && build_cc \
+     && cd python && meson setup --prefix="$GAUSS2D_FIT_DIR/python/build-release" --buildtype release build-release)
 }
 
 config()

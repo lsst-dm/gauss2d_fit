@@ -1,17 +1,17 @@
 Gauss2DFit
 #######
 
-.. todo image:: https://img.shields.io/pypi/v/gauss2dfit.svg
-   .. todo   :target: https://pypi.python.org/pypi/gauss2dfit
+.. todo image:: https://img.shields.io/pypi/v/gauss2d_fit.svg
+   .. todo   :target: https://pypi.python.org/pypi/gauss2d_fit
 
-.. todo image:: https://img.shields.io/pypi/pyversions/gauss2dfit.svg
-   .. todo   :target: https://pypi.python.org/pypi/gauss2dfit
+.. todo image:: https://img.shields.io/pypi/pyversions/gauss2d_fit.svg
+   .. todo   :target: https://pypi.python.org/pypi/gauss2d_fit
 
-*gauss2dfit* provides python bindings for the C++ libgauss2dfit library.
+*gauss2d_fit* provides python bindings for the C++ libgauss2d_fit library.
 Python 3.8+, `pybind11 <https://github.com/pybind/pybind11>`_, and numpy are 
 requirements, as numpy arrays are used to store images for tests.
 
-With libgauss2dfit installed, these bindings can be built using meson:
+With libgauss2d_fit installed, these bindings can be built using meson:
 
 meson --prefix=~/.local build && meson compile -C build && meson install -C build
 
@@ -27,7 +27,7 @@ poetry build && python3 -m pip install .
 
 ... using the include pyproject.toml.
 
-.. todo *gauss2dfit* is available in `PyPI <https://pypi.python.org/pypi/gauss2dfit>`_
+.. todo *gauss2d_fit* is available in `PyPI <https://pypi.python.org/pypi/gauss2d_fit>`_
    .. and thus can be easily installed via::
 
-.. pip install gauss2dfit
+.. pip install gauss2d_fit

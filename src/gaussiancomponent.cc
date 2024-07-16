@@ -1,20 +1,27 @@
-#include "gaussiancomponent.h"
-
-#include "gauss2d/evaluate.h"
-#include "gauss2d/gaussian.h"
-#include "integralmodel.h"
-#include "gaussianparametricellipse.h"
-#include "gaussianmodelintegral.h"
-#include "param_defs.h"
-#include "param_filter.h"
-
 #include <stdexcept>
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/evaluate.h"
+#include "lsst/gauss2d/gaussian.h"
+#include "lsst/gauss2d/type_name.h"
+
+#include "lsst/gauss2d/fit/gaussiancomponent.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/gaussianparametricellipse.h"
+#include "lsst/gauss2d/fit/gaussianmodelintegral.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+
+namespace lsst::gauss2d::fit {
 // This is the gauss2d convention; see evaluator.h
 static const std::array<size_t, N_PARAMS_GAUSS2D> IDX_ORDER = {0, 1, 3, 4, 5, 2};
 static const size_t N_PARAMS_INTEGRAL_MAX = 2;
 static const size_t N_PARAMS_EXTRA_INTEGRAL_MAX = N_PARAMS_INTEGRAL_MAX - 1;
+
+GaussianComponent::GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse,
+                                     std::shared_ptr<CentroidParameters> centroid,
+                                     std::shared_ptr<IntegralModel> integralmodel)
+        : GaussianParametricEllipseHolder(std::move(ellipse)),
+          EllipticalComponent(_ellipsedata, centroid, integralmodel) {}
 
 ParamCRefs GaussianComponent::_get_parameters_grad(const Channel& channel) const {
     ParamCRefs params;
@@ -112,11 +119,12 @@ void GaussianComponent::add_grad_param_factors(const Channel& channel, GradParam
     factors.push_back({1, 1, 1, 1, 1, 1});
 }
 
-std::unique_ptr<const gauss2d::Gaussians> GaussianComponent::get_gaussians(const Channel& channel) const {
-    gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
+std::unique_ptr<const lsst::gauss2d::Gaussians> GaussianComponent::get_gaussians(
+        const Channel& channel) const {
+    lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
             std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
             std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
-    return std::make_unique<const gauss2d::Gaussians>(gaussians);
+    return std::make_unique<const lsst::gauss2d::Gaussians>(gaussians);
 }
 
 size_t GaussianComponent::get_n_gaussians(const Channel& channel) const { return 1; };
@@ -173,16 +181,13 @@ void GaussianComponent::set_grad_param_factors(const Channel& channel, GradParam
     }
 }
 
-std::string GaussianComponent::repr(bool name_keywords) const {
-    return "GaussianComponent(" + EllipticalComponent::repr(name_keywords) + ")";
+std::string GaussianComponent::repr(bool name_keywords, std::string_view namespace_separator) const {
+    return type_name_str<GaussianComponent>(false, namespace_separator) + "("
+           + EllipticalComponent::repr(name_keywords, namespace_separator) + ")";
 }
 
-std::string GaussianComponent::str() const { return "GaussianComponent(" + EllipticalComponent::str() + ")"; }
+std::string GaussianComponent::str() const {
+    return type_name_str<GaussianComponent>(true) + "(" + EllipticalComponent::str() + ")";
+}
 
-GaussianComponent::GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse,
-                                     std::shared_ptr<CentroidParameters> centroid,
-                                     std::shared_ptr<IntegralModel> integralmodel)
-        : GaussianParametricEllipseHolder(std::move(ellipse)),
-          EllipticalComponent(_ellipsedata, centroid, integralmodel) {}
-
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

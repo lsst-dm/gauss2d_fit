@@ -1,15 +1,14 @@
-#include "sersicmixcomponent.h"
-#include "parameters.h"
-#include <stdexcept>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
 
-#include "channel.h"
-#include "linearintegralmodel.h"
-#include "sersicmixcomponent.h"
+#include <stdexcept>
 
-namespace g2f = gauss2d::fit;
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/linearintegralmodel.h"
+#include "lsst/gauss2d/fit/sersicmixcomponent.h"
+
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("SersicMixComponentIndexParameter") {
     auto param = g2f::SersicMixComponentIndexParameterD(0.5);

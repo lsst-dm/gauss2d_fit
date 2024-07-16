@@ -1,10 +1,10 @@
-#ifndef GAUSS2D_FIT_TRANSFORMS_H
-#include "transforms.h"
-#endif
-
 #include <limits>
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/type_name.h"
+
+#include "lsst/gauss2d/fit/transforms.h"
+
+namespace lsst::gauss2d::fit {
 static const double INF = std::numeric_limits<double>::infinity();
 
 double LogitLimitedTransform::derivative(double x) const {
@@ -36,4 +36,4 @@ double LogitLimitedTransform::reverse(double x) const {
     y = 1 + exp(y);
     return _range / y + _limits->get_min();
 }
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

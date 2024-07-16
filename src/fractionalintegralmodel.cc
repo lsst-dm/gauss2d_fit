@@ -1,19 +1,74 @@
-#include "fractionalintegralmodel.h"
-
 #include <functional>
 #include <memory>
 #include <stdexcept>
 #include <vector>
 
-#include "channel.h"
-#include "component.h"
-#include "integralmodel.h"
-#include "param_defs.h"
-#include "param_filter.h"
-#include "parameters.h"
-#include "util.h"
+#include "lsst/gauss2d/to_string.h"
+#include "lsst/gauss2d/type_name.h"
 
-namespace gauss2d::fit {
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/fractionalintegralmodel.h"
+#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/param_defs.h"
+#include "lsst/gauss2d/fit/param_filter.h"
+#include "lsst/gauss2d/fit/parameters.h"
+#include "lsst/gauss2d/fit/util.h"
+
+namespace lsst::gauss2d::fit {
+
+FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
+                                                 std::shared_ptr<const IntegralModel> model, bool is_final)
+        : _model(std::move(model)), _parent(_find_parent(_model)), _is_final(is_final) {
+    if (_model == nullptr) throw std::invalid_argument("FractionalIntegralModel model can't be null");
+
+    const auto found = find_model(*_model);
+    if (found != nullptr) {
+        throw std::invalid_argument("FractionalIntegralModel model=" + _model->str()
+                                    + " already referenced by " + found->str());
+    }
+    if (data) {
+        size_t idx = 0;
+        for (const auto &datum : *data) {
+            const auto &channel = datum.first;
+            const auto &param = datum.second;
+            if (param == nullptr) {
+                throw std::runtime_error("FractionalIntegralModel data[" + channel.get().str()
+                                         + "] can't be null");
+            } else if (_is_final) {
+                bool is_fixed = param->get_fixed();
+                bool is_one = param->get_value() == 1;
+                std::string errmsg = "";
+                if (!is_fixed) errmsg += " is_fixed != true;";
+                if (!is_one) errmsg += " get_value()=" + std::to_string(param->get_value()) + "!=1;";
+                if (errmsg.size() > 0) {
+                    throw std::invalid_argument("FractionalIntegralModel data[" + std::to_string(idx)
+                                                + "] is_final==true but param for " + channel.get().str()
+                                                + errmsg);
+                }
+            }
+            if (_map.find(channel) != _map.end()) {
+                throw std::runtime_error("FractionalIntegralModel data[" + std::to_string(idx)
+                                         + "] channel=" + channel.get().str() + " duplicated");
+            }
+            _data.emplace_back(datum.first, datum.second);
+            _map.insert(_data.back());
+            idx++;
+        }
+    } else {
+        auto param = std::make_shared<ProperFractionParameterD>();
+        param->set_fixed(_is_final);
+        _data.emplace_back(Channel::NONE(), param);
+        _map.insert(_data.back());
+    }
+    auto data_keys = this->get_channels();
+    auto model_keys = _model.get()->get_channels();
+    if (data_keys != model_keys) {
+        throw std::invalid_argument("FractionalIntegralModel data channels=" + str_iter_ref<true>(data_keys)
+                                    + " != model.get_channels()=" + str_iter_ref<true>(model_keys));
+    }
+}
+FractionalIntegralModel::~FractionalIntegralModel() {};
 
 std::shared_ptr<ProperFractionParameterD> FractionalIntegralModel::at(const Channel &channel) {
     return _map.at(channel);
@@ -141,16 +196,18 @@ bool FractionalIntegralModel::is_final() const { return _is_final; }
 
 size_t FractionalIntegralModel::size() const { return _data.size(); }
 
-std::string FractionalIntegralModel::repr(bool name_keywords) const {
-    std::string s = std::string("FractionalIntegralModel(") + (name_keywords ? "data={" : "{");
+std::string FractionalIntegralModel::repr(bool name_keywords, std::string_view namespace_separator) const {
+    std::string s = type_name_str<FractionalIntegralModel>(false, namespace_separator) + "("
+                    + (name_keywords ? "data={" : "{");
     for (const auto &datum : _data) {
-        s += datum.first.get().repr(name_keywords) + ": " + datum.second->repr(name_keywords) + ",";
+        s += datum.first.get().repr(name_keywords, namespace_separator) + ": "
+             + datum.second->repr(name_keywords, namespace_separator) + ",";
     }
     return s + "})";
 }
 
 std::string FractionalIntegralModel::str() const {
-    std::string s = "FractionalIntegralModel(data={";
+    std::string s = type_name_str<FractionalIntegralModel>(true) + "(data={";
     for (const auto &datum : _data) {
         s += datum.first.get().str() + ": " + datum.second->str() + ",";
     }
@@ -172,9 +229,7 @@ std::shared_ptr<const FractionalIntegralModel> FractionalIntegralModel::_find_pa
 
 std::shared_ptr<FractionalIntegralModel> FractionalIntegralModel::make(
         std::optional<const Data> data, std::shared_ptr<const IntegralModel> model, bool is_final) {
-    std::shared_ptr<FractionalIntegralModel> ptr
-            = std::make_shared<Shared_enabler>(data, std::move(model), is_final);
-    ;
+    std::shared_ptr<FractionalIntegralModel> ptr = std::make_shared<Shared_enabler>(data, model, is_final);
     _registry.insert({*ptr, *model});
     FractionalIntegralModel::_registry_rev.insert({*model, ptr});
     return ptr;
@@ -185,57 +240,4 @@ const std::shared_ptr<const FractionalIntegralModel> FractionalIntegralModel::ma
     return make(data, model, is_final);
 }
 
-FractionalIntegralModel::FractionalIntegralModel(std::optional<const Data> data,
-                                                 std::shared_ptr<const IntegralModel> model, bool is_final)
-        : _model(std::move(model)), _parent(_find_parent(_model)), _is_final(is_final) {
-    if (_model == nullptr) throw std::invalid_argument("FractionalIntegralModel model can't be null");
-
-    const auto found = find_model(*_model);
-    if (found != nullptr) {
-        throw std::invalid_argument("FractionalIntegralModel model=" + _model->str()
-                                    + " already referenced by " + found->str());
-    }
-    if (data) {
-        size_t idx = 0;
-        for (const auto &datum : *data) {
-            const auto &channel = datum.first;
-            const auto &param = datum.second;
-            if (param == nullptr) {
-                throw std::runtime_error("FractionalIntegralModel data[" + channel.get().str()
-                                         + "] can't be null");
-            } else if (_is_final) {
-                bool is_fixed = param->get_fixed();
-                bool is_one = param->get_value() == 1;
-                std::string errmsg = "";
-                if (!is_fixed) errmsg += " is_fixed != true;";
-                if (!is_one) errmsg += " get_value()=" + std::to_string(param->get_value()) + "!=1;";
-                if (errmsg.size() > 0) {
-                    throw std::invalid_argument("FractionalIntegralModel data[" + std::to_string(idx)
-                                                + "] is_final==true but param for " + channel.get().str()
-                                                + errmsg);
-                }
-            }
-            if (_map.find(channel) != _map.end()) {
-                throw std::runtime_error("FractionalIntegralModel data[" + std::to_string(idx)
-                                         + "] channel=" + channel.get().str() + " duplicated");
-            }
-            _data.emplace_back(datum.first, datum.second);
-            _map.insert(_data.back());
-            idx++;
-        }
-    } else {
-        auto param = std::make_shared<ProperFractionParameterD>();
-        param->set_fixed(_is_final);
-        _data.emplace_back(Channel::NONE(), param);
-        _map.insert(_data.back());
-    }
-    auto data_keys = this->get_channels();
-    auto model_keys = _model.get()->get_channels();
-    if (data_keys != model_keys) {
-        throw std::invalid_argument("FractionalIntegralModel data channels=" + str_iter_refw(data_keys)
-                                    + " != model.get_channels()=" + str_iter_refw(model_keys));
-    }
-}
-FractionalIntegralModel::~FractionalIntegralModel(){};
-
-}  // namespace gauss2d::fit
+}  // namespace lsst::gauss2d::fit

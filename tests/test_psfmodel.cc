@@ -4,12 +4,12 @@
 
 #include <memory>
 
-#include "channel.h"
-#include "component.h"
-#include "gaussiancomponent.h"
-#include "psfmodel.h"
+#include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/component.h"
+#include "lsst/gauss2d/fit/gaussiancomponent.h"
+#include "lsst/gauss2d/fit/psfmodel.h"
 
-namespace g2f = gauss2d::fit;
+namespace g2f = lsst::gauss2d::fit;
 
 TEST_CASE("PsfModel") {
     const auto& C = g2f::Channel::NONE();
@@ -22,18 +22,18 @@ TEST_CASE("PsfModel") {
     auto psfmodel = std::make_shared<g2f::PsfModel>(comps);
 
     g2f::ParamCRefs params{};
-    CHECK(psfmodel->get_components().size() == 2);
+    CHECK_EQ(psfmodel->get_components().size(), 2);
     // 2 comps x (2 centroid, 3 ellipse, 1 integral)
-    CHECK(psfmodel->get_parameters_const(params).size() == 12);
-    CHECK(psfmodel->get_n_gaussians(C) == 2);
+    CHECK_EQ(psfmodel->get_parameters_const(params).size(), 12);
+    CHECK_EQ(psfmodel->get_n_gaussians(C), 2);
     auto gaussians = psfmodel->get_gaussians(C);
-    CHECK(gaussians->size() == 2);
+    CHECK_EQ(gaussians->size(), 2);
     const auto& g0 = gaussians->at(0);
     const auto gaussians_comp = comp_const.get_gaussians(C);
-    CHECK(gaussians_comp->size() == 1);
+    CHECK_EQ(gaussians_comp->size(), 1);
     const auto& c0 = gaussians_comp->at(0);
-    CHECK(g0.get_centroid_const() == c0.get_centroid_const());
-    CHECK(g0.get_ellipse_const() == c0.get_ellipse_const());
-    CHECK(g0.get_integral_const() == c0.get_integral_const());
-    CHECK(g0 == c0);
+    CHECK_EQ(g0.get_centroid_const(), c0.get_centroid_const());
+    CHECK_EQ(g0.get_ellipse_const(), c0.get_ellipse_const());
+    CHECK_EQ(g0.get_integral_const(), c0.get_integral_const());
+    CHECK_EQ(g0, c0);
 }
