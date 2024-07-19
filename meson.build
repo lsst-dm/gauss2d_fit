@@ -22,7 +22,7 @@ if use_eups
     gauss2d_eupsdir = run_command('sh', '-c', 'echo $GAUSS2D_DIR', check: true).stdout().strip() / 'build-release'
     cpp = meson.get_compiler('cpp')
     gauss2d_dep = declare_dependency(
-        dependencies: [cpp.find_library('gauss2d', dirs: [gauss2d_eupsdir / 'lib64/lsst']),],
+        dependencies: [cpp.find_library('gauss2d', dirs: [gauss2d_eupsdir / 'lib/lsst']),],
         include_directories: gauss2d_eupsdir / 'include',
     )
 
