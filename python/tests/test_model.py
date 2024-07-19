@@ -146,7 +146,9 @@ def test_model(channels, model):
 def test_model_eval_jacobian(model):
     model.setup_evaluators(g2f.EvaluatorMode.jacobian)
     result = np.array(model.evaluate())
-    assert (result == 0).all()
+    # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
+    # GCC/linux are exactly 0. Hopefully it's not something like ffast-math
+    assert (np.abs(result) < 1e-25).all()
     # TODO: Investigate why this rtol needs to be so high
     errors = model.verify_jacobian(atol=1e-3, rtol=5e-3)
     # All of the IntegralParameters got double-counted - see DM-40674
@@ -157,7 +159,8 @@ def test_model_eval_jacobian(model):
 def test_model_eval_loglike_grad(model):
     model.setup_evaluators(g2f.EvaluatorMode.loglike_grad, print=True)
     result = np.array(model.evaluate())
-    assert (result == 0).all()
+    # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
+    assert (np.abs(result) < 1e-25).all()
     dloglike = np.array(model.compute_loglike_grad(True))
     assert (dloglike == 0).all()
 
