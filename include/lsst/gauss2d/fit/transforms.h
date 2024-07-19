@@ -45,7 +45,7 @@ struct JanskyToABMagTransform : public Transform {
         return -1.08573620475812959718098227313021197915 / x;
     }
     inline double forward(double x) const override { return -2.5 * log10(x / f_nu_0); }
-    inline double reverse(double x) const override { return f_nu_0 * pow10(-0.4 * x); }
+    inline double reverse(double x) const override { return f_nu_0 * pow(10.0, -0.4 * x); }
 };
 
 struct NanojanskyToABMagTransform : public JanskyToABMagTransform {
