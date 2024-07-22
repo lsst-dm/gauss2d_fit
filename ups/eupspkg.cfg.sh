@@ -23,7 +23,7 @@ clean()
 config_cc()
 {
     ([ -d "$GAUSS2D_FIT_DIR" ] && ./clean-cc.sh && meson setup --prefix="$GAUSS2D_FIT_DIR/build-release" \
-     --buildtype release build-release)
+     --buildtype release --libdir "lib" build-release)
 }
 
 config_py()
