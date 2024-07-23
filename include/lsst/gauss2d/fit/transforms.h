@@ -91,7 +91,7 @@ struct Log10Transform : public Transform {
         return 0.434294481903251827651128918916605082294397 / x;
     }
     inline double forward(double x) const override { return log10(x); }
-    inline double reverse(double x) const override { return pow10(x); }
+    inline double reverse(double x) const override { return pow(10., x); }
 };
 
 struct LogitTransform : public Transform {
