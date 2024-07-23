@@ -182,6 +182,8 @@ def test_model_hessian(model):
                     param.fixed = True
 
     for is_transformed in (False, True):
-        hessian_from_jac = model.compute_hessian(transformed=is_transformed, options=None, print=True).data
+        # can set print=True for debugging, but the output is too verbose for
+        # pytest output even on a failure
+        hessian_from_jac = model.compute_hessian(transformed=is_transformed, options=None).data
         # TODO: investigate these unreasonably large differences after DM-40674
         assert np.all(np.isclose(hessians[is_transformed].data, hessian_from_jac, rtol=1e-3, atol=1))
