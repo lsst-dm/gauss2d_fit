@@ -55,7 +55,12 @@ pymod = import('python')
 python = pymod.find_installation(
     'python3',
     required : true,
-    modules: ['lsst.gauss2d', 'pytest'],
+    # SIP prevents finding lsst.gauss2d on MacOS, so sadly we can't add it to modules
+    # Luckily lsst.gauss2d (the Python module) is not actually required to build lsst.gauss2d.fit
+    # if libgauss2d built but not lsst.gauss2d, then lsst.gauss2d.fit should build but the pytests will fail
+    # TODO: Find an alternative to test for the existence of lsst.gauss2d
+    # just letting pytest fail might be OK for now
+    modules: ['pytest'],
 )
 subdir('src')
 
