@@ -90,7 +90,9 @@ if not use_eups
 endif
 
 # Run tests - not sure why workdir is required, but it is
-test('pytest', python, args : ['-m', 'pytest', 'tests'], workdir : meson.project_source_root())
+proj_root = meson.project_source_root()
+test_script = find_program(proj_root / 'test.sh')
+test('pytest', test_script, args : [], workdir : proj_root)
 
 # Build package docs (optional)
 subdir('doc')
