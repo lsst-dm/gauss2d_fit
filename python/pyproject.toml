@@ -41,3 +41,44 @@ where = ["src"]
 
 [tool.setuptools.dynamic]
 version = { attr = "lsst.gauss2d.__version__" }
+
+[tool.black]
+line-length = 110
+target-version = ["py311"]
+
+[tool.ruff]
+exclude = [
+    "src/lsst/gauss2d/fit/__init__.py",
+    "tests/*.py",
+]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+ignore = [
+    "N802",
+    "N803",
+    "N806",
+    "N812",
+    "N815",
+    "N816",
+    "N999",
+    "D100",
+    "D102",
+    "D104",
+    "D105",
+    "D107",
+    "D200",
+    "D203",
+    "D205",
+    "D213",
+    "D400",
+    "UP007", # Allow UNION in type annotation
+]
+select = [
+    "E", # pycodestyle
+    "F", # pycodestyle
+    "N", # pep8-naming
+    "W", # pycodestyle
+    "D", # pydocstyle
+]
