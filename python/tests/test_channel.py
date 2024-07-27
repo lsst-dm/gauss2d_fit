@@ -17,7 +17,7 @@ def test_channel():
 
     name_new = "A long name that is very unlikely to have already been taken"
     channel_new = g2f.Channel(name_new)
-    assert (len(g2f.Channel.all) == (n_channels + 1))
+    assert len(g2f.Channel.all) == (n_channels + 1)
     with pytest.raises(ValueError):
         g2f.Channel.erase("None")
     with pytest.raises(ValueError):
@@ -27,7 +27,7 @@ def test_channel():
     del channel_new
     # ...only calling erase removes it from the registry, though
     g2f.Channel.erase(name_new)
-    assert (g2f.Channel.find(name_new) is None)
-    assert (len(g2f.Channel.all) == n_channels)
-    assert (len(g2f.Channel(name_new).all) == (n_channels + 1))
-    assert (len(g2f.Channel("Another unusually long name").all) == (n_channels + 2))
+    assert g2f.Channel.find(name_new) is None
+    assert len(g2f.Channel.all) == n_channels
+    assert len(g2f.Channel(name_new).all) == (n_channels + 1)
+    assert len(g2f.Channel("Another unusually long name").all) == (n_channels + 2)
