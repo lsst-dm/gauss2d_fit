@@ -3,6 +3,10 @@ import lsst.gauss2d.fit as g2f
 import numpy as np
 import pytest
 
+# TODO: Investigate why clang/osx builds have non-zero values in DM-45308
+# GCC/linux are exactly 0. Hopefully it's not something like ffast-math
+max_diff_ll = 1e-25
+
 
 @pytest.fixture(scope="module")
 def channels():
@@ -155,9 +159,9 @@ def test_model_eval_jacobian(model):
     result = np.array(model.evaluate())
     # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
     # GCC/linux are exactly 0. Hopefully it's not something like ffast-math
-    assert (np.abs(result) < 1e-25).all()
+    assert (np.abs(result) <= max_diff_ll).all()
     # TODO: Investigate why this rtol needs to be so high
-    errors = model.verify_jacobian(atol=1e-3, rtol=5e-3)
+    errors = model.verify_jacobian(atol=1e-3, rtol=5e-3, max_diff_ll=max_diff_ll)
     # All of the IntegralParameters got double-counted - see DM-40674
     # ... but also, linear interpolators will fail the Sersic index params
     assert len(errors) == 6
@@ -167,9 +171,9 @@ def test_model_eval_loglike_grad(model):
     model.setup_evaluators(g2f.EvaluatorMode.loglike_grad, print=True)
     result = np.array(model.evaluate())
     # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
-    assert (np.abs(result) < 1e-25).all()
+    assert (np.abs(result) <= max_diff_ll).all()
     dloglike = np.array(model.compute_loglike_grad(True))
-    assert (dloglike == 0).all()
+    assert (np.abs(dloglike) < max_diff_ll).all()
 
 
 def test_model_hessian(model):

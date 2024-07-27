@@ -82,7 +82,7 @@ void declare_model(py::module &m, std::string str_type) {
                  "outputs_prior"_a = std::vector<std::shared_ptr<Image>>{},
                  "residuals_prior"_a = std::shared_ptr<Image>{}, "force"_a = false, "print"_a = false)
             .def("verify_jacobian", &Model::verify_jacobian, "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4,
-                 "rtol"_a = 1e-3, "atol"_a = 1e-3)
+                 "rtol"_a = 1e-3, "atol"_a = 1e-3, "max_diff_ll"_a = 0)
             .def("__repr__", [](const Model &self) { return self.repr(true); })
             .def("__str__", &Model::str);
 }
