@@ -51,7 +51,7 @@ if not use_eups
     pkg_mod = import('pkgconfig')
     if pkg_mod.found()
         pkg_mod.generate(libraries : gauss2d_fitlib,
-                         version : '0.1',
+                         version : meson.project_version(),
                          name : 'libgauss2d_fit',
                          filebase : 'lsst_gauss2d_fit',
                          description : 'Create, manipulate and evaluate 2D Gaussian mixtures and images thereof.')
