@@ -5,7 +5,7 @@ project(
     license : 'GPL-3.0-or-later',
     version : run_command('cat', meson.source_root() / 'VERSION', check: true).stdout().strip(),
 )
-
+add_project_arguments('-ffp-contract=off', language : 'cpp')
 add_project_arguments('-DVERSION=@0@'.format(meson.project_version()), language : 'cpp')
 
 eups = find_program('eups', required: false)

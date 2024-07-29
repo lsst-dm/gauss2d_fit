@@ -5,6 +5,7 @@ project(
   license : 'GPL-3.0-or-later',
   default_options : ['cpp_std=c++17',],
 )
+add_project_arguments('-ffp-contract=off', language : 'cpp')
 
 eups = find_program('eups', required: false)
 use_eups = eups.found()
