@@ -80,7 +80,6 @@ else
     python.install_sources(
         python_sources,
         pure: false, # Will be installed next to binaries
-        subdir: 'lsst',  # Folder relative to site-packages to install to
         preserve_path: true,
     )
 endif

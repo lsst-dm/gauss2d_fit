@@ -3,38 +3,44 @@ import lsst.gauss2d.fit as g2f
 import numpy as np
 import pytest
 
+# TODO: Investigate why clang/osx builds have non-zero values in DM-45308
+# GCC/linux are exactly 0. Hopefully it's not something like ffast-math
+max_diff_ll = 1e-25
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def channels():
-    return tuple(g2f.Channel(x) for x in 'rgb')
+    return tuple(g2f.Channel(x) for x in "rgb")
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def data(channels):
     n_x, n_y = 5, 5
-    return g2f.DataD([
-        g2f.ObservationD(
-            g2d.ImageD(np.zeros((n_y, n_x))),
-            g2d.ImageD(np.full((n_y, n_x), 1e3)),
-            g2d.ImageB(np.ones((n_y, n_x))),
-            channel,
-        )
-        for channel in channels
-    ])
+    return g2f.DataD(
+        [
+            g2f.ObservationD(
+                g2d.ImageD(np.zeros((n_y, n_x))),
+                g2d.ImageD(np.full((n_y, n_x), 1e3)),
+                g2d.ImageB(np.ones((n_y, n_x))),
+                channel,
+            )
+            for channel in channels
+        ]
+    )
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def psfmodels(data):
     psfmodels = tuple(
-        g2f.PsfModel([
-            g2f.GaussianComponent(
-                g2f.GaussianParametricEllipse(1., 1., 0.),
-                None,
-                g2f.LinearIntegralModel(
-                    [(g2f.Channel.NONE, g2f.IntegralParameterD(1.))]
-                ),
-            )
-        ])
+        g2f.PsfModel(
+            [
+                g2f.GaussianComponent(
+                    g2f.GaussianParametricEllipse(1.0, 1.0, 0.0),
+                    None,
+                    g2f.LinearIntegralModel([(g2f.Channel.NONE, g2f.IntegralParameterD(1.0))]),
+                )
+            ]
+        )
         for _ in range(len(data))
     )
     for psfmodel in psfmodels:
@@ -43,12 +49,12 @@ def psfmodels(data):
     return psfmodels
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def interptype_sersic_default():
     return g2f.SersicMixComponentIndexParameterD().interptype
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def sources(channels, interptype_sersic_default):
     last = None
     n_sources, n_components = 2, 2
@@ -61,21 +67,24 @@ def sources(channels, interptype_sersic_default):
             is_last = c == n_comp_max
             last = g2f.FractionalIntegralModel(
                 [
-                    (channel, g2f.ProperFractionParameterD(
-                        (is_last == 1) or 0.25 * (1 + idx_channel),
-                        fixed=is_last
-                    ))
+                    (
+                        channel,
+                        g2f.ProperFractionParameterD(
+                            (is_last == 1) or 0.25 * (1 + idx_channel), fixed=is_last
+                        ),
+                    )
                     for idx_channel, channel in enumerate(channels)
                 ],
-                g2f.LinearIntegralModel([
-                    (channel, g2f.IntegralParameterD(0.5 + 0.5 * (i + 1)))
-                    for channel in channels
-                ]) if (c == 0) else last,
+                g2f.LinearIntegralModel(
+                    [(channel, g2f.IntegralParameterD(0.5 + 0.5 * (i + 1))) for channel in channels]
+                )
+                if (c == 0)
+                else last,
                 is_last,
             )
             components[c] = g2f.GaussianComponent(
                 centroid=None,
-                ellipse=g2f.GaussianParametricEllipse(1., 1., 0.),
+                ellipse=g2f.GaussianParametricEllipse(1.0, 1.0, 0.0),
                 integral=last,
             )
         components.append(
@@ -90,15 +99,17 @@ def sources(channels, interptype_sersic_default):
                         transform=g2f.LogitLimitedTransformD(
                             limits=g2f.LimitsD(min=-0.999, max=0.999, name="ref_logit_sersic[0.5, 6.0]"),
                         ),
-                    )
+                    ),
                 ),
-                integral=g2f.LinearIntegralModel([
-                    (
-                        channel,
-                        g2f.IntegralParameterD(1.0, transform=log10, label=f"Sersic {channel}-band")
-                    )
-                    for channel in channels
-                ]),
+                integral=g2f.LinearIntegralModel(
+                    [
+                        (
+                            channel,
+                            g2f.IntegralParameterD(1.0, transform=log10, label=f"Sersic {channel}-band"),
+                        )
+                        for channel in channels
+                    ]
+                ),
                 # Linear interpolation fails at exact knot values
                 # Adding a small offset solves the problem
                 sersicindex=g2f.SersicMixComponentIndexParameterD(
@@ -107,7 +118,7 @@ def sources(channels, interptype_sersic_default):
                     transform=g2f.LogitLimitedTransformD(
                         limits=g2f.LimitsD(min=0.5, max=6.0, name="ref_logit_sersic[0.5, 6.0]"),
                     ),
-                )
+                ),
             ),
         )
         sources[i] = g2f.Source(components)
@@ -115,7 +126,7 @@ def sources(channels, interptype_sersic_default):
     return sources
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def model(data, psfmodels, sources):
     model = g2f.ModelD(data, list(psfmodels), list(sources))
     with pytest.raises(RuntimeError):
@@ -148,9 +159,9 @@ def test_model_eval_jacobian(model):
     result = np.array(model.evaluate())
     # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
     # GCC/linux are exactly 0. Hopefully it's not something like ffast-math
-    assert (np.abs(result) < 1e-25).all()
+    assert (np.abs(result) <= max_diff_ll).all()
     # TODO: Investigate why this rtol needs to be so high
-    errors = model.verify_jacobian(atol=1e-3, rtol=5e-3)
+    errors = model.verify_jacobian(atol=1e-3, rtol=5e-3, max_diff_ll=max_diff_ll)
     # All of the IntegralParameters got double-counted - see DM-40674
     # ... but also, linear interpolators will fail the Sersic index params
     assert len(errors) == 6
@@ -160,16 +171,18 @@ def test_model_eval_loglike_grad(model):
     model.setup_evaluators(g2f.EvaluatorMode.loglike_grad, print=True)
     result = np.array(model.evaluate())
     # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
-    assert (np.abs(result) < 1e-25).all()
+    assert (np.abs(result) <= max_diff_ll).all()
     dloglike = np.array(model.compute_loglike_grad(True))
-    assert (dloglike == 0).all()
+    assert (np.abs(dloglike) < max_diff_ll).all()
 
 
 def test_model_hessian(model):
     options = g2f.HessianOptions(return_negative=False)
     for idx in range(2):
-        hessians = {is_transformed: model.compute_hessian(transformed=is_transformed, options=options)
-                    for is_transformed in (False, True)}
+        hessians = {
+            is_transformed: model.compute_hessian(transformed=is_transformed, options=options)
+            for is_transformed in (False, True)
+        }
         # Note that since there is no noise in the image and none of the
         # param values have changed, the Hessian terms are not all negative -
         # the sign corrections are based on the sign of loglike_grad,

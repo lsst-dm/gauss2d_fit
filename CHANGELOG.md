@@ -3,7 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-### [0.1.3] 2024-07-23
+### [0.1.4] 2024-07-30
+
+* Fixed: Put correct version in pkg-config file for standalone C++ builds
+* Added: -ffp-contract=off to default C++ compiler options
+* Fixed: Allow tiny (1e-25) deviations from equality in some Python tests
+* Fixed: Python formatting
+* Added: Black and ruff configurations to pyproject.toml
+* Fixed: Removed incorrect subdir for standalone Python build
+* See [DM-45473](https://rubinobs.atlassian.net/browse/DM-45473) for details.
+
+### [0.1.3] 2024-07-29
 
 * Fixed: test_channel is no longer sensitive to test order.
 * Fixed: test_model no longer calls compute_hessian with overly verbose print=True.
@@ -32,6 +42,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 * Changed: Initial release, forked to https://github.com/lsst/gauss2d_fit.
 * See [DM-43906](https://rubinobs.atlassian.net/browse/DM-43906) for details.
+
+[0.1.4]: https://github.com/lsst-dm/gauss2d_fit/compare/0.1.3...0.1.4
 
 [0.1.3]: https://github.com/lsst-dm/gauss2d_fit/compare/0.1.2...0.1.3
 

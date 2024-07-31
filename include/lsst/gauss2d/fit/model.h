@@ -515,16 +515,14 @@ private:
         }
         auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, nullptr, coordsys)
                                      : map_extra_weak.lock();
-        auto map_grad_mut
-                = expired ? std::make_shared<Indices>(n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D,
-                                                      nullptr, coordsys)
-                          : map_grad_weak.lock();
+        auto map_grad_mut = expired ? std::make_shared<Indices>(
+                                    n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
+                                    : map_grad_weak.lock();
         auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, nullptr, coordsys)
                                          : factors_extra_weak.lock();
-        auto factors_grad_mut
-                = expired ? std::make_shared<Image>(n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D,
-                                                    nullptr, coordsys)
-                          : factors_grad_weak.lock();
+        auto factors_grad_mut = expired ? std::make_shared<Image>(
+                                        n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
+                                        : factors_grad_weak.lock();
         ;
 
         ExtraParamMap map_extra = {};
@@ -1405,12 +1403,17 @@ public:
      * @param findiff_add The minimum value of the finite difference increment.
      * @param rtol The allowed relative tolerance in the Jacobian as compared to the finite difference.
      * @param atol The allowed absolute tolerance in the Jacobian as compared to the finite difference.
+     * @param max_ll_diff The maximum allowed difference between equivalent log-likelihood evaluations.
+     *      Must be >= 0 and should only be a few orders of magnitude larger than machine epsilon.
      * @return A vector of error messages, one for each Parameter that failed verification.
      *
      * @note Verification is done using isclose(), which is modelled after Python's numpy.isclose.
      */
     std::vector<std::string> verify_jacobian(double findiff_frac = 1e-5, double findiff_add = 1e-5,
-                                             double rtol = 1e-3, double atol = 1e-3) {
+                                             double rtol = 1e-3, double atol = 1e-3, double max_ll_diff = 0) {
+        if (!(max_ll_diff >= 0)) {
+            throw std::invalid_argument("max_ll_diff=" + to_string_float(max_ll_diff) + " !> 0");
+        }
         if (_mode != EvaluatorMode::jacobian) {
             this->setup_evaluators(EvaluatorMode::jacobian);
         }
@@ -1466,9 +1469,11 @@ public:
 
             auto result = _make_evaluator(idx, EvaluatorMode::loglike_image);
             double loglike_img = result.first->loglike_pixel();
-            if (loglike_jac != loglike_img) {
-                errors.push_back("loglike_jac=" + to_string_float(loglike_jac) + "loglike_img="
-                                 + to_string_float(loglike_img) + "for obs[" + std::to_string(idx) + "]:");
+            auto is_close_ll = isclose(loglike_img, loglike_jac, 0., max_ll_diff);
+            if (!is_close_ll.isclose) {
+                errors.push_back("loglike_jac=" + to_string_float(loglike_jac) + ", loglike_img="
+                                 + to_string_float(loglike_img) + " !close (isclose=" + is_close_ll.str()
+                                 + ") for obs[" + std::to_string(idx) + "]:");
             }
 
             const auto& image_current = *(result.second.first);
