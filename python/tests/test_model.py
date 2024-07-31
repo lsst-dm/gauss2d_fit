@@ -155,7 +155,9 @@ def test_model(channels, model):
 
 
 def test_model_eval_jacobian(model):
-    model.setup_evaluators(g2f.EvaluatorMode.jacobian)
+    # Force is needed in case other tests use a jacobian evaluator
+    # with different parameters
+    model.setup_evaluators(g2f.EvaluatorMode.jacobian, force=True)
     result = np.array(model.evaluate())
     # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
     # GCC/linux are exactly 0. Hopefully it's not something like ffast-math
@@ -168,7 +170,7 @@ def test_model_eval_jacobian(model):
 
 
 def test_model_eval_loglike_grad(model):
-    model.setup_evaluators(g2f.EvaluatorMode.loglike_grad, print=True)
+    model.setup_evaluators(g2f.EvaluatorMode.loglike_grad, force=True)
     result = np.array(model.evaluate())
     # TODO: Investigate why clang/osx builds have non-zero values in DM-45308
     assert (np.abs(result) <= max_diff_ll).all()
@@ -178,6 +180,8 @@ def test_model_eval_loglike_grad(model):
 
 def test_model_hessian(model):
     options = g2f.HessianOptions(return_negative=False)
+    params_fixed = set()
+
     for idx in range(2):
         hessians = {
             is_transformed: model.compute_hessian(transformed=is_transformed, options=options)
@@ -189,10 +193,11 @@ def test_model_hessian(model):
         # and those are all exactly zero
         assert all(np.isfinite(hessian.data).all() for hessian in hessians.values())
         if idx == 0:
-            for param in model.parameters():
+            for param in set(model.parameters()):
                 # TODO: Remove this when DM-40674 is fixed
-                if isinstance(param, g2f.IntegralParameterD):
-                    param.fixed = True
+                if isinstance(param, g2f.IntegralParameterD) and param.free:
+                    param.free = False
+                    params_fixed.add(param)
 
     for is_transformed in (False, True):
         # can set print=True for debugging, but the output is too verbose for
@@ -200,3 +205,6 @@ def test_model_hessian(model):
         hessian_from_jac = model.compute_hessian(transformed=is_transformed, options=None).data
         # TODO: investigate these unreasonably large differences after DM-40674
         assert np.all(np.isclose(hessians[is_transformed].data, hessian_from_jac, rtol=1e-3, atol=1))
+
+    for param in params_fixed:
+        param.free = True
