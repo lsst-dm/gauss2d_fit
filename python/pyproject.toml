@@ -40,7 +40,7 @@ test = [
 where = ["src"]
 
 [tool.setuptools.dynamic]
-version = { attr = "lsst.gauss2d.__version__" }
+version = { attr = "lsst.gauss2d.fit.__version__" }
 
 [tool.black]
 line-length = 110
