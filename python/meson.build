@@ -62,9 +62,17 @@ python = pymod.find_installation(
     # just letting pytest fail might be OK for now
     modules: ['pytest'],
 )
+
+if not use_eups
+    # Must uninstall old gauss2d (if any) to get pip to recognize new version
+    # This also must be run before installing python sources with subdir('src')
+    run_command('python', '-m', 'pip', 'uninstall', '-y', 'lsst-gauss2d-fit', check: true)
+endif
+
 subdir('src')
 
 if not use_eups
+    subdir_module = meson.source_root() / 'src/lsst/gauss2d/fit'
     # A hacky way to pip install (to say the least) the Python module
     # this is "necessary" to allow its use as a dependency in other packages
     # (e.g. in requirements.txt, pyproject.toml)
@@ -72,7 +80,7 @@ if not use_eups
     # the downside is there are now two ways to manage/install the package
     # pip doesn't seem to find the pybind extension module automagically either
     # (perhaps some config is missing in pyproject.toml)
-    subdir_module = meson.source_root() / 'src/lsst/gauss2d/fit'
+	add_link_cmd = ['ln', '-fs', module.full_path(), subdir_module]
 	pip_cmd = [
 	    'python', '-m', 'pip', 'install', meson.source_root(),
 	     '-t', python.get_install_dir(),
@@ -80,13 +88,14 @@ if not use_eups
 	     '--no-build-isolation',
 	     '--force-reinstall',
      ]
+	rm_link_cmd = ['rm', subdir_module / module.full_path().split('/')[-1]]
 	message('Will run on install:')
+	message(add_link_cmd)
 	message(pip_cmd)
-	add_link_cmd = ['ln', '-fs', module.full_path(), subdir_module]
+	message(rm_link_cmd)
 	meson.add_install_script(add_link_cmd)
 	meson.add_install_script(pip_cmd)
-	remove_link_cmd = ['rm', subdir_module / module.full_path().split('/')[-1]]
-	meson.add_install_script(remove_link_cmd)
+	meson.add_install_script(rm_link_cmd)
 endif
 
 # Run tests - not sure why workdir is required, but it is
