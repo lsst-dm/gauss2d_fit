@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+### [0.1.4] 2024-08-09
+
+* Fixed: Python tests now force evaluator setup to prevent order dependence
+* Fixed: Model.compute_hessian also forces evaluator setup
+* Fixed: flake8 configuration in setup.cfg ignore build directories
+* See [DM-45520](https://rubinobs.atlassian.net/browse/DM-45520) for details.
+
 ### [0.1.4] 2024-07-30
 
 * Fixed: Put correct version in pkg-config file for standalone C++ builds
@@ -42,6 +49,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 * Changed: Initial release, forked to https://github.com/lsst/gauss2d_fit.
 * See [DM-43906](https://rubinobs.atlassian.net/browse/DM-43906) for details.
+
+[0.1.5]: https://github.com/lsst-dm/gaus s2d_fit/compare/0.1.4...0.1.5
 
 [0.1.4]: https://github.com/lsst-dm/gauss2d_fit/compare/0.1.3...0.1.4
 

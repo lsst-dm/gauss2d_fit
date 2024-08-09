@@ -825,7 +825,7 @@ public:
     std::unique_ptr<Image> compute_hessian(bool transformed = false, bool include_prior = true,
                                            std::optional<HessianOptions> options = std::nullopt,
                                            bool print = false) {
-        this->setup_evaluators(EvaluatorMode::loglike_grad);
+        this->setup_evaluators(EvaluatorMode::loglike_grad, {}, {}, {}, nullptr, true, print);
 
         auto filter_free = g2f::ParamFilter{false, true, true, true};
         auto params_free = this->get_parameters_new(&filter_free);
