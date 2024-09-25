@@ -133,8 +133,10 @@ public:
         }
 
         _gaussians_srcs = this->_get_gaussians_srcs();
-        _factors_extra_in.resize(_size);
+        _factors_grad.resize(_size);
         _factors_grad_in.resize(_size);
+        _factors_extra.resize(_size);
+        _factors_extra_in.resize(_size);
         _map_extra_in.resize(_size);
         _map_grad_in.resize(_size);
     }
@@ -142,9 +144,9 @@ public:
 private:
     std::shared_ptr<const ModelData> _data;
     std::vector<std::unique_ptr<Evaluator>> _evaluators = {};
-    ExtraParamFactors _factors_extra = {};
+    std::vector<ExtraParamFactors> _factors_extra = {};
     std::vector<std::weak_ptr<Image>> _factors_extra_in;
-    GradParamFactors _factors_grad = {};
+    std::vector<GradParamFactors> _factors_grad = {};
     std::vector<std::weak_ptr<Image>> _factors_grad_in;
     GaussiansMap _gaussians_srcs;
     std::vector<std::shared_ptr<ImageArray<T, Image>>> _grads;
@@ -212,6 +214,9 @@ private:
             const auto& factors_extra_in = _factors_extra_in[idx].lock();
             const auto& factors_grad_in = _factors_grad_in[idx].lock();
 
+            GradParamFactors & factors_grad_obs = _factors_grad[idx];
+            ExtraParamFactors & factors_extra_obs = _factors_extra[idx];
+
             size_t offset = 0;
             for (size_t i_psf = 0; i_psf < n_gaussians_psf; ++i_psf) {
                 size_t i_src = 0;
@@ -226,16 +231,19 @@ private:
                                 + std::to_string(src->get_n_gaussians(channel))
                                 + " != get_gaussians(channel).size()=" + std::to_string(n_gauss_src));
                     }
-                    src->set_grad_param_factors(channel, _factors_grad, offset);
-                    src->set_extra_param_factors(channel, _factors_extra, offset);
+                    if(print) std::cout << " setting fac_grad for offset=" << offset << std::endl;
+                    src->set_grad_param_factors(channel, factors_grad_obs, offset);
+                    if(print) std::cout << " setting epf for offset=" << offset << std::endl;
+                    src->set_extra_param_factors(channel, factors_extra_obs, offset);
                     // Copy values to the actual input arrays used by the evaluator
                     const size_t row_max = offset + n_gauss_src;
+                    if(print) std::cout << " row_max=" << row_max << " n_gauss_src=" << n_gauss_src << std::endl;
                     for (size_t row = offset; row < row_max; ++row) {
                         if (print) {
                             std::cout << "factors_extra[" << row << "]=[";
                         }
                         for (size_t col = 0; col < lsst::gauss2d::N_EXTRA_FACTOR; ++col) {
-                            factors_extra_in->set_value_unchecked(row, col, _factors_extra[row][col]);
+                            factors_extra_in->set_value_unchecked(row, col, factors_extra_obs[row][col]);
                             if (print) {
                                 std::cout << factors_extra_in->get_value_unchecked(row, col) << ",";
                             }
@@ -244,7 +252,7 @@ private:
                             std::cout << "]\nfactors_grad[" << row << "]=[";
                         }
                         for (size_t col = 0; col < lsst::gauss2d::N_PARAMS_GAUSS2D; ++col) {
-                            factors_grad_in->set_value_unchecked(row, col, _factors_grad[row][col]);
+                            factors_grad_in->set_value_unchecked(row, col, factors_grad_obs[row][col]);
                             if (print) {
                                 std::cout << factors_grad_in->get_value_unchecked(row, col) << ",";
                             }
@@ -386,7 +394,9 @@ private:
         }
 
         size_t n_gaussians_src = 0;
-        for (const auto& gaussians : gaussians_src) n_gaussians_src += gaussians->size();
+        for (const auto& gaussians : gaussians_src) {
+            n_gaussians_src += gaussians->size();
+        }
         const size_t n_gaussians_conv = n_gaussians_src * n_gaussians_psf;
 
         ConvolvedGaussians::Data data{};
@@ -504,11 +514,17 @@ private:
                           std::shared_ptr<const Indices>& map_grad_in,
                           std::shared_ptr<const Image>& factors_extra_in,
                           std::shared_ptr<const Image>& factors_grad_in) {
+
+        if constexpr (print) {
+            std::cout << "making parameter maps with n_gaussian_conv=" << n_gaussians_conv << " and n_psf="
+                << n_gaussians_psf << std::endl;
+        }
+
         unsigned int n_obsired = map_extra_weak.expired() + map_grad_weak.expired()
                                  + factors_grad_weak.expired() + factors_extra_weak.expired();
         const bool expired = n_obsired == 4;
         if (print) {
-            std::cout << "expired=" << expired << "\n";
+            std::cout << "expired=" << expired << ", n_obsired=" << n_obsired << "\n";
         }
         if (!((n_obsired == 0) || expired)) {
             throw std::logic_error("jacobian n_obsired=" + std::to_string(n_obsired) + " not in (0,4)");
@@ -527,8 +543,9 @@ private:
 
         ExtraParamMap map_extra = {};
         GradParamMap map_grad = {};
-        ExtraParamFactors& factors_extra = _factors_extra;
-        GradParamFactors& factors_grad = _factors_grad;
+
+        ExtraParamFactors& factors_extra = _factors_extra[idx_obs];
+        GradParamFactors& factors_grad = _factors_grad[idx_obs];
         factors_extra.clear();
         factors_grad.clear();
 
@@ -1200,7 +1217,8 @@ public:
                           std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                           std::vector<std::shared_ptr<Image>> residuals = {},
                           std::vector<std::shared_ptr<Image>> outputs_prior = {},
-                          std::shared_ptr<Image> residuals_prior = nullptr, bool force = false,
+                          std::shared_ptr<Image> residuals_prior = nullptr,
+                          bool force = false,
                           bool print = false) {
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;
