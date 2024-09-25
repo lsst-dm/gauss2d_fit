@@ -103,7 +103,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
                   bool print = false, double findiff_frac = 1e-6, double findiff_add = 1e-6,
                   double rtol = 5e-5, double atol = 5e-5, bool do_hess_diff = true, double hess_rtol = 1e-3) {
     const size_t n_channels = channels.size();
-    auto grads = model.compute_loglike_grad(true, false, true, findiff_frac, findiff_add, rtol, atol);
+    auto grads = model.compute_loglike_grad(true, print, true, findiff_frac, findiff_add, rtol, atol);
     g2f::ParamFilter filter_free{false, true, true, true};
     params_free = model.get_parameters_new(&filter_free);
     params_free = g2f::nonconsecutive_unique(params_free);
@@ -309,6 +309,7 @@ void verify_model(Model& model, const std::vector<std::shared_ptr<const g2f::Cha
 }
 
 TEST_CASE("Model") {
+    bool print = false;
     const std::vector<std::shared_ptr<const g2f::Channel>> channels
             = {// TODO: Figure out how this works - auto const conversion?
                g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")};
@@ -562,7 +563,7 @@ TEST_CASE("Model") {
     }
 
     // TODO: This should pass without setting skip_rho
-    verify_model(*model, channels, params_src_free, true, true);
+    verify_model(*model, channels, params_src_free, true, true, print);
 
     // Add a fractional source, which should work even if it's not useful
     auto centroids = std::make_shared<g2f::CentroidParameters>(5.5, 6.5);
@@ -602,10 +603,11 @@ TEST_CASE("Model") {
     auto params_src_free2 = model2->get_parameters_new(&filter_free);
     params_src_free2 = g2f::nonconsecutive_unique<g2f::ParamBaseRef>(params_src_free2);
 
-    verify_model(*model2, channels, params_src_free2, true, true, true, 1e-5, 1e-5, 1e-5, 1e-5);
+    verify_model(*model2, channels, params_src_free2, true, true, print, 1e-5, 1e-5, 1e-5, 1e-5);
 }
 
 TEST_CASE("Model PSF") {
+    bool print = false;
     const Channels channels = CHANNELS_NONE;
     auto data = make_data<double>(channels, 11, 13);
     std::vector<std::shared_ptr<g2f::Component>> comps = {};
@@ -651,11 +653,12 @@ TEST_CASE("Model PSF") {
     params_free = g2f::nonconsecutive_unique(params_free);
     // 2 cens + 1 fluxfrac + 2*(2sigmas + rho) = 9
     CHECK_EQ(params_free.size(), 9);
-    verify_model(*model, channels, params_free, true, false, true);
+    verify_model(*model, channels, params_free, true, false, print);
 }
 
 // This has some overlap with the Model test case, so test float as well
 TEST_CASE("Model with priors") {
+    bool print = false;
     const size_t n_x = 31, n_y = 27;
     auto data_f = make_data<float>(CHANNELS_NONE, n_x, n_y, 1, 3);
     auto data_d = make_data<double>(CHANNELS_NONE, n_x, n_y, 1, 3);
@@ -729,10 +732,10 @@ TEST_CASE("Model with priors") {
 
     // Set skip_rho true for float; apparently it makes enough of a
     // difference to fail by a wide margin
-    CHECK_NOTHROW(verify_model(*model_f, CHANNELS_NONE, params_free_f, true, true, true, 1e-5, 1e-5, 1e-3,
+    CHECK_NOTHROW(verify_model(*model_f, CHANNELS_NONE, params_free_f, true, true, print, 1e-5, 1e-5, 1e-3,
                                1e-4, false));
     // Unclear why this needs a larger hess_rtol
-    CHECK_NOTHROW(verify_model(*model_d, CHANNELS_NONE, params_free_d, true, false, true, 1e-6, 1e-6, 5e-5,
+    CHECK_NOTHROW(verify_model(*model_d, CHANNELS_NONE, params_free_d, true, false, print, 1e-6, 1e-6, 5e-5,
                                5e-5, true, 5e-3));
 
     // Test repeat evaluation with and without forcing and specifying outputs
@@ -741,7 +744,7 @@ TEST_CASE("Model with priors") {
 
     model_f->setup_evaluators(g2f::EvaluatorMode::loglike_image);
     model_f->evaluate();
-    model_f->setup_evaluators(g2f::EvaluatorMode::jacobian, {}, {}, {}, nullptr, false);
+    model_f->setup_evaluators(g2f::EvaluatorMode::jacobian, {}, {}, {}, nullptr, false, true);
     model_f->evaluate();
     std::vector<std::vector<std::shared_ptr<Image<float>>>> outputs
             = {{std::make_shared<Image<float>>(n_y, n_x)}};
