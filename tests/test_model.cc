@@ -57,8 +57,8 @@ Channels CHANNELS_NONE = {CHANNEL_NONE};
 
 template <typename T>
 std::shared_ptr<Data<T>> make_data(Channels channels, const size_t n_x, const size_t n_y,
-                                   const size_t dn_x = 0., const size_t dn_y = 0.,
-                                   const double sigma_inv_value = 1.) {
+                                   const size_t dn_x = 0., const size_t dn_y = 0., const double ddx1 = 0.,
+                                   const double ddy2 = 0., const double sigma_inv_value = 1.) {
     std::vector<std::shared_ptr<const Observation<T>>> observations;
     double dx_min = 0., dy_min = 0.;
     auto fill = std::make_unique<T>(0);
@@ -313,7 +313,7 @@ TEST_CASE("Model") {
             = {// TODO: Figure out how this works - auto const conversion?
                g2f::Channel::make("r"), g2f::Channel::make("g"), g2f::Channel::make("b")};
 
-    auto data = make_data<double>(channels, 11, 13);
+    auto data = make_data<double>(channels, 11, 13, 1., 2., -0.2, 0.1);
     g2f::ParamCRefs params_data{};
     data->get_parameters_const(params_data);
     CHECK_EQ(params_data.size(), 0);
