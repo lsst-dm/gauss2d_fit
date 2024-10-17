@@ -2,9 +2,9 @@
 
 .. _lsst.gauss2d.fit:
 
-###############
+################
 lsst.gauss2d.fit
-###############
+################
 
 gauss2d_fit is a submodule for gauss2d that implements a 2D Gaussian mixture
 model class, along with its constituent parts, including parameters and data.
