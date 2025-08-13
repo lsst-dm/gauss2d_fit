@@ -24,10 +24,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/componentmixture.h"
 #include "lsst/gauss2d/fit/parametricmodel.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;

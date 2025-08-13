@@ -21,14 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "lsst/gauss2d/fit/parameters.h"
 #include "lsst/gauss2d/fit/transforms.h"
@@ -37,7 +35,6 @@
 
 #include "parameters.h"
 #include "pybind11.h"
-#include "utils.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;

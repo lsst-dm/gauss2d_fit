@@ -21,11 +21,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <memory>
 
 #include "lsst/gauss2d/fit/componentmixture.h"
 #include "lsst/gauss2d/fit/source.h"

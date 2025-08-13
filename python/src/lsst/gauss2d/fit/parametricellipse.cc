@@ -24,8 +24,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/parametricellipse.h"
 #include "lsst/gauss2d/fit/parametric.h"
 #include "pybind11.h"

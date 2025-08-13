@@ -24,20 +24,18 @@
 #ifndef LSST_GAUSS2D_FIT_PYTHON_PARAMETERS_H
 #define LSST_GAUSS2D_FIT_PYTHON_PARAMETERS_H
 
-#include <pybind11/attr.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-
 #include <memory>
 #include <string>
+
+#include <pybind11/attr.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "lsst/modelfit/parameters.h"
 
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
 
-#include "pybind11.h"
 #include "utils.h"
 
 namespace py = pybind11;

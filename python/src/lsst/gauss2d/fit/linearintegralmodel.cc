@@ -24,12 +24,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/data.h"
 #include "lsst/gauss2d/fit/integralmodel.h"
 #include "lsst/gauss2d/fit/linearintegralmodel.h"
-#include "lsst/gauss2d/fit/parameters.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;

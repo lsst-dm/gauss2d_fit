@@ -21,11 +21,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <memory>
 #include <optional>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <memory>
 
 #include "lsst/gauss2d/fit/channel.h"
 #include "lsst/gauss2d/fit/param_filter.h"

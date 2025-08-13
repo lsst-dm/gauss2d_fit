@@ -23,16 +23,15 @@
 
 #ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
-#include "pybind11.h"
-
 #include "lsst/gauss2d/fit/gsl.h"
 #include "lsst/gauss2d/fit/gslinterpolator.h"
+
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;

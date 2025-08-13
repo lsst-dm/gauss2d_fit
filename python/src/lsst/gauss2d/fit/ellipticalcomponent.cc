@@ -21,16 +21,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-#include <string>
-
-#include "lsst/gauss2d/ellipse.h"
 #include "lsst/gauss2d/fit/ellipticalcomponent.h"
-#include "lsst/gauss2d/fit/parametric.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;

@@ -21,18 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-#include <string>
-
 #include "lsst/gauss2d/centroid.h"
 #include "lsst/gauss2d/fit/centroidparameters.h"
-#include "pybind11.h"
 
-// #include "utils.h"
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;

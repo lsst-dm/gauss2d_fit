@@ -21,16 +21,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <memory>
 
 #include "lsst/gauss2d/gaussian.h"
 
 #include "lsst/gauss2d/fit/channel.h"
 #include "lsst/gauss2d/fit/gaussianmodelintegral.h"
 #include "lsst/gauss2d/fit/integralmodel.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
