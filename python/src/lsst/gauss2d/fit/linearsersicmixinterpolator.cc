@@ -38,8 +38,8 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_linearsersicmixinterpolator(py::module &m) {
-    auto _e = py::class_<g2f::LinearSersicMixInterpolator, std::shared_ptr<g2f::LinearSersicMixInterpolator>,
-                         g2f::SersicMixInterpolator>(m, "LinearSersicMixInterpolator")
+    auto _e = py::classh<g2f::LinearSersicMixInterpolator, g2f::SersicMixInterpolator>(
+                      m, "LinearSersicMixInterpolator")
                       .def(py::init<short>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT)
                       .def("integralsizes", &g2f::LinearSersicMixInterpolator::get_integralsizes)
                       .def("integralsizes_derivs",

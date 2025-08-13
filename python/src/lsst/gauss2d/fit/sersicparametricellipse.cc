@@ -37,8 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_sersicparametricellipse(py::module &m) {
-    auto _e = py::class_<g2f::SersicParametricEllipse, std::shared_ptr<g2f::SersicParametricEllipse>,
-                         g2f::ParametricEllipse>(m, "SersicParametricEllipse")
+    auto _e = py::classh<g2f::SersicParametricEllipse, g2f::ParametricEllipse>(m, "SersicParametricEllipse")
                       .def(py::init<double, double, double>(), "size_x"_a = 0, "size_y"_a = 0, "rho"_a = 0)
                       .def(py::init<std::shared_ptr<g2f::ReffXParameterD>,
                                     std::shared_ptr<g2f::ReffYParameterD>,

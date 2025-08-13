@@ -39,8 +39,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_shapeprior(py::module &m) {
-    auto _o = py::class_<g2f::ShapePriorOptions, std::shared_ptr<g2f::ShapePriorOptions>,
-                         lsst::gauss2d::Object>(m, "ShapePriorOptions")
+    auto _o = py::classh<g2f::ShapePriorOptions, lsst::gauss2d::Object>(m, "ShapePriorOptions")
                       .def(py::init<double, double, double>(),
                            "delta_jacobian"_a = g2f::ShapePriorOptions::delta_jacobian_default,
                            "size_maj_floor"_a = g2f::ShapePriorOptions::size_maj_floor_default,
@@ -57,7 +56,7 @@ void bind_shapeprior(py::module &m) {
                       .def("__repr__", [](const g2f::ShapePriorOptions &self) { return self.repr(true); })
                       .def("__str__", &g2f::ShapePriorOptions::str);
 
-    auto _s = py::class_<g2f::ShapePrior, std::shared_ptr<g2f::ShapePrior>, g2f::Prior>(m, "ShapePrior")
+    auto _s = py::classh<g2f::ShapePrior, g2f::Prior>(m, "ShapePrior")
                       .def(py::init<std::shared_ptr<const g2f::ParametricEllipse>,
                                     std::shared_ptr<g2f::ParametricGaussian1D>,
                                     std::shared_ptr<g2f::ParametricGaussian1D>,

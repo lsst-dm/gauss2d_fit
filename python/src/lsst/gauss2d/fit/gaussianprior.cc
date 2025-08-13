@@ -38,8 +38,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussianprior(py::module &m) {
-    auto _e = py::class_<g2f::GaussianPrior, std::shared_ptr<g2f::GaussianPrior>, g2f::Prior>(m,
-                                                                                              "GaussianPrior")
+    auto _e = py::classh<g2f::GaussianPrior, g2f::Prior>(m, "GaussianPrior")
                       .def(py::init<std::shared_ptr<const g2f::ParamBase>, double, double, bool>(),
                            "param"_a = nullptr, "mean"_a = 0, "stddev"_a = 1., "transformed"_a = false)
                       .def("evaluate", &g2f::GaussianPrior::evaluate, "calc_jacobians"_a = false,

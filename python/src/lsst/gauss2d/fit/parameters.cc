@@ -45,13 +45,13 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_parameters(py::module &m) {
-    auto _u = py::class_<parameters::Unit, std::shared_ptr<parameters::Unit>>(m, "Unit");
-    py::class_<g2f::UnitNone, std::shared_ptr<g2f::UnitNone>, parameters::Unit>(m, "UnitNone")
+    auto _u = py::classh<parameters::Unit>(m, "Unit");
+    py::classh<g2f::UnitNone, parameters::Unit>(m, "UnitNone")
             .def(py::init<>())
             .def_property_readonly("name", &g2f::UnitNone::get_name);
     declare_limits<double>(m);
     using Parameter = parameters::ParameterBase<double>;
-    auto _p = py::class_<Parameter, std::shared_ptr<Parameter>>(m, "ParameterD");
+    auto _p = py::classh<Parameter>(m, "ParameterD");
     auto integral = declare_parameter<double, g2f::IntegralParameterD>(m, "Integral");
     integral.def_property("label", &g2f::IntegralParameterD::get_label, &g2f::IntegralParameterD::set_label);
     declare_parameter<double, g2f::CentroidXParameterD>(m, "CentroidX");

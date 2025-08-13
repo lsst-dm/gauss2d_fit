@@ -37,8 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_prior(py::module &m) {
-    auto _e = py::class_<g2f::PriorEvaluation, std::shared_ptr<g2f::PriorEvaluation>, lsst::gauss2d::Object>(
-                      m, "PriorEvaluation")
+    auto _e = py::classh<g2f::PriorEvaluation, lsst::gauss2d::Object>(m, "PriorEvaluation")
                       .def(py::init<double, std::vector<double>,
                                     std::map<g2f::ParamBaseCRef, std::vector<double>>>(),
                            "loglike"_a, "residuals"_a = std::vector<double>{},
@@ -48,5 +47,5 @@ void bind_prior(py::module &m) {
                       .def_readonly("residuals", &g2f::PriorEvaluation::residuals)
                       .def("__repr__", [](const g2f::PriorEvaluation &self) { return self.repr(true); })
                       .def("__str__", &g2f::PriorEvaluation::str);
-    auto _p = py::class_<g2f::Prior, std::shared_ptr<g2f::Prior>, lsst::gauss2d::Object>(m, "Prior");
+    auto _p = py::classh<g2f::Prior, lsst::gauss2d::Object>(m, "Prior");
 }

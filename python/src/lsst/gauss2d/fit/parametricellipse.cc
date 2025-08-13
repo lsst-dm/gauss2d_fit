@@ -36,6 +36,5 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_parametricellipse(py::module &m) {
-    auto _p = py::class_<g2f::ParametricEllipse, std::shared_ptr<g2f::ParametricEllipse>, g2f::Parametric>(
-            m, "ParametricEllipse");
+    auto _p = py::classh<g2f::ParametricEllipse, g2f::Parametric>(m, "ParametricEllipse");
 }

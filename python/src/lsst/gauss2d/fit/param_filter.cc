@@ -36,7 +36,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_param_filter(py::module &m) {
-    auto _p = py::class_<g2f::ParamFilter, std::shared_ptr<g2f::ParamFilter>>(m, "ParamFilter")
+    auto _p = py::classh<g2f::ParamFilter>(m, "ParamFilter")
                       .def(py::init<bool, bool, bool, bool,
                                     std::optional<std::reference_wrapper<const g2f::Channel>>>(),
                            "fixed"_a = true, "free"_a = true, "linear"_a = true, "nonlinear"_a = true,

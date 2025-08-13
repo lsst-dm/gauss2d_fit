@@ -37,7 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_source(py::module &m) {
-    auto _s = py::class_<g2f::Source, std::shared_ptr<g2f::Source>, g2f::ComponentMixture>(m, "Source")
+    auto _s = py::classh<g2f::Source, g2f::ComponentMixture>(m, "Source")
                       .def(py::init<g2f::Components &>(), "components"_a = nullptr)
                       .def_property_readonly("components", &g2f::Source::get_components)
                       .def("gaussians",

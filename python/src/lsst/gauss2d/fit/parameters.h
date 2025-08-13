@@ -50,7 +50,7 @@ template <typename T>
 void declare_limits(py::module &m) {
     using Class = parameters::Limits<T>;
     std::string pyclass_name = std::string("Limits") + g2f::suffix_type_str<T>();
-    py::class_<Class, std::shared_ptr<Class>>(m, pyclass_name.c_str())
+    py::classh<Class>(m, pyclass_name.c_str())
             .def(py::init<T, T, const std::string>(), "min"_a = -std::numeric_limits<T>::infinity(),
                  "max"_a = std::numeric_limits<T>::infinity(), "name"_a = "")
             .def("check", &Class::check)
@@ -67,7 +67,7 @@ void declare_limits(py::module &m) {
     TODO: Come up with a better naming scheme for this.
 */
 template <class Class, class C, typename... Args>
-auto declare_parameter_methods(py::class_<C, Args...> c) {
+auto declare_parameter_methods(py::classh<C, Args...> c) {
     return c.def_property_readonly("default", &Class::get_default)
             .def_property_readonly("desc", &Class::get_desc)
             .def_property("fixed", &Class::get_fixed, &Class::set_fixed)
@@ -114,8 +114,8 @@ template <typename T, class C, class... Bases>
 auto declare_parameter(py::module &m, std::string name, std::string suffix = g2f::suffix_type_str<T>()) {
     using Base = parameters::ParameterBase<T>;
     using Class = parameters::Parameter<T, C>;
-    return declare_parameter_methods<Class, C, std::shared_ptr<C>, Base>(
-            py::class_<C, std::shared_ptr<C>, Base, Bases...>(m, (name + "Parameter" + suffix).c_str())
+    return declare_parameter_methods<Class, C, Base>(
+            py::classh<C, Base, Bases...>(m, (name + "Parameter" + suffix).c_str())
                     .def(py::init<T, std::shared_ptr<const parameters::Limits<T>>,
                                   std::shared_ptr<const parameters::Transform<T>>,
                                   std::shared_ptr<const parameters::Unit>, bool, std::string>(),
@@ -131,20 +131,20 @@ auto declare_sizeparameter(py::module &m, std::string name) {
 
 template <typename T, class ClassX, class ClassY>
 auto declare_sizeparameter_base(py::module &m, std::string suffix = g2f::suffix_type_str<T>()) {
-    py::class_<ClassX, std::shared_ptr<ClassX>>(m, ("SizeXParameter" + suffix).c_str());
-    py::class_<ClassY, std::shared_ptr<ClassY>>(m, ("SizeYParameter" + suffix).c_str());
+    py::classh<ClassX>(m, ("SizeXParameter" + suffix).c_str());
+    py::classh<ClassY>(m, ("SizeYParameter" + suffix).c_str());
 }
 
 template <typename T>
 void declare_transform_base(py::module &m) {
     using Class = parameters::Transform<T>;
-    py::class_<Class, std::shared_ptr<Class>>(m, "TransformD");
+    py::classh<Class>(m, "TransformD");
 }
 
 template <typename T, class C, bool has_factor, bool has_limits, typename... Arguments>
 void declare_transform_full(py::module &m, std::string name) {
     using Class = C;
-    auto x = py::class_<Class, std::shared_ptr<Class>, parameters::Transform<T>>(
+    auto x = py::classh<Class, parameters::Transform<T>>(
                      m, (name + "TransformD").c_str())
                      .def("description", &Class::description)
                      .def("derivative", &Class::derivative)
@@ -154,15 +154,13 @@ void declare_transform_full(py::module &m, std::string name) {
                      .def("__str__", &Class::str);
     if constexpr (has_factor) x.def_property("factor", &Class::get_factor, &Class::set_factor);
     if constexpr (has_limits) x.def_property("limits", &Class::get_limits, &Class::set_limits);
-    // TODO: Figure out a neater way to do this
-    constexpr const bool has_both = has_factor && has_limits;
-    if constexpr (has_both)
+    if constexpr (has_factor && has_limits)
         x.def(py::init<Arguments...>(), "limits"_a = nullptr, "factor"_a = 1.);
     else if constexpr (has_factor)
         x.def(py::init<Arguments...>(), "factor"_a = 1.);
     else if constexpr (has_limits)
         x.def(py::init<Arguments...>(), "limits"_a = nullptr);
-    else if constexpr (!has_both)
+    else
         x.def(py::init<>());
 }
 

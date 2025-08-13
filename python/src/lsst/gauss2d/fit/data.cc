@@ -45,7 +45,7 @@ void declare_data(py::module &m, std::string str_type) {
     typedef g2f::Data<T, g2p::Image<T>, g2p::Image<bool>> Data;
     typedef g2f::Observation<T, g2p::Image<T>, g2p::Image<bool>> Observation;
     std::string pyclass_name = std::string("Data") + str_type;
-    py::class_<Data, std::shared_ptr<Data>, g2f::Chromatic, g2f::Parametric>(m, pyclass_name.c_str())
+    py::classh<Data, g2f::Chromatic, g2f::Parametric>(m, pyclass_name.c_str())
             .def(py::init<std::vector<std::shared_ptr<const Observation>>>(), "data"_a)
             .def_property_readonly("channels", &Data::get_channels)
             .def("parameters", &Data::get_parameters, "parameters"_a = g2f::ParamRefs(),
