@@ -21,16 +21,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <memory>
 
 #include "lsst/gauss2d/gaussian.h"
 
 #include "lsst/gauss2d/fit/channel.h"
 #include "lsst/gauss2d/fit/gaussianmodelintegral.h"
 #include "lsst/gauss2d/fit/integralmodel.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -39,8 +40,8 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussianmodelintegral(py::module &m) {
-    auto _p = py::class_<g2f::GaussianModelIntegral, std::shared_ptr<g2f::GaussianModelIntegral>,
-                         lsst::gauss2d::GaussianIntegral>(m, "GaussianModelIntegral")
+    auto _p = py::classh<g2f::GaussianModelIntegral, lsst::gauss2d::GaussianIntegral>(m,
+                                                                                      "GaussianModelIntegral")
                       .def(py::init<const g2f::Channel &, const std::shared_ptr<const g2f::IntegralModel>>(),
                            "channel"_a, "integralmodel"_a)
                       .def_property("value", &g2f::GaussianModelIntegral::get_value,

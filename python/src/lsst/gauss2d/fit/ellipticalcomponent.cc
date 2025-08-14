@@ -21,16 +21,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-#include <string>
-
-#include "lsst/gauss2d/ellipse.h"
 #include "lsst/gauss2d/fit/ellipticalcomponent.h"
-#include "lsst/gauss2d/fit/parametric.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -39,8 +34,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_ellipticalcomponent(py::module &m) {
-    auto _e = py::class_<g2f::EllipticalComponent, std::shared_ptr<g2f::EllipticalComponent>, g2f::Component>(
-                      m, "EllipticalComponent")
+    auto _e = py::classh<g2f::EllipticalComponent, g2f::Component>(m, "EllipticalComponent")
                       .def_property_readonly("centroid", &g2f::EllipticalComponent::get_centroid)
                       .def_property_readonly("ellipse", &g2f::EllipticalComponent::get_ellipse)
                       .def_property_readonly("integralmodel", &g2f::EllipticalComponent::get_integralmodel);

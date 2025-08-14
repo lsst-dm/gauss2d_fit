@@ -21,14 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-#include <string>
-
 #include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/object.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -37,7 +35,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_channel(py::module &m) {
-    auto _c = py::class_<g2f::Channel, std::shared_ptr<g2f::Channel> >(m, "Channel")
+    auto _c = py::classh<g2f::Channel, lsst::gauss2d::Object>(m, "Channel")
                       .def(py::init(&g2f::Channel::make))
                       .def_static("erase", &g2f::Channel::erase)
                       .def_property_readonly_static("all",

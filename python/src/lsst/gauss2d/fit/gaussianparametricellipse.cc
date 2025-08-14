@@ -21,14 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/parameters.h"
 #include "lsst/gauss2d/fit/gaussianparametricellipse.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -37,8 +37,8 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussianparametricellipse(py::module &m) {
-    auto _e = py::class_<g2f::GaussianParametricEllipse, std::shared_ptr<g2f::GaussianParametricEllipse>,
-                         lsst::gauss2d::EllipseData, g2f::ParametricEllipse>(m, "GaussianParametricEllipse")
+    auto _e = py::classh<g2f::GaussianParametricEllipse, lsst::gauss2d::EllipseData, g2f::ParametricEllipse>(
+                      m, "GaussianParametricEllipse")
                       .def(py::init<double, double, double>(), "sigma_x"_a = 0, "sigma_y"_a = 0, "rho"_a = 0)
                       .def(py::init<std::shared_ptr<g2f::SigmaXParameterD>,
                                     std::shared_ptr<g2f::SigmaYParameterD>,

@@ -21,18 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-#include <string>
-
 #include "lsst/gauss2d/centroid.h"
 #include "lsst/gauss2d/fit/centroidparameters.h"
-#include "pybind11.h"
 
-// #include "utils.h"
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -40,8 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_centroidparameters(py::module &m) {
-    auto _c = py::class_<g2f::CentroidParameters, std::shared_ptr<g2f::CentroidParameters>,
-                         lsst::gauss2d::CentroidData>(m, "CentroidParameters")
+    auto _c = py::classh<g2f::CentroidParameters, lsst::gauss2d::CentroidData>(m, "CentroidParameters")
                       .def(py::init<double, double>(), "x"_a = 0, "y"_a = 0)
                       .def(py::init<std::shared_ptr<g2f::CentroidXParameterD>,
                                     std::shared_ptr<g2f::CentroidYParameterD>>(),

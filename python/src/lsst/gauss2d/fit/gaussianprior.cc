@@ -21,15 +21,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <memory>
 
 #include "lsst/gauss2d/fit/gaussianprior.h"
 #include "lsst/gauss2d/fit/param_defs.h"
 #include "lsst/gauss2d/fit/prior.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -38,8 +38,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussianprior(py::module &m) {
-    auto _e = py::class_<g2f::GaussianPrior, std::shared_ptr<g2f::GaussianPrior>, g2f::Prior>(m,
-                                                                                              "GaussianPrior")
+    auto _e = py::classh<g2f::GaussianPrior, g2f::Prior>(m, "GaussianPrior")
                       .def(py::init<std::shared_ptr<const g2f::ParamBase>, double, double, bool>(),
                            "param"_a = nullptr, "mean"_a = 0, "stddev"_a = 1., "transformed"_a = false)
                       .def("evaluate", &g2f::GaussianPrior::evaluate, "calc_jacobians"_a = false,

@@ -24,12 +24,11 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/data.h"
 #include "lsst/gauss2d/fit/integralmodel.h"
 #include "lsst/gauss2d/fit/fractionalintegralmodel.h"
 #include "lsst/gauss2d/fit/parameters.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -38,8 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_fractionalintegralmodel(py::module &m) {
-    auto _p = py::class_<g2f::FractionalIntegralModel, std::shared_ptr<g2f::FractionalIntegralModel>,
-                         g2f::IntegralModel>(m, "FractionalIntegralModel")
+    auto _p = py::classh<g2f::FractionalIntegralModel, g2f::IntegralModel>(m, "FractionalIntegralModel")
                       .def(py::init(&g2f::FractionalIntegralModel::make), "data"_a, "model"_a,
                            "is_final"_a = false)
                       .def_property_readonly("channels", &g2f::FractionalIntegralModel::get_channels)

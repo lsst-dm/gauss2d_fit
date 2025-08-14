@@ -21,16 +21,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
-#include "pybind11.h"
-
 #include "lsst/gauss2d/fit/linearsersicmixinterpolator.h"
 #include "lsst/gauss2d/fit/sersicmix.h"
+
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -38,8 +35,8 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_linearsersicmixinterpolator(py::module &m) {
-    auto _e = py::class_<g2f::LinearSersicMixInterpolator, std::shared_ptr<g2f::LinearSersicMixInterpolator>,
-                         g2f::SersicMixInterpolator>(m, "LinearSersicMixInterpolator")
+    auto _e = py::classh<g2f::LinearSersicMixInterpolator, g2f::SersicMixInterpolator>(
+                      m, "LinearSersicMixInterpolator")
                       .def(py::init<short>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT)
                       .def("integralsizes", &g2f::LinearSersicMixInterpolator::get_integralsizes)
                       .def("integralsizes_derivs",

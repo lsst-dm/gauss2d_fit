@@ -23,14 +23,14 @@
 
 #include <memory>
 
-#include <pybind11/attr.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "pybind11.h"
 
 #include "lsst/gauss2d/fit/component.h"
 #include "lsst/gauss2d/fit/gaussiancomponent.h"
 #include "lsst/gauss2d/fit/gaussianparametricellipse.h"
+
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -38,8 +38,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_gaussiancomponent(py::module &m) {
-    auto _e = py::class_<g2f::GaussianComponent, std::shared_ptr<g2f::GaussianComponent>,
-                         g2f::EllipticalComponent>(m, "GaussianComponent")
+    auto _e = py::classh<g2f::GaussianComponent, g2f::EllipticalComponent>(m, "GaussianComponent")
                       .def(py::init<std::shared_ptr<g2f::GaussianParametricEllipse>,
                                     std::shared_ptr<g2f::CentroidParameters>,
                                     std::shared_ptr<g2f::IntegralModel>>(),

@@ -21,15 +21,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-#include <string>
-
 #include "lsst/gauss2d/fit/componentmixture.h"
 #include "lsst/gauss2d/fit/psfmodel.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -38,7 +37,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_psfmodel(py::module &m) {
-    auto _o = py::class_<g2f::PsfModel, std::shared_ptr<g2f::PsfModel>, g2f::ComponentMixture>(m, "PsfModel")
+    auto _o = py::classh<g2f::PsfModel, g2f::ComponentMixture>(m, "PsfModel")
                       .def(py::init<g2f::Components &>(), "components"_a = nullptr)
                       .def_property_readonly("components", &g2f::PsfModel::get_components)
                       .def("gaussians",

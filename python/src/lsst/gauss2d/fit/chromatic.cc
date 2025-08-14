@@ -24,9 +24,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/chromatic.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -34,6 +33,4 @@ using namespace pybind11::literals;
 
 namespace g2f = lsst::gauss2d::fit;
 
-void bind_chromatic(py::module &m) {
-    auto _p = py::class_<g2f::Chromatic, std::shared_ptr<g2f::Chromatic>>(m, "Chromatic");
-}
+void bind_chromatic(const py::module &m) { auto _p = py::classh<g2f::Chromatic>(m, "Chromatic"); }

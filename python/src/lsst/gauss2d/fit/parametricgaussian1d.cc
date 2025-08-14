@@ -21,11 +21,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-
-#include <memory>
 
 #include "lsst/gauss2d/fit/parameters.h"
 #include "lsst/gauss2d/fit/parametricgaussian1d.h"
@@ -37,8 +36,7 @@ using namespace pybind11::literals;
 
 namespace g2f = lsst::gauss2d::fit;
 void bind_parametricgaussian1d(py::module &m) {
-    auto _e = py::class_<g2f::ParametricGaussian1D, std::shared_ptr<g2f::ParametricGaussian1D>,
-                         lsst::gauss2d::Object>(m, "ParametricGaussian1D")
+    auto _e = py::classh<g2f::ParametricGaussian1D, lsst::gauss2d::Object>(m, "ParametricGaussian1D")
                       .def(py::init<std::shared_ptr<g2f::MeanParameterD>,
                                     std::shared_ptr<g2f::StdDevParameterD>>(),
                            "mean"_a = nullptr, "stddev"_a = nullptr)

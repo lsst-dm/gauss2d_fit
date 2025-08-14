@@ -23,16 +23,15 @@
 
 #ifdef LSST_GAUSS2D_FIT_HAS_GSL
 
-#include <pybind11/attr.h>
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
-#include "pybind11.h"
-
 #include "lsst/gauss2d/fit/gsl.h"
 #include "lsst/gauss2d/fit/gslinterpolator.h"
+
+#include "pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -40,8 +39,8 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_gslsersicmixinterpolator(py::module &m) {
-    auto _e = py::class_<g2f::GSLSersicMixInterpolator, std::shared_ptr<g2f::GSLSersicMixInterpolator>,
-                         g2f::SersicMixInterpolator>(m, "GSLSersicMixInterpolator")
+    auto _e = py::classh<g2f::GSLSersicMixInterpolator, g2f::SersicMixInterpolator>(
+                      m, "GSLSersicMixInterpolator")
                       .def(py::init<short, const g2f::GSLInterpType>(),
                            "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
                            "interp_type"_a = g2f::GSLInterpType::cspline)

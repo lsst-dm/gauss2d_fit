@@ -24,12 +24,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <memory>
-
 #include "lsst/gauss2d/fit/data.h"
 #include "lsst/gauss2d/fit/integralmodel.h"
 #include "lsst/gauss2d/fit/linearintegralmodel.h"
-#include "lsst/gauss2d/fit/parameters.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -38,8 +36,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_linearintegralmodel(py::module &m) {
-    auto _p = py::class_<g2f::LinearIntegralModel, std::shared_ptr<g2f::LinearIntegralModel>,
-                         g2f::IntegralModel>(m, "LinearIntegralModel")
+    auto _p = py::classh<g2f::LinearIntegralModel, g2f::IntegralModel>(m, "LinearIntegralModel")
                       .def(py::init<const g2f::LinearIntegralModel::Data *>(), "data"_a)
                       .def_property_readonly("channels", &g2f::LinearIntegralModel::get_channels)
                       .def("integral", &g2f::LinearIntegralModel::get_integral, "channel"_a)

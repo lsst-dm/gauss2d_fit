@@ -21,13 +21,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
 #include <memory>
 #include <optional>
 #include <string>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "lsst/gauss2d/gaussian.h"
 #include "lsst/gauss2d/fit/model.h"
@@ -45,7 +44,7 @@ void declare_model(py::module &m, std::string str_type) {
     typedef g2p::Image<T> Image;
     typedef g2f::Model<T, Image, g2p::Image<size_t>, g2p::Image<bool>> Model;
     std::string pyclass_name = std::string("Model") + str_type;
-    auto model = py::class_<Model, std::shared_ptr<Model>, g2f::ParametricModel>(m, pyclass_name.c_str());
+    auto model = py::classh<Model, g2f::ParametricModel>(m, pyclass_name.c_str());
     model.def(py::init<std::shared_ptr<const typename Model::ModelData>, g2f::PsfModels &, g2f::Sources &,
                        g2f::Priors &>(),
               "data"_a, "psfmodels"_a, "sources"_a, "priors"_a = g2f::Priors{})
@@ -95,7 +94,7 @@ void bind_model(py::module &m) {
                       .value("loglike_grad", g2f::EvaluatorMode::loglike_grad)
                       .value("jacobian", g2f::EvaluatorMode::jacobian)
                       .export_values();
-    auto _h = py::class_<g2f::HessianOptions, std::shared_ptr<g2f::HessianOptions>>(m, "HessianOptions")
+    auto _h = py::classh<g2f::HessianOptions>(m, "HessianOptions")
                       .def(py::init<bool, double, double>(), "return_negative"_a = true,
                            "findiff_frac"_a = 1e-4, "findiff_add"_a = 1e-4)
                       .def_readwrite("return_negative", &g2f::HessianOptions::return_negative)

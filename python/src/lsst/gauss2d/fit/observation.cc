@@ -21,16 +21,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <pybind11/attr.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
 #include <memory>
 #include <string>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "lsst/gauss2d/fit/observation.h"
 #include "lsst/gauss2d/fit/parametric.h"
 #include "lsst/gauss2d/python/image.h"
+
 #include "pybind11.h"
 
 namespace py = pybind11;
@@ -45,7 +45,7 @@ void declare_observation(py::module &m, std::string str_type) {
     typedef g2p::Image<bool> Mask;
     typedef g2f::Observation<T, Image, Mask> Observation;
     std::string pyclass_name = std::string("Observation") + str_type;
-    py::class_<Observation, std::shared_ptr<Observation>, g2f::Parametric>(m, pyclass_name.c_str())
+    py::classh<Observation, g2f::Parametric>(m, pyclass_name.c_str())
             .def(py::init<std::shared_ptr<Image>, std::shared_ptr<Image>, std::shared_ptr<Mask>,
                           const g2f::Channel &>(),
                  "image"_a, "sigma_inv"_a, "mask_inv"_a, "channel"_a)
