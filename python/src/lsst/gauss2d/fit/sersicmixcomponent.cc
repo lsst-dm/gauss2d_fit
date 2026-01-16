@@ -67,7 +67,7 @@ void bind_sersicmixcomponent(py::module &m) {
 
     auto _e = py::classh<g2f::SersicMixComponent, g2f::EllipticalComponent>(m, "SersicMixComponent")
                       .def(py::init<std::shared_ptr<g2f::SersicParametricEllipse>,
-                                    std::shared_ptr<g2f::CentroidParameters>,
+                                    std::shared_ptr<g2f::MultiChannelCentroid>,
                                     std::shared_ptr<g2f::IntegralModel>,
                                     std::shared_ptr<g2f::SersicMixComponentIndexParameterD>>(),
                            "ellipse"_a = nullptr, "centroid"_a = nullptr, "integral"_a = nullptr,

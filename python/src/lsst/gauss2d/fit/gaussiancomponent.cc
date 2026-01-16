@@ -40,17 +40,19 @@ namespace g2f = lsst::gauss2d::fit;
 void bind_gaussiancomponent(py::module &m) {
     auto _e = py::classh<g2f::GaussianComponent, g2f::EllipticalComponent>(m, "GaussianComponent")
                       .def(py::init<std::shared_ptr<g2f::GaussianParametricEllipse>,
-                                    std::shared_ptr<g2f::CentroidParameters>,
+                                    std::shared_ptr<g2f::MultiChannelCentroid>,
                                     std::shared_ptr<g2f::IntegralModel>>(),
                            "ellipse"_a = nullptr, "centroid"_a = nullptr, "integral"_a = nullptr)
                       .def("parameters", &g2f::GaussianComponent::get_parameters,
                            "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
                       .def("gaussians",
                            [](const g2f::GaussianComponent &g, const g2f::Channel &c) {
-                               return std::shared_ptr<const lsst::gauss2d::Gaussians>(g.get_gaussians(c));
+                               return std::shared_ptr(g.get_gaussians(c));
                            })
                       .def_static("make_uniq_default_gaussians",
-                                  &g2f::GaussianComponent::make_uniq_default_gaussians, "sizes"_a, "fixed"_a)
+                                  &g2f::GaussianComponent::make_uniq_default_gaussians, "sizes"_a,
+                                  "fixed"_a=true,
+                                  "achromatic_centroids"_a=true)
                       .def("__repr__", [](const g2f::GaussianComponent &self) { return self.repr(true); })
                       .def("__str__", &g2f::GaussianComponent::str);
 }

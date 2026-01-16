@@ -2,9 +2,11 @@ prefix_gauss2d = 'lsst/gauss2d/'
 prefix_gauss2d_fit = prefix_gauss2d + 'fit/'
 gauss2d_fit_headers = [
     prefix_gauss2d + 'fit.h',
+    prefix_gauss2d_fit + 'achromaticcentroid.h',
     prefix_gauss2d_fit + 'centroidparameters.h',
     prefix_gauss2d_fit + 'channel.h',
     prefix_gauss2d_fit + 'chromatic.h',
+    prefix_gauss2d_fit + 'chromaticcentroid.h',
     prefix_gauss2d_fit + 'component.h',
     prefix_gauss2d_fit + 'componentmixture.h',
     prefix_gauss2d_fit + 'data.h',
@@ -23,6 +25,7 @@ gauss2d_fit_headers = [
     prefix_gauss2d_fit + 'linearsersicmixinterpolator.h',
     prefix_gauss2d_fit + 'math.h',
     prefix_gauss2d_fit + 'model.h',
+    prefix_gauss2d_fit + 'multichannelcentroid.h',
     prefix_gauss2d_fit + 'observation.h',
     prefix_gauss2d_fit + 'param_defs.h',
     prefix_gauss2d_fit + 'param_filter.h',

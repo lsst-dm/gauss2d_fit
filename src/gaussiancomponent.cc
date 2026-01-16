@@ -18,10 +18,10 @@ static const size_t N_PARAMS_INTEGRAL_MAX = 2;
 static const size_t N_PARAMS_EXTRA_INTEGRAL_MAX = N_PARAMS_INTEGRAL_MAX - 1;
 
 GaussianComponent::GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse,
-                                     std::shared_ptr<CentroidParameters> centroid,
+                                     std::shared_ptr<MultiChannelCentroid> centroid,
                                      std::shared_ptr<IntegralModel> integralmodel)
         : GaussianParametricEllipseHolder(std::move(ellipse)),
-          EllipticalComponent(_ellipsedata, centroid, integralmodel) {}
+          EllipticalComponent(_ellipsedata, std::move(centroid), std::move(integralmodel)) {}
 
 ParamCRefs GaussianComponent::_get_parameters_grad(const Channel& channel) const {
     ParamCRefs params;
@@ -119,15 +119,21 @@ void GaussianComponent::add_grad_param_factors(const Channel& channel, GradParam
     factors.push_back({1, 1, 1, 1, 1, 1});
 }
 
-std::unique_ptr<const lsst::gauss2d::Gaussians> GaussianComponent::get_gaussians(
-        const Channel& channel) const {
-    lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
-            std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
-            std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
-    return std::make_unique<const lsst::gauss2d::Gaussians>(gaussians);
+std::unique_ptr<const Gaussians> GaussianComponent::get_gaussians(const Channel& channel) const {
+    auto centroid = this->_centroid->find(channel);
+    if (centroid == nullptr) {
+        return nullptr;
+    }
+    auto integralmodel = std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel);
+    Gaussians::Data gaussians
+            = {std::make_shared<Gaussian>(std::make_shared<Centroid>(centroid),
+                                          std::make_shared<Ellipse>(this->_ellipsedata), integralmodel)};
+    return std::make_unique<const Gaussians>(gaussians);
 }
 
-size_t GaussianComponent::get_n_gaussians(const Channel& channel) const { return 1; };
+size_t GaussianComponent::get_n_gaussians(const Channel& channel) const {
+    return _centroid->find(channel) != nullptr;
+};
 
 ParamRefs& GaussianComponent::get_parameters(ParamRefs& params, ParamFilter* filter) const {
     EllipticalComponent::get_parameters(params, filter);

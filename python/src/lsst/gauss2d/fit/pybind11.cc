@@ -48,12 +48,15 @@ PYBIND11_MODULE(_gauss2d_fit, m) {
     bind_componentmixture(m);
     bind_integralmodel(m);
     bind_interpolation(m);
+    bind_multichannelcentroid(m);
     bind_prior(m);
     bind_sersicmix(m);
 #ifdef LSST_GAUSS2D_FIT_HAS_GSL
     bind_gsl(m);
 #endif
+    bind_achromaticcentroid(m);
     bind_centroidparameters(m);
+    bind_chromaticcentroid(m);
     bind_channel(m);
     bind_data(m);
     bind_ellipticalcomponent(m);

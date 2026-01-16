@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/chromaticcentroid.h"
 #include "lsst/gauss2d/fit/linearintegralmodel.h"
 #include "lsst/gauss2d/fit/sersicmixcomponent.h"
 
@@ -39,7 +40,8 @@ TEST_CASE("SersicMixComponent") {
 
     auto comp = std::make_shared<g2f::SersicMixComponent>(
             std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y),
-            std::make_shared<g2f::CentroidParameters>(), std::make_shared<g2f::LinearIntegralModel>(&data),
+            std::make_shared<g2f::ChromaticCentroid>(),
+            std::make_shared<g2f::LinearIntegralModel>(&data),
             sersic_n);
     CHECK_GE(comp->str().size(), 0);
 

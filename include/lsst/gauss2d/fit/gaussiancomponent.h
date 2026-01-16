@@ -1,13 +1,16 @@
 #ifndef LSST_GAUSS2D_FIT_GAUSSIANCOMPONENT_H
 #define LSST_GAUSS2D_FIT_GAUSSIANCOMPONENT_H
 
+#include "achromaticcentroid.h"
 #include "channel.h"
+#include "chromaticcentroid.h"
 #include "ellipticalcomponent.h"
 #include "gaussianparametricellipse.h"
 #include "integralmodel.h"
 #include "linearintegralmodel.h"
 #include "param_defs.h"
 #include "param_filter.h"
+
 #include <memory>
 
 namespace lsst::gauss2d::fit {
@@ -33,11 +36,11 @@ public:
      * Construct a GaussianComponent from ellipse, centroid and integral parameters.
      *
      * @param ellipse The GaussianParametricEllipse value; default-initialized if null.
-     * @param centroid The CentroidParameters value; default-initialized if null.
+     * @param centroid The MultiChannelCentroid value; default-initialized if null.
      * @param integralmodel The IntegralModel value; default-initialized if null.
      */
     explicit GaussianComponent(std::shared_ptr<GaussianParametricEllipse> ellipse = nullptr,
-                               std::shared_ptr<CentroidParameters> centroid = nullptr,
+                               std::shared_ptr<MultiChannelCentroid> centroid = nullptr,
                                std::shared_ptr<IntegralModel> integralmodel = nullptr);
 
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
@@ -46,7 +49,7 @@ public:
     void add_grad_param_map(const Channel& channel, GradParamMap& map, ParameterMap& offsets) const override;
     void add_grad_param_factors(const Channel& channel, GradParamFactors& factor) const override;
 
-    std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const override;
+    std::unique_ptr<const Gaussians> get_gaussians(const Channel& channel) const override;
     size_t get_n_gaussians(const Channel& channel) const override;
 
     ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
@@ -57,27 +60,38 @@ public:
      *
      * @param sizes Vector of initial values for both sigma_x and sigma_y.
      * @param fixed Whether all Parameter members should be fixed initially.
+     * @param achromatic_centroids Whether the centroid should be an
+     *   AchromaticCentroid instance; otherwise ChromaticCentroid.
      * @return A vector of GaussianComponent instances.
      *
      * @note This can be used to initialize a trivial PsfModel as a
-     * noralized, zero-size single Gaussian.
+     * normalized, zero-size single Gaussian.
      */
     static std::vector<std::shared_ptr<Component>> make_uniq_default_gaussians(
-            const std::vector<double>& sizes = {2.}, bool fixed = true) {
+            const std::vector<double>& sizes = {2.}, bool fixed = true, bool achromatic_centroids = true) {
         std::vector<std::shared_ptr<Component>> comps = {};
+        const auto& channel_none = g2f::Channel::NONE();
         for (const double size : sizes) {
             LinearIntegralModel::Data data
                     = {{Channel::NONE(),
                         std::make_shared<IntegralParameterD>(1., nullptr, nullptr, nullptr, fixed)}};
+            auto centroid_none = std::make_shared<CentroidParameters>(
+                    std::make_shared<CentroidXParameterD>(0, nullptr, nullptr, nullptr, fixed),
+                    std::make_shared<CentroidYParameterD>(0, nullptr, nullptr, nullptr, fixed));
+            std::shared_ptr<MultiChannelCentroid> centroid;
+            if (achromatic_centroids) {
+                centroid = std::make_shared<AchromaticCentroid>(centroid_none);
+            } else {
+                std::map<std::reference_wrapper<const Channel>, std::shared_ptr<CentroidParameters>> data;
+                data[channel_none] = centroid_none;
+                centroid = std::make_shared<ChromaticCentroid>(data);
+            }
             comps.emplace_back(std::make_shared<GaussianComponent>(
                     std::make_shared<GaussianParametricEllipse>(
                             std::make_shared<SigmaXParameterD>(size, nullptr, nullptr, nullptr, fixed),
                             std::make_shared<SigmaYParameterD>(size, nullptr, nullptr, nullptr, fixed),
                             std::make_shared<RhoParameterD>(0, nullptr, nullptr, nullptr, fixed)),
-                    std::make_shared<CentroidParameters>(
-                            std::make_shared<CentroidXParameterD>(0, nullptr, nullptr, nullptr, fixed),
-                            std::make_shared<CentroidYParameterD>(0, nullptr, nullptr, nullptr, fixed)),
-                    std::make_shared<LinearIntegralModel>(&data)));
+                    centroid, std::make_shared<LinearIntegralModel>(&data)));
         }
         return comps;
     }

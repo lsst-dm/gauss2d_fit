@@ -1,6 +1,8 @@
 gauss2d_fit_sources = [
+    'achromaticcentroid.cc',
     'centroidparameters.cc',
     'channel.cc',
+    'chromaticcentroid.cc',
     'ellipticalcomponent.cc',
     'fractionalintegralmodel.cc',
     'gaussiancomponent.cc',

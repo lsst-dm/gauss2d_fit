@@ -8,8 +8,11 @@
 namespace g2d = lsst::gauss2d;
 namespace g2f = lsst::gauss2d::fit;
 
+const auto & CHANNEL_NONE = g2f::Channel::NONE();
+const auto CHANNEL_X_PTR = g2f::Channel::make("x");
+const auto & CHANNEL_X = *CHANNEL_X_PTR;
+
 TEST_CASE("GaussianComponent") {
-    const auto& C = g2f::Channel::NONE();
     auto comp = std::make_shared<g2f::GaussianComponent>();
     CHECK_GT(comp->str().size(), 0);
 
@@ -17,8 +20,10 @@ TEST_CASE("GaussianComponent") {
     // 2 centroid, 3 ellipse, 1 integral
     CHECK_EQ(comp->get_parameters_const(params).size(), 6);
 
-    CHECK_EQ(comp->get_n_gaussians(C), 1);
-    auto gaussians = comp->get_gaussians(C);
+    CHECK_EQ(comp->get_n_gaussians(CHANNEL_NONE), 1);
+    // It should be achromatic
+    CHECK_EQ(comp->get_n_gaussians(CHANNEL_X), 1);
+    auto gaussians = comp->get_gaussians(CHANNEL_NONE);
     CHECK_EQ(gaussians->size(), 1);
     const auto& g0 = gaussians->at(0);
     const g2d::Gaussian g1{};
@@ -28,6 +33,10 @@ TEST_CASE("GaussianComponent") {
 
     CHECK_EQ(gaussians->at_const(0), g1);
 
-    auto gaussians_default = g2f::GaussianComponent::make_uniq_default_gaussians({1., 3.});
+    auto gaussians_default = g2f::GaussianComponent::make_uniq_default_gaussians(
+        {1., 3.}, true, false
+    );
     CHECK_EQ(gaussians_default.size(), 2);
+    const auto & comp2 = gaussians_default.at(0);
+    CHECK_EQ(comp2->get_n_gaussians(CHANNEL_X), 0);
 }

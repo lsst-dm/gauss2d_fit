@@ -150,8 +150,17 @@ def test_model(channels, model):
     gaussians = model.gaussians(channels[0])
     assert len(gaussians) == 12
     params = model.parameters()
-    assert len(params) == 80
+    # Each component gets a ChromaticCentroid with 3 channels x 2 params
+    # + 3 shape parameters + 3 channels x 2 params for the first
+    # Source 0 = 15 + 15 + 13 (+ 1 for Sersic, -3 for no IntegralParameter)
+    # Source 1 = same
+    # PSF: 3 channel x 6 params (single Gauss) each = 18
+    # 86 + 18 = 104
+    assert len(params) == 104
+    # 6 components each drop 4 identical centroid params = -24
+    # 2 x components[1] drop 6 frac/integral params = -12
     assert len(set(params)) == 68
+    assert len(g2f.params_unique(params)) == 68
 
 
 def test_model_eval_jacobian(model):

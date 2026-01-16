@@ -160,26 +160,37 @@ static const std::array<size_t, N_PARAMS_GAUSS2D> IDX_ORDER = {0, 1, 3, 4, 5, 2}
 // seems to be no need to implement all of its functions
 class SersicMixComponent::SersicMixGaussianComponent {
 public:
-    SersicMixGaussianComponent(std::shared_ptr<SersicEllipseData> ellipsedata = nullptr,
-                               std::shared_ptr<CentroidParameters> centroid = nullptr,
-                               std::shared_ptr<SersicModelIntegral> integralmodel = nullptr)
+    SersicMixGaussianComponent(std::shared_ptr<SersicEllipseData> ellipsedata,
+                               std::shared_ptr<MultiChannelCentroid> centroid,
+                               std::shared_ptr<SersicModelIntegral> integralmodel)
             : _ellipsedata(std::move(ellipsedata)),
               _centroid(std::move(centroid)),
-              _integralmodel(std::move(integralmodel)) {}
+              _integralmodel(std::move(integralmodel)) {
+        bool _ellipse_null = _ellipsedata == nullptr;
+        bool _centroid_null = _centroid == nullptr;
+        bool _integralmodel_null = _integralmodel == nullptr;
+        if (_ellipse_null || _centroid_null || _integralmodel_null) {
+            throw std::invalid_argument(std::string(_ellipse_null ? "ellipsedata," : "")
+                                        + std::string(_centroid_null ? "centroid," : "")
+                                        + std::string(_integralmodel_null ? "integralmodel," : "")
+                                        + " must not be null");
+        }
+    }
 
     const SersicEllipseData& get_ellipse() const { return *_ellipsedata; }
     const SersicModelIntegral& get_integralmodel() const { return *_integralmodel; }
 
     std::unique_ptr<const lsst::gauss2d::Gaussians> get_gaussians(const Channel& channel) const {
         lsst::gauss2d::Gaussians::Data gaussians = {std::make_shared<Gaussian>(
-                std::make_shared<Centroid>(this->_centroid), std::make_shared<Ellipse>(this->_ellipsedata),
+                std::make_shared<Centroid>(this->_centroid->at(channel)),
+                std::make_shared<Ellipse>(this->_ellipsedata),
                 std::make_shared<GaussianModelIntegral>(channel, this->_integralmodel))};
         return std::make_unique<const lsst::gauss2d::Gaussians>(gaussians);
     }
 
 private:
     std::shared_ptr<SersicEllipseData> _ellipsedata;
-    std::shared_ptr<CentroidParameters> _centroid;
+    std::shared_ptr<MultiChannelCentroid> _centroid;
     std::shared_ptr<SersicModelIntegral> _integralmodel;
 };
 
@@ -268,7 +279,7 @@ void SersicMixComponentIndexParameterD::set_value_transformed(double value) {
 }
 
 SersicMixComponent::SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse,
-                                       std::shared_ptr<CentroidParameters> centroid,
+                                       std::shared_ptr<MultiChannelCentroid> centroid,
                                        std::shared_ptr<IntegralModel> integralmodel,
                                        std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex)
         : SersicParametricEllipseHolder(std::move(ellipse)),

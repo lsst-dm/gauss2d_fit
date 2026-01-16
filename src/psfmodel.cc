@@ -12,10 +12,13 @@ namespace lsst::gauss2d::fit {
 PsfModel::PsfModel(Components& components) {
     size_t i = 0;
     _components.reserve(components.size());
-    for (auto& component : components) {
-        if (component == nullptr)
+    for (size_t idx = 0; idx < components.size(); idx++) {
+        auto component = components[idx];
+        if (component == nullptr) {
             throw std::invalid_argument("PsfModel components[" + std::to_string(i) + "] can't be null");
-        auto channels = component->get_integralmodel().get_channels();
+        }
+        const auto & model = component->get_integralmodel();
+        auto channels = model.get_channels();
         if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
             throw std::invalid_argument("PsfModel components[" + std::to_string(i)
                                         + "].get_integralmodel().get_channels()="

@@ -6,6 +6,7 @@
 #include "channel.h"
 #include "ellipticalcomponent.h"
 #include "integralmodel.h"
+#include "multichannelcentroid.h"
 #include "param_defs.h"
 #include "param_filter.h"
 #include "sersicmix.h"
@@ -85,10 +86,10 @@ public:
 class SersicMixComponent : private SersicParametricEllipseHolder, public EllipticalComponent {
 public:
     explicit SersicMixComponent(std::shared_ptr<SersicParametricEllipse> ellipse = nullptr,
-                                std::shared_ptr<CentroidParameters> centroid = nullptr,
+                                std::shared_ptr<MultiChannelCentroid> centroid = nullptr,
                                 std::shared_ptr<IntegralModel> integralmodel = nullptr,
                                 std::shared_ptr<SersicMixComponentIndexParameterD> sersicindex = nullptr);
-    ~SersicMixComponent();
+    ~SersicMixComponent() override;
 
     void add_extra_param_map(const Channel& channel, ExtraParamMap& map_extra, const GradParamMap& map_grad,
                              ParameterMap& offsets) const override;

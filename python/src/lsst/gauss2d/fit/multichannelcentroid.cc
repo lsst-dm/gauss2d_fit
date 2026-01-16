@@ -24,7 +24,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "lsst/gauss2d/fit/integralmodel.h"
+#include "lsst/gauss2d/fit/multichannelcentroid.h"
+#include "lsst/gauss2d/fit/chromatic.h"
+#include "lsst/gauss2d/fit/parametric.h"
 
 #include "pybind11.h"
 
@@ -33,6 +35,6 @@ using namespace pybind11::literals;
 
 namespace g2f = lsst::gauss2d::fit;
 
-void bind_integralmodel(py::module &m) {
-    auto _p = py::classh<g2f::IntegralModel, g2f::Chromatic, g2f::Parametric>(m, "IntegralModel");
+void bind_multichannelcentroid(py::module &m) {
+    auto _c = py::classh<g2f::MultiChannelCentroid, g2f::Chromatic, g2f::Parametric>(m, "MultiChannelCentroid");
 }

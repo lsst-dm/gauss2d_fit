@@ -28,9 +28,11 @@
 
 namespace py = pybind11;
 
+void bind_achromaticcentroid(py::module &m);
 void bind_centroidparameters(py::module &m);
 void bind_channel(py::module &m);
 void bind_chromatic(const py::module &m);
+void bind_chromaticcentroid(py::module &m);
 void bind_component(py::module &m);
 void bind_componentmixture(py::module &m);
 void bind_data(py::module &m);
@@ -49,6 +51,7 @@ void bind_interpolation(py::module &m);
 void bind_linearintegralmodel(py::module &m);
 void bind_linearsersicmixinterpolator(py::module &m);
 void bind_model(py::module &m);
+void bind_multichannelcentroid(py::module &m);
 void bind_observation(py::module &m);
 void bind_param_filter(py::module &m);
 void bind_parameters(py::module &m);

@@ -1,9 +1,11 @@
 subdir_gauss2d_fit = 'lsst/gauss2d/fit'
 
 sources = [
+    subdir_gauss2d_fit / 'achromaticcentroid.cc',
     subdir_gauss2d_fit / 'centroidparameters.cc',
     subdir_gauss2d_fit / 'channel.cc',
     subdir_gauss2d_fit / 'chromatic.cc',
+    subdir_gauss2d_fit / 'chromaticcentroid.cc',
     subdir_gauss2d_fit / 'component.cc',
     subdir_gauss2d_fit / 'componentmixture.cc',
     subdir_gauss2d_fit / 'data.cc',
@@ -20,6 +22,7 @@ sources = [
     subdir_gauss2d_fit / 'linearintegralmodel.cc',
     subdir_gauss2d_fit / 'linearsersicmixinterpolator.cc',
     subdir_gauss2d_fit / 'model.cc',
+    subdir_gauss2d_fit / 'multichannelcentroid.cc',
     subdir_gauss2d_fit / 'observation.cc',
     subdir_gauss2d_fit / 'param_filter.cc',
     subdir_gauss2d_fit / 'parameters.cc',

@@ -87,6 +87,10 @@ TEST_CASE("FractionalIntegralModel") {
     auto source = std::make_shared<g2f::Source>(comps);
     auto gaussians = source->get_gaussians(*c1);
     auto g1 = gaussians->at(0);
-    CHECK_EQ(g1.get_integral_value(), frac->at(channel)->get_value());
+    auto g1_integral_ptr = g1.get_integral_ptr();
+    auto str = g1_integral_ptr->str();
+    const auto g1_value = g1.get_integral_value();
+    const auto & frac_chan = frac->at(channel);
+    CHECK_EQ(g1_value, frac->at(channel)->get_value());
     // TODO: Add more checks
 }

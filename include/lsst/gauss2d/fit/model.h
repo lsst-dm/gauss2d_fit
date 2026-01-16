@@ -1178,7 +1178,7 @@ public:
     PsfModels get_psfmodels() const { return _psfmodels; }
 
     /// Return _sources, the list of Source instances for each Observation in _data
-    Sources get_sources() const { return _sources; }
+    Sources   get_sources() const { return _sources; }
 
     void set_extra_param_factors(const Channel& channel, ExtraParamFactors& factors,
                                  size_t index) const override {

@@ -37,11 +37,13 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_centroidparameters(py::module &m) {
-    auto _c = py::classh<g2f::CentroidParameters, lsst::gauss2d::CentroidData>(m, "CentroidParameters")
+    auto _c = py::classh<g2f::CentroidParameters, lsst::gauss2d::CentroidData, g2f::Parametric>(m, "CentroidParameters")
                       .def(py::init<double, double>(), "x"_a = 0, "y"_a = 0)
                       .def(py::init<std::shared_ptr<g2f::CentroidXParameterD>,
                                     std::shared_ptr<g2f::CentroidYParameterD>>(),
                            "x"_a = nullptr, "y"_a = nullptr)
+                      .def("parameters", &g2f::CentroidParameters::get_parameters,
+    "parameters"_a = g2f::ParamRefs(), "paramfilter"_a = nullptr)
                       .def_property("x", &g2f::CentroidParameters::get_x, &g2f::CentroidParameters::set_x)
                       .def_property("y", &g2f::CentroidParameters::get_y, &g2f::CentroidParameters::set_y)
                       .def_property("xy", &g2f::CentroidParameters::get_xy, &g2f::CentroidParameters::set_xy)

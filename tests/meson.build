@@ -1,5 +1,7 @@
 test_names = [
+    'achromaticcentroid',
     'centroidparameters',
+    'chromaticcentroid',
     'channel',
     'data',
     'fractionalintegralmodel',

@@ -4,8 +4,6 @@
 #include "channel.h"
 #include "ellipticalcomponent.h"
 #include "integralmodel.h"
-#include "param_defs.h"
-#include "param_filter.h"
 
 namespace lsst::gauss2d::fit {
 

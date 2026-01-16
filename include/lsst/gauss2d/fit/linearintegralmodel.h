@@ -23,8 +23,6 @@ public:
      * Construct a LinearIntegralModel from input Data.
      *
      * @param data_in A map of IntegralParameterD shared_ptr to move for each Channel.
-     *
-     * @note No default initialization is provided, so data_in must not be null.
      */
     explicit LinearIntegralModel(const Data *data_in);
     ~LinearIntegralModel();

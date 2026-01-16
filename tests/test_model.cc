@@ -12,6 +12,7 @@
 
 #include "lsst/gauss2d/fit/centroidparameters.h"
 #include "lsst/gauss2d/fit/channel.h"
+#include "lsst/gauss2d/fit/chromaticcentroid.h"
 #include "lsst/gauss2d/fit/componentmixture.h"
 #include "lsst/gauss2d/fit/data.h"
 #include "lsst/gauss2d/fit/ellipticalcomponent.h"
@@ -90,6 +91,17 @@ g2f::LinearIntegralModel::Data make_integrals(
         integrals.emplace_back(*channel, std::move(param));
     }
     return integrals;
+}
+
+std::shared_ptr<g2f::ChromaticCentroid> make_achromatic_centroid(
+    const std::vector<std::shared_ptr<const g2f::Channel>>& channels,
+    std::shared_ptr<lsst::gauss2d::fit::CentroidParameters> centroid
+) {
+    lsst::gauss2d::fit::ChromaticCentroid::Data data;
+    for (const auto& channel : channels) {
+        data[*channel] = centroid;
+    }
+    return std::make_shared<g2f::ChromaticCentroid>(data);
 }
 
 template <typename t>
@@ -383,8 +395,6 @@ TEST_CASE("Model") {
             CHECK_MESSAGE(gauss->get_integral_value() > 0, msg);
             g++;
         }
-        // std::cerr << psfmodel->str() << std::endl;
-        // std::cerr << gaussians->str() << std::endl;
 
         psfmodels.push_back(std::move(psfmodel));
     }
@@ -405,12 +415,13 @@ TEST_CASE("Model") {
     for (size_t i = 0; i < 2; ++i) {
         std::vector<std::shared_ptr<g2f::Component>> comps;
         for (size_t c = 0; c < 2; ++c) {
-            auto centroids = std::make_shared<g2f::CentroidParameters>(c + i + 1, c + i + 1.5);
-            priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroids->get_x_param_ptr(),
-                                                                     centroids->get_x(), 1.0, false));
-            priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroids->get_y_param_ptr(),
-                                                                     centroids->get_y(), 0.5, false));
+            auto centroid = std::make_shared<g2f::CentroidParameters>(c + i + 1, c + i + 1.5);
+            priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroid->get_x_param_ptr(),
+                                                                     centroid->get_x(), 1.0, false));
+            priors.emplace_back(std::make_shared<g2f::GaussianPrior>(centroid->get_y_param_ptr(),
+                                                                     centroid->get_y(), 0.5, false));
             auto integrals = make_integrals(channels, c + 1);
+            auto centroid_achromatic = make_achromatic_centroid(channels, centroid);
             auto integralmodel = std::make_shared<g2f::LinearIntegralModel>(&integrals);
             std::shared_ptr<g2f::Component> comp;
             std::shared_ptr<g2f::ParametricEllipse> ellipse;
@@ -420,7 +431,7 @@ TEST_CASE("Model") {
                 ellipse_g->get_sigma_y_param_ptr()->set_transform(transform_log10);
                 ellipse_g->get_rho_param_ptr()->set_transform(transform_rho);
                 ellipse = ellipse_g;
-                comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroids, integralmodel);
+                comp = std::make_shared<g2f::GaussianComponent>(ellipse_g, centroid_achromatic, integralmodel);
             } else {
                 auto sersic_n = std::make_shared<g2f::SersicMixComponentIndexParameterD>(
                         0.5 + 3.5 * c, nullptr, transform_log10);
@@ -434,7 +445,7 @@ TEST_CASE("Model") {
                 auto reff_y = std::make_shared<g2f::ReffYParameterD>(c + 1.5, nullptr, transform_log10);
                 auto ellipse_s = std::make_shared<g2f::SersicParametricEllipse>(reff_x, reff_y);
                 ellipse = ellipse_s;
-                comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroids, integralmodel,
+                comp = std::make_shared<g2f::SersicMixComponent>(ellipse_s, centroid_achromatic, integralmodel,
                                                                  sersic_n);
             }
             auto ell_g2 = g2d::Ellipse(ellipse->get_size_x(), ellipse->get_size_y(), ellipse->get_rho());
@@ -463,10 +474,12 @@ TEST_CASE("Model") {
     CHECK_EQ(model->get_priors().size(), priors.size());
 
     auto params = model->get_parameters_new();
-    // 2 sources x (2 comps x (3 integral, 2 centroid, 3 ellipse)) = 32
-    // + 1 source x (2 comps x 1 sersic_n) = 34
-    const size_t n_params_src = 34;
-    // PSF: 3 observations x (2 comp x (1 integral, n frac, 2 centroid, 3 ellipse)) = 45
+    // 2 sources x (2 comps x (3 integral, 2 centroid x 3 channels = 6, 3 ellipse)) = 48
+    // 2 sources x (2 comps x (3 integral, 2 centroid, 3 ellipse)) = 32 unique
+    // + 1 source x (2 comps x 1 sersic_n) = 50
+    const size_t n_params_src = 50;
+    const size_t n_params_src_uniq = 34;
+    // PSF: 3 observations x (2 comp x (1 integral, n frac, 2 centroid x 1 channel, 3 ellipse)) = 45
     // (each comp after second has an extra frac per channel)
     const size_t n_params_psf = 42;
     CHECK_EQ(params.size(), (n_params_src + n_params_psf));
@@ -474,12 +487,12 @@ TEST_CASE("Model") {
     // PSF: 3 observations x (1 integral + 1 frac + 2 comp x (2 centroid, 3 ellipse)) = 36
     std::set<g2f::ParamBaseCRef> paramset(params.cbegin(), params.cend());
     const size_t n_params_psf_uniq = 36;
-    CHECK_EQ(paramset.size(), n_params_src + n_params_psf_uniq);
+    CHECK_EQ(paramset.size(), n_params_src_uniq + n_params_psf_uniq);
 
     g2f::ParamFilter filter_free{false, true, true, true};
     params = model->get_parameters_new(&filter_free);
     params = g2f::nonconsecutive_unique(params);
-    CHECK_EQ(params.size(), n_params_src);
+    CHECK_EQ(params.size(), n_params_src_uniq);
 
     const auto& channel = *channels[0];
 
@@ -566,7 +579,8 @@ TEST_CASE("Model") {
     verify_model(*model, channels, params_src_free, true, true, print);
 
     // Add a fractional source, which should work even if it's not useful
-    auto centroids = std::make_shared<g2f::CentroidParameters>(5.5, 6.5);
+    auto centroid = std::make_shared<g2f::CentroidParameters>(5.5, 6.5);
+    auto centroid_achromatic = make_achromatic_centroid(channels, centroid);
     g2f::FractionalIntegralModel::Data data_frac1 = {};
     g2f::FractionalIntegralModel::Data data_frac2 = {};
     double frac_value = 0.3;
@@ -586,9 +600,9 @@ TEST_CASE("Model") {
     auto fracmodel1 = g2f::FractionalIntegralModel::make(data_frac1, integralmodel_frac, false);
     g2f::Components comps_src3 = {
             std::make_shared<g2f::GaussianComponent>(
-                    std::make_shared<g2f::GaussianParametricEllipse>(2.3, 4.4, 0.15), centroids, fracmodel1),
+                    std::make_shared<g2f::GaussianParametricEllipse>(2.3, 4.4, 0.15), centroid_achromatic, fracmodel1),
             std::make_shared<g2f::GaussianComponent>(
-                    std::make_shared<g2f::GaussianParametricEllipse>(2.6, 3.8, -0.33), centroids,
+                    std::make_shared<g2f::GaussianParametricEllipse>(2.6, 3.8, -0.33), centroid_achromatic,
                     g2f::FractionalIntegralModel::make(data_frac2, fracmodel1, true))};
     auto source = std::make_shared<g2f::Source>(comps_src3);
     sources.clear();
@@ -615,8 +629,9 @@ TEST_CASE("Model PSF") {
     auto model_total = std::make_shared<g2f::LinearIntegralModel>(&integrals);
     std::shared_ptr<g2f::IntegralModel> last = model_total;
 
-    auto cens = std::make_shared<g2f::CentroidParameters>(std::make_shared<g2f::CentroidXParameterD>(0),
+    auto centroid = std::make_shared<g2f::CentroidParameters>(std::make_shared<g2f::CentroidXParameterD>(0),
                                                           std::make_shared<g2f::CentroidYParameterD>(0));
+    auto centroid_achromatic = make_achromatic_centroid(channels, centroid);
 
     auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
     auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
@@ -637,7 +652,9 @@ TEST_CASE("Model PSF") {
                         std::make_shared<g2f::SigmaXParameterD>(size, nullptr, transform_log10),
                         std::make_shared<g2f::SigmaYParameterD>(size, nullptr, transform_log10),
                         std::make_shared<g2f::RhoParameterD>(0, nullptr, transform_rho)),
-                cens, last));
+                centroid_achromatic,
+                last)
+        );
     }
     g2f::Components psfcomps = {g2f::GaussianComponent::make_uniq_default_gaussians({0.})};
     g2f::PsfModels psfmodels({std::make_shared<g2f::PsfModel>(psfcomps)});
@@ -662,8 +679,13 @@ TEST_CASE("Model with priors") {
     const size_t n_x = 31, n_y = 27;
     auto data_f = make_data<float>(CHANNELS_NONE, n_x, n_y, 1, 3);
     auto data_d = make_data<double>(CHANNELS_NONE, n_x, n_y, 1, 3);
-    auto centroid_psf = std::make_shared<g2f::CentroidParameters>(
-            make_shared_fixed<g2f::CentroidXParameterD>(0), make_shared_fixed<g2f::CentroidYParameterD>(0));
+    auto centroid_psf = make_achromatic_centroid(
+        CHANNELS_NONE,
+        std::make_shared<g2f::CentroidParameters>(
+            make_shared_fixed<g2f::CentroidXParameterD>(0),
+            make_shared_fixed<g2f::CentroidYParameterD>(0)
+        )
+    );
     g2f::LinearIntegralModel::Data model_psf_ref_data
             = {{*CHANNEL_NONE, make_shared_fixed<g2f::IntegralParameterD>(1.0)}};
     auto model_psf_ref = std::make_shared<g2f::LinearIntegralModel>(&model_psf_ref_data);
@@ -708,8 +730,11 @@ TEST_CASE("Model with priors") {
 
     g2f::Components comps_src = {std::make_shared<g2f::SersicMixComponent>(
             ellipse_src,
-            std::make_shared<g2f::CentroidParameters>(make_shared_fixed<g2f::CentroidXParameterD>(16.586227),
-                                                      make_shared_fixed<g2f::CentroidYParameterD>(16.695350)),
+            make_achromatic_centroid(
+                CHANNELS_NONE,
+                std::make_shared<g2f::CentroidParameters>(make_shared_fixed<g2f::CentroidXParameterD>(16.586227),
+                                                          make_shared_fixed<g2f::CentroidYParameterD>(16.695350))
+            ),
             std::make_shared<g2f::LinearIntegralModel>(&model_src_flux_data),
             make_shared_fixed<g2f::SersicMixComponentIndexParameterD>(1.0))};
 
