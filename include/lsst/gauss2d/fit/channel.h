@@ -30,8 +30,8 @@ class Channel : public Object {
 public:
     typedef std::map<std::string, std::shared_ptr<const Channel>> Registry;
 
-    Channel(const Channel &) = delete;
-    Channel &operator=(const Channel &) = delete;
+    Channel(const Channel&) = delete;
+    Channel& operator=(const Channel&) = delete;
     /**
      * Delete a channel with a given name.
      *
@@ -66,7 +66,7 @@ public:
     const std::string name;
 
     static const std::shared_ptr<const Channel> NONE_PTR();
-    static const Channel &NONE();
+    static const Channel& NONE();
 
     std::string repr(bool name_keywords = false,
                      std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
@@ -84,9 +84,9 @@ public:
 
     // TODO: Figure out why tests compile but do not run without this operator.
     // Until then, do NOT remove.
-    const bool operator<(const Channel &c) const;
-    const bool operator==(const Channel &c) const;
-    const bool operator!=(const Channel &c) const;
+    const bool operator<(const Channel& c) const;
+    const bool operator==(const Channel& c) const;
+    const bool operator!=(const Channel& c) const;
 
 private:
     /**
@@ -101,13 +101,13 @@ private:
     struct Shared_enabler;
 };
 
-inline bool operator<(const std::reference_wrapper<const Channel> &lhs,
-                      const std::reference_wrapper<const Channel> &rhs) {
+inline bool operator<(const std::reference_wrapper<const Channel>& lhs,
+                      const std::reference_wrapper<const Channel>& rhs) {
     return (lhs.get() < rhs.get());
 }
 
-inline bool operator==(const std::reference_wrapper<const Channel> &lhs,
-                       const std::reference_wrapper<const Channel> &rhs) {
+inline bool operator==(const std::reference_wrapper<const Channel>& lhs,
+                       const std::reference_wrapper<const Channel>& rhs) {
     return (lhs.get() == rhs.get());
 }
 

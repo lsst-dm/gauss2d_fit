@@ -214,8 +214,8 @@ private:
             const auto& factors_extra_in = _factors_extra_in[idx].lock();
             const auto& factors_grad_in = _factors_grad_in[idx].lock();
 
-            GradParamFactors & factors_grad_obs = _factors_grad[idx];
-            ExtraParamFactors & factors_extra_obs = _factors_extra[idx];
+            GradParamFactors& factors_grad_obs = _factors_grad[idx];
+            ExtraParamFactors& factors_extra_obs = _factors_extra[idx];
 
             size_t offset = 0;
             for (size_t i_psf = 0; i_psf < n_gaussians_psf; ++i_psf) {
@@ -231,13 +231,14 @@ private:
                                 + std::to_string(src->get_n_gaussians(channel))
                                 + " != get_gaussians(channel).size()=" + std::to_string(n_gauss_src));
                     }
-                    if(print) std::cout << " setting fac_grad for offset=" << offset << std::endl;
+                    if (print) std::cout << " setting fac_grad for offset=" << offset << std::endl;
                     src->set_grad_param_factors(channel, factors_grad_obs, offset);
-                    if(print) std::cout << " setting epf for offset=" << offset << std::endl;
+                    if (print) std::cout << " setting epf for offset=" << offset << std::endl;
                     src->set_extra_param_factors(channel, factors_extra_obs, offset);
                     // Copy values to the actual input arrays used by the evaluator
                     const size_t row_max = offset + n_gauss_src;
-                    if(print) std::cout << " row_max=" << row_max << " n_gauss_src=" << n_gauss_src << std::endl;
+                    if (print)
+                        std::cout << " row_max=" << row_max << " n_gauss_src=" << n_gauss_src << std::endl;
                     for (size_t row = offset; row < row_max; ++row) {
                         if (print) {
                             std::cout << "factors_extra[" << row << "]=[";
@@ -514,10 +515,9 @@ private:
                           std::shared_ptr<const Indices>& map_grad_in,
                           std::shared_ptr<const Image>& factors_extra_in,
                           std::shared_ptr<const Image>& factors_grad_in) {
-
         if constexpr (print) {
-            std::cout << "making parameter maps with n_gaussian_conv=" << n_gaussians_conv << " and n_psf="
-                << n_gaussians_psf << std::endl;
+            std::cout << "making parameter maps with n_gaussian_conv=" << n_gaussians_conv
+                      << " and n_psf=" << n_gaussians_psf << std::endl;
         }
 
         unsigned int n_obsired = map_extra_weak.expired() + map_grad_weak.expired()
@@ -531,14 +531,16 @@ private:
         }
         auto map_extra_mut = expired ? std::make_shared<Indices>(n_gaussians_conv, 2, nullptr, coordsys)
                                      : map_extra_weak.lock();
-        auto map_grad_mut = expired ? std::make_shared<Indices>(
-                                    n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
-                                    : map_grad_weak.lock();
+        auto map_grad_mut
+                = expired ? std::make_shared<Indices>(n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D,
+                                                      nullptr, coordsys)
+                          : map_grad_weak.lock();
         auto factors_extra_mut = expired ? std::make_shared<Image>(n_gaussians_conv, 3, nullptr, coordsys)
                                          : factors_extra_weak.lock();
-        auto factors_grad_mut = expired ? std::make_shared<Image>(
-                                        n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D, nullptr, coordsys)
-                                        : factors_grad_weak.lock();
+        auto factors_grad_mut
+                = expired ? std::make_shared<Image>(n_gaussians_conv, lsst::gauss2d::N_PARAMS_GAUSS2D,
+                                                    nullptr, coordsys)
+                          : factors_grad_weak.lock();
         ;
 
         ExtraParamMap map_extra = {};
@@ -1178,7 +1180,7 @@ public:
     PsfModels get_psfmodels() const { return _psfmodels; }
 
     /// Return _sources, the list of Source instances for each Observation in _data
-    Sources   get_sources() const { return _sources; }
+    Sources get_sources() const { return _sources; }
 
     void set_extra_param_factors(const Channel& channel, ExtraParamFactors& factors,
                                  size_t index) const override {
@@ -1217,8 +1219,7 @@ public:
                           std::vector<std::vector<std::shared_ptr<Image>>> outputs = {},
                           std::vector<std::shared_ptr<Image>> residuals = {},
                           std::vector<std::shared_ptr<Image>> outputs_prior = {},
-                          std::shared_ptr<Image> residuals_prior = nullptr,
-                          bool force = false,
+                          std::shared_ptr<Image> residuals_prior = nullptr, bool force = false,
                           bool print = false) {
         const size_t n_outputs = outputs.size();
         const bool has_outputs = n_outputs > 0;

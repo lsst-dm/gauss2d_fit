@@ -23,7 +23,7 @@ namespace lsst::gauss2d::fit {
 class IntegralModel : public Chromatic, public Parametric {
 public:
     /// Get the value of the integral in a single Channel
-    virtual double get_integral(const Channel &channel) const = 0;
+    virtual double get_integral(const Channel& channel) const = 0;
     /**
      * @brief Return the partial derivative of the model w.r.t. each metaparameter.
      *
@@ -34,11 +34,11 @@ public:
      *         specified in GaussianEvaluator (L, sigma_x, sigma_y).
      */
     virtual std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(
-            const Channel &channel) const
+            const Channel& channel) const
             = 0;
 };
 
-inline bool operator<(const IntegralModel &lhs, const IntegralModel &rhs) { return &lhs < &rhs; }
+inline bool operator<(const IntegralModel& lhs, const IntegralModel& rhs) { return &lhs < &rhs; }
 // TODO: These aren't necessary, but should they be included?
 // const bool operator == ( const IntegralModel &m ) const { return &(*this) == &m; };
 // const bool operator != ( const IntegralModel &m ) const { return &(*this) != &m; };

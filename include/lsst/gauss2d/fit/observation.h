@@ -46,7 +46,7 @@ public:
      * @param channel The channel of every Observation.
      */
     explicit Observation(std::shared_ptr<Image> image, std::shared_ptr<Image> sigma_inv,
-                         std::shared_ptr<Mask> mask_inv, const Channel &channel = Channel::NONE())
+                         std::shared_ptr<Mask> mask_inv, const Channel& channel = Channel::NONE())
             : _image(std::move(image)),
               _sigma_inv(std::move(sigma_inv)),
               _mask_inv(std::move(mask_inv)),
@@ -64,7 +64,7 @@ public:
     }
 
     /// Get this->_channel
-    const Channel &get_channel() const { return _channel; }
+    const Channel& get_channel() const { return _channel; }
     /// Get this->_image
     std::shared_ptr<const Image> get_image_ptr_const() const { return _image; }
     /// Get this->_sigma_inv
@@ -76,16 +76,16 @@ public:
     size_t get_n_rows() const { return _image->get_n_rows(); }
 
     /// Get a ref to this->_image
-    Image &get_image() const { return *_image; }
+    Image& get_image() const { return *_image; }
     /// Get a ref to this->_mask
-    Mask &get_mask_inverse() const { return *_mask_inv; }
+    Mask& get_mask_inverse() const { return *_mask_inv; }
     /// Get a ref to this->sigma_inv
-    Image &get_sigma_inverse() const { return *_sigma_inv; }
+    Image& get_sigma_inverse() const { return *_sigma_inv; }
 
-    ParamRefs &get_parameters(ParamRefs &params, ParamFilter *filter = nullptr) const override {
+    ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override {
         return params;
     }
-    ParamCRefs &get_parameters_const(ParamCRefs &params, ParamFilter *filter = nullptr) const override {
+    ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override {
         return params;
     }
 
@@ -105,7 +105,7 @@ public:
                + ", channel=" + _channel.str() + ")";
     }
 
-    bool operator==(const Observation &other) const {
+    bool operator==(const Observation& other) const {
         return ((this->get_image() == other.get_image())
                 && (this->get_mask_inverse() == other.get_mask_inverse())
                 && (this->get_sigma_inverse() == other.get_sigma_inverse()));
@@ -115,7 +115,7 @@ private:
     std::shared_ptr<Image> _image;
     std::shared_ptr<Image> _sigma_inv;
     std::shared_ptr<Mask> _mask_inv;
-    const Channel &_channel;
+    const Channel& _channel;
 };
 
 }  // namespace lsst::gauss2d::fit

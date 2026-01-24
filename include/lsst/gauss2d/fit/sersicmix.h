@@ -70,18 +70,18 @@ public:
     std::string str() const override;
 };
 
-inline bool operator<(const SersicMixValues &lhs, const SersicMixValues &rhs) {
+inline bool operator<(const SersicMixValues& lhs, const SersicMixValues& rhs) {
     return lhs.sersicindex < rhs.sersicindex;
 }
-inline bool operator<(const SersicMixValues &lhs, double x) { return lhs.sersicindex < x; }
-inline bool operator<(double x, const SersicMixValues &rhs) { return x < rhs.sersicindex; }
+inline bool operator<(const SersicMixValues& lhs, double x) { return lhs.sersicindex < x; }
+inline bool operator<(double x, const SersicMixValues& rhs) { return x < rhs.sersicindex; }
 
 std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
 
-const std::vector<SersicMixValues> &get_sersic_mix_knots(unsigned short order);
+const std::vector<SersicMixValues>& get_sersic_mix_knots(unsigned short order);
 
-const std::vector<SersicMixValues> &get_sersic_mix_knots_order4();
-const std::vector<SersicMixValues> &get_sersic_mix_knots_order8();
+const std::vector<SersicMixValues>& get_sersic_mix_knots_order4();
+const std::vector<SersicMixValues>& get_sersic_mix_knots_order8();
 
 }  // namespace lsst::gauss2d::fit
 

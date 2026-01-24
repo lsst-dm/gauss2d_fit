@@ -24,13 +24,13 @@ public:
      *
      * @param data_in A map of IntegralParameterD shared_ptr to move for each Channel.
      */
-    explicit LinearIntegralModel(const Data *data_in);
+    explicit LinearIntegralModel(const Data* data_in);
     ~LinearIntegralModel();
 
     /// Get the IntegralParameterD for the given Channel
-    std::shared_ptr<IntegralParameterD> at(const Channel &channel);
+    std::shared_ptr<IntegralParameterD> at(const Channel& channel);
     /// Get the (const) IntegralParameterD for the given Channel
-    std::shared_ptr<const IntegralParameterD> at(const Channel &channel) const;
+    std::shared_ptr<const IntegralParameterD> at(const Channel& channel) const;
 
     typename Data::iterator begin() noexcept;
     typename Data::const_iterator cbegin() const noexcept;
@@ -39,12 +39,12 @@ public:
     typename Data::const_iterator cend() const noexcept;
 
     std::vector<std::reference_wrapper<const Channel>> get_channels() const override;
-    double get_integral(const Channel &channel) const override;
+    double get_integral(const Channel& channel) const override;
     std::vector<std::pair<ParamBaseCRef, ExtraParamFactorValues>> get_integral_derivative_factors(
-            const Channel &channel) const override;
+            const Channel& channel) const override;
 
-    ParamRefs &get_parameters(ParamRefs &params, ParamFilter *filter = nullptr) const override;
-    ParamCRefs &get_parameters_const(ParamCRefs &params, ParamFilter *filter = nullptr) const override;
+    ParamRefs& get_parameters(ParamRefs& params, ParamFilter* filter = nullptr) const override;
+    ParamCRefs& get_parameters_const(ParamCRefs& params, ParamFilter* filter = nullptr) const override;
 
     /// Return the size of Data (number of Channel/IntegralParameterD instances)
     size_t size() const;
@@ -53,9 +53,9 @@ public:
                      std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
-    const bool operator<(const IntegralModel &m) const { return &(*this) < &m; };
-    const bool operator==(const IntegralModel &m) const { return &(*this) == &m; };
-    const bool operator!=(const IntegralModel &m) const { return &(*this) != &m; };
+    const bool operator<(const IntegralModel& m) const { return &(*this) < &m; };
+    const bool operator==(const IntegralModel& m) const { return &(*this) == &m; };
+    const bool operator!=(const IntegralModel& m) const { return &(*this) != &m; };
 
 private:
     Data _data = {};

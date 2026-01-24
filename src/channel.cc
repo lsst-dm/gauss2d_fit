@@ -22,7 +22,7 @@ static inline Channel::Registry _registry = {};
 // 8147213#comment58654091_25069711
 struct Channel::Shared_enabler : public Channel {
     template <typename... Args>
-    Shared_enabler(Args &&...args) : Channel(std::forward<Args>(args)...) {}
+    Shared_enabler(Args&&... args) : Channel(std::forward<Args>(args)...) {}
 };
 
 Channel::Channel(std::string name_) : name(name_) {
@@ -42,11 +42,11 @@ Channel::Channel(std::string name_) : name(name_) {
     }
 }
 
-const bool Channel::operator<(const Channel &c) const { return name < c.name; }
+const bool Channel::operator<(const Channel& c) const { return name < c.name; }
 
-const bool Channel::operator==(const Channel &c) const { return name == c.name; }
+const bool Channel::operator==(const Channel& c) const { return name == c.name; }
 
-const bool Channel::operator!=(const Channel &c) const { return !(*this == c); }
+const bool Channel::operator!=(const Channel& c) const { return !(*this == c); }
 
 void Channel::erase(std::string name) {
     if (name == NAME_NONE) throw std::invalid_argument("Can't erase the " + NAME_NONE + " Channel");
@@ -79,7 +79,7 @@ const std::shared_ptr<const Channel> Channel::get_channel(std::string name) {
 
 std::vector<std::shared_ptr<const Channel>> Channel::get_channels() {
     std::vector<std::shared_ptr<const Channel>> vec = {};
-    for (const auto &[key, value] : _registry) {
+    for (const auto& [key, value] : _registry) {
         vec.emplace_back(value);
     }
     vec.emplace_back(NONE_PTR());
@@ -108,6 +108,6 @@ const std::shared_ptr<const Channel> Channel::NONE_PTR() {
     return _NONE;
 }
 
-const Channel &Channel::NONE() { return *NONE_PTR(); }
+const Channel& Channel::NONE() { return *NONE_PTR(); }
 
 }  // namespace lsst::gauss2d::fit

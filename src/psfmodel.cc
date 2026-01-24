@@ -17,7 +17,7 @@ PsfModel::PsfModel(Components& components) {
         if (component == nullptr) {
             throw std::invalid_argument("PsfModel components[" + std::to_string(i) + "] can't be null");
         }
-        const auto & model = component->get_integralmodel();
+        const auto& model = component->get_integralmodel();
         auto channels = model.get_channels();
         if ((channels.size() != 1) || ((*channels.begin()).get() != Channel::NONE())) {
             throw std::invalid_argument("PsfModel components[" + std::to_string(i)
