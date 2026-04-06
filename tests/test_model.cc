@@ -85,7 +85,7 @@ g2f::LinearIntegralModel::Data make_integrals(
     g2f::LinearIntegralModel::Data integrals{};
     for (const auto& channel : channels) {
         auto param = std::make_shared<g2f::IntegralParameterD>(
-                value, nullptr, g2f::get_transform_default<g2f::Log10Transform>(), nullptr, fixed,
+                value, nullptr, g2f::get_transform_default<g2f::Log10TransformD>(), nullptr, fixed,
                 (*channel).name);
         integrals.emplace_back(*channel, std::move(param));
     }
@@ -391,10 +391,10 @@ TEST_CASE("Model") {
     const bool free_sersicindex = true;
 
     auto limits_axrat_logit = std::make_shared<parameters::Limits<double>>(-1e-10, 1 + 1e-10);
-    auto transform_axrat = std::make_shared<g2f::LogitLimitedTransform>(limits_axrat_logit);
-    auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
+    auto transform_axrat = std::make_shared<g2f::LogitLimitedTransformD>(limits_axrat_logit);
+    auto transform_log10 = g2f::get_transform_default<g2f::Log10TransformD>();
     auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
-    auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
+    auto transform_rho = std::make_shared<g2f::LogitLimitedTransformD>(limits_rho_logit);
 
     g2f::Sources sources{};
     std::vector<std::shared_ptr<g2f::Prior>> priors = {};
@@ -445,7 +445,7 @@ TEST_CASE("Model") {
 
             auto prior_size = std::make_shared<g2f::ParametricGaussian1D>(
                     std::make_shared<g2f::MeanParameterD>(size_ell, nullptr,
-                                                          g2f::get_transform_default<g2f::Log10Transform>()),
+                                                          g2f::get_transform_default<g2f::Log10TransformD>()),
                     std::make_shared<g2f::StdDevParameterD>(0.5));
             auto prior_axrat = std::make_shared<g2f::ParametricGaussian1D>(
                     std::make_shared<g2f::MeanParameterD>(axrat, nullptr, transform_axrat),
@@ -571,7 +571,7 @@ TEST_CASE("Model") {
     double frac_value = 0.3;
     for (const auto& channel : channels) {
         auto frac1 = std::make_shared<g2f::ProperFractionParameterD>(
-                frac_value, nullptr, g2f::get_transform_default<g2f::Log10Transform>());
+                frac_value, nullptr, g2f::get_transform_default<g2f::Log10TransformD>());
         auto frac2 = std::make_shared<g2f::ProperFractionParameterD>(1.0, nullptr, nullptr, nullptr, true);
         data_frac1.emplace_back(*channel, frac1);
         data_frac2.emplace_back(*channel, frac2);
@@ -617,8 +617,8 @@ TEST_CASE("Model PSF") {
                                                           std::make_shared<g2f::CentroidYParameterD>(0));
 
     auto limits_rho_logit = std::make_shared<parameters::Limits<double>>(-1 + 1e-10, 1 + 1e-10);
-    auto transform_rho = std::make_shared<g2f::LogitLimitedTransform>(limits_rho_logit);
-    auto transform_log10 = g2f::get_transform_default<g2f::Log10Transform>();
+    auto transform_rho = std::make_shared<g2f::LogitLimitedTransformD>(limits_rho_logit);
+    auto transform_log10 = g2f::get_transform_default<g2f::Log10TransformD>();
 
     for (const auto& sizefrac : {std::pair{1.5, 1.0 - 1e-15}, {2.5, 1.0}}) {
         const auto is_last = sizefrac.second == 1;

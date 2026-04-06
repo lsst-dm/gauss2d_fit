@@ -36,7 +36,7 @@ TEST_CASE("GaussianPrior") {
     CHECK_EQ(prior.get_stddev(), stddev);
     CHECK_EQ(prior.get_transformed(), false);
 
-    param = std::make_shared<g2f::IntegralParameterD>(1.0, nullptr, std::make_shared<g2f::Log10Transform>());
+    param = std::make_shared<g2f::IntegralParameterD>(1.0, nullptr, std::make_shared<g2f::Log10TransformD>());
     prior = g2f::GaussianPrior(param, param->get_value_transformed(), stddev, true);
     CHECK_EQ(prior.get_transformed(), true);
     auto eval = prior.evaluate(true);

@@ -58,7 +58,8 @@ void bind_parameters(py::module &m) {
     auto propfrac = declare_parameter<double, g2f::ProperFractionParameterD>(m, "ProperFraction");
     propfrac.def_property("label", &g2f::ProperFractionParameterD::get_label,
                           &g2f::ProperFractionParameterD::set_label);
-    declare_sizeparameter_base<double, g2f::SizeXParameterD, g2f::SizeYParameterD>(m);
+    declare_sizeparameter_base<g2f::SizeXParameterD>(m);
+    declare_sizeparameter_base<g2f::SizeYParameterD>(m);
     declare_parameter<double, g2f::RadiusScaleParameterD>(m, "RadiusScale");
     declare_sizeparameter<double, g2f::ReffXParameterD, g2f::SizeXParameterD>(m, "ReffX");
     declare_sizeparameter<double, g2f::ReffYParameterD, g2f::SizeYParameterD>(m, "ReffY");
@@ -68,16 +69,16 @@ void bind_parameters(py::module &m) {
     declare_sizeparameter<double, g2f::SigmaYParameterD, g2f::SizeYParameterD>(m, "SigmaY");
     declare_parameter<double, g2f::StdDevParameterD>(m, "StdDev");
     declare_transform_base<double>(m);
-    declare_transform<double, lsst::modelfit::parameters::UnitTransform<double>>(m, "Unit");
-    declare_transform<double, g2f::InverseTransform>(m, "Inverse");
-    declare_transform<double, g2f::JanskyToABMagTransform>(m, "JanskyToABMag");
-    declare_transform<double, g2f::NanojanskyToABMagTransform>(m, "NanojanskyToABMag");
-    declare_transform<double, g2f::LogTransform>(m, "Log");
-    declare_transform<double, g2f::Log10Transform>(m, "Log10");
-    declare_transform<double, g2f::LogitTransform>(m, "Logit");
+    declare_transform<double, lsst::modelfit::parameters::UnitTransform<double>>(m, "");
+    declare_transform<double, g2f::InverseTransformD>(m);
+    declare_transform<double, g2f::JanskyToABMagTransformD>(m);
+    declare_transform<double, g2f::NanojanskyToABMagTransformD>(m);
+    declare_transform<double, g2f::LogTransformD>(m);
+    declare_transform<double, g2f::Log10TransformD>(m);
+    declare_transform<double, g2f::LogitTransformD>(m);
     // TODO: Determine why this won't work with std::shared_ptr<parameters::Limits<double>>
-    declare_transform_full<double, g2f::LogitLimitedTransform, true, true,
-                           std::shared_ptr<parameters::Limits<double>>, double>(m, "LogitLimited");
+    declare_transform_full<double, g2f::LogitLimitedTransformD, true, true,
+                           std::shared_ptr<parameters::Limits<double>>, double>(m);
     const std::vector<std::reference_wrapper<Parameter>> _default = {};
     m.def("params_unique", &g2f::nonconsecutive_unique<std::reference_wrapper<Parameter>>,
           "params"_a = _default);

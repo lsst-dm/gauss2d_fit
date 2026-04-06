@@ -35,8 +35,7 @@
 
 #include "gauss2d/fit/parameters.h"
 #include "gauss2d/fit/transforms.h"
-
-#include "utils.h"
+#include "gauss2d/fit/util.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -127,23 +126,22 @@ auto declare_sizeparameter(py::module &m, std::string name) {
     return declare_parameter<T, C, Bases...>(m, name).def_property("size", &C::get_size, &C::set_size);
 }
 
-template <typename T, class ClassX, class ClassY>
-auto declare_sizeparameter_base(py::module &m, std::string suffix = g2f::suffix_type_str<T>()) {
-    py::classh<ClassX>(m, ("SizeXParameter" + suffix).c_str());
-    py::classh<ClassY>(m, ("SizeYParameter" + suffix).c_str());
+template <class C>
+auto declare_sizeparameter_base(py::module &m) {
+    py::classh<C>(m, parameters::type_name_str<C>(true).c_str());
 }
 
 template <typename T>
 void declare_transform_base(py::module &m) {
     using Class = parameters::Transform<T>;
-    py::classh<Class>(m, "TransformD");
+    py::classh<Class>(m, ("Transform" + g2f::suffix_type_str<T>()).c_str());
 }
 
 template <typename T, class C, bool has_factor, bool has_limits, typename... Arguments>
-void declare_transform_full(py::module &m, std::string name) {
+void declare_transform_full(py::module &m, std::string class_suffix="_") {
     using Class = C;
     auto x = py::classh<Class, parameters::Transform<T>>(
-                     m, (name + "TransformD").c_str())
+                     m, (g2f::stripped_template_type_name_str<C, T>(class_suffix, true) + g2f::suffix_type_str<T>()).c_str())
                      .def("description", &Class::description)
                      .def("derivative", &Class::derivative)
                      .def("forward", &Class::forward)
@@ -163,8 +161,8 @@ void declare_transform_full(py::module &m, std::string name) {
 }
 
 template <typename T, class C, typename... Arguments>
-void declare_transform(py::module &m, std::string name) {
-    declare_transform_full<T, C, false, false, Arguments...>(m, name);
+void declare_transform(py::module &m, std::string class_suffix="_") {
+    declare_transform_full<T, C, false, false, Arguments...>(m, class_suffix);
 }
 
 #endif

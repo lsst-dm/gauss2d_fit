@@ -12,12 +12,14 @@ test_names = [
     'linearsersicmixinterpolator',
     'model',
     'observation',
+    'parameters',
     'parametricgaussian1d',
     'psfmodel',
     'sersicmix',
     'sersicmixcomponent',
     'shapeprior',
     'source',
+    'transforms',
 ]
 foreach test_name : test_names
     test = executable(

@@ -20,7 +20,6 @@ gauss2d_fit_sources = [
     'sersicparametricellipse.cc',
     'shapeprior.cc',
     'source.cc',
-    'transforms.cc',
 ]
 gauss2d_fitlib = shared_library('gauss2d_fit',
                                 gauss2d_fit_sources,
