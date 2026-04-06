@@ -124,6 +124,25 @@ Container<Value> tail_iter(const Container<Value>& container, size_t n) {
     return Container<Value>(container.end() - n, container.end());
 }
 
+// An attempt was made to define these as static strings, but it failed
+template <typename T>
+constexpr std::string_view suffix_type();
+
+template <>
+constexpr std::string_view suffix_type<float>() {
+    return "F";
+}
+
+template <>
+constexpr std::string_view suffix_type<double>() {
+    return "D";
+}
+
+template <typename T>
+std::string suffix_type_str() {
+    return std::string(suffix_type<T>());
+}
+
 }  // namespace lsst::gauss2d::fit
 
 #endif
