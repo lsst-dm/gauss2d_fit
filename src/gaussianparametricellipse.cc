@@ -34,10 +34,10 @@ ParamCRefs& GaussianParametricEllipse::get_parameters_const(ParamCRefs& params, 
 }
 
 double GaussianParametricEllipse::get_hwhm_x() const {
-    return lsst::gauss2d::M_SIGMA_HWHM * _sigma_x->get_value();
+    return lsst::gauss2d::M_HWHM_SIGMA * _sigma_x->get_value();
 }
 double GaussianParametricEllipse::get_hwhm_y() const {
-    return lsst::gauss2d::M_SIGMA_HWHM * _sigma_y->get_value();
+    return lsst::gauss2d::M_HWHM_SIGMA * _sigma_y->get_value();
 }
 double GaussianParametricEllipse::get_rho() const { return _rho->get_value(); }
 double GaussianParametricEllipse::get_sigma_x() const { return _sigma_x->get_value(); }
@@ -75,10 +75,10 @@ void GaussianParametricEllipse::set_h(double hwhm_x, double hwhm_y, double rho) 
     set_rho(rho);
 }
 inline void GaussianParametricEllipse::set_hwhm_x(double hwhm_x) {
-    _sigma_x->set_value(lsst::gauss2d::M_HWHM_SIGMA * hwhm_x);
+    _sigma_x->set_value(lsst::gauss2d::M_SIGMA_HWHM * hwhm_x);
 }
 inline void GaussianParametricEllipse::set_hwhm_y(double hwhm_y) {
-    _sigma_y->set_value(lsst::gauss2d::M_HWHM_SIGMA * hwhm_y);
+    _sigma_y->set_value(lsst::gauss2d::M_SIGMA_HWHM * hwhm_y);
 }
 inline void GaussianParametricEllipse::set_rho(double rho) { _rho->set_value(rho); }
 inline void GaussianParametricEllipse::set_sigma_x(double sigma_x) { _sigma_x->set_value(sigma_x); }
