@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+### [0.3.1] 2026-10-23
+
+* Fixed: Usage of gauss2d's M_HWHM_SIGMA and M_SIGMA_HWHM was swapped
+* Fixed: Sersic mixtures had incorrect hard-coded sizes
+* See [DM-56611](https://rubinobs.atlassian.net/browse/DM-56611) for details.
+
 ### [0.3.0] 2025-08-12
 
 * Fixed: Made standalone conda setup work correctly
