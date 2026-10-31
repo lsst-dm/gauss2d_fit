@@ -13,10 +13,10 @@
 
 namespace lsst::gauss2d::fit {
 
-GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_)
+GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_, std::string version)
         : _interp_type(interp_type_),
           _order(order),
-          _knots(get_sersic_mix_knots(order)),
+          _knots(get_sersic_mix_knots(order, version)),
           _sersicindex_min(_knots[0].sersicindex),
           _sersicindex_max(_knots.back().sersicindex) {
     _interps.reserve(order);
@@ -120,6 +120,8 @@ unsigned short GSLSersicMixInterpolator::get_order() const { return _order; }
 
 double GSLSersicMixInterpolator::get_sersicindex_min() const { return _sersicindex_min; }
 double GSLSersicMixInterpolator::get_sersicindex_max() const { return _sersicindex_max; }
+
+std::string GSLSersicMixInterpolator::get_version() const { return _version; }
 
 std::string GSLSersicMixInterpolator::repr(bool name_keywords, std::string_view namespace_separator) const {
     return std::string("GSLSersicMixInterpolator(") + (name_keywords ? "order=" : "") + std::to_string(_order)

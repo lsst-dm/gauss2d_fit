@@ -20,7 +20,9 @@ namespace lsst::gauss2d::fit {
 class GSLSersicMixInterpolator : public SersicMixInterpolator {
 public:
     explicit GSLSersicMixInterpolator(unsigned short order = SERSICMIX_ORDER_DEFAULT,
-                                      InterpType interp_type = INTERPTYPE_DEFAULT);
+                                      InterpType interp_type = INTERPTYPE_DEFAULT,
+                                      std::string version = SersicMixValues::VERSION_DEFAULT()
+                                      );
     ~GSLSersicMixInterpolator();
 
     bool correct_final_integral = true;
@@ -41,16 +43,19 @@ public:
     double get_sersicindex_min() const;
     double get_sersicindex_max() const;
 
+    std::string get_version() const override;
+
     std::string repr(bool name_keywords = false,
                      std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
 
 private:
-    // This is allows caching of the final_correction value between calls to
+    // This allows caching of the final_correction value between calls to
     // get_integralsizes(_derivs); so get_final_correction can return it
     mutable double _final_correction = 1.;
     const InterpType _interp_type;
     const unsigned short _order;
+    const std::string _version;
     std::vector<std::pair<std::unique_ptr<GSLInterpolator>, std::unique_ptr<GSLInterpolator>>> _interps;
     const std::vector<SersicMixValues>& _knots;
     const double _sersicindex_min;

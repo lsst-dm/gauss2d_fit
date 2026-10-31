@@ -34,6 +34,7 @@ using namespace pybind11::literals;
 namespace g2f = lsst::gauss2d::fit;
 
 void bind_sersicmix(py::module &m) {
+    const auto VERSION_DEFAULT = g2f::SersicMixValues::VERSION_DEFAULT();
     auto _is = py::classh<g2f::IntegralSize, lsst::gauss2d::Object>(m, "IntegralSize")
                        .def(py::init<const double, const double>(), "integral"_a = 0, "sigma"_a = 0)
                        .def_readonly("integral", &g2f::IntegralSize::integral)
@@ -44,12 +45,13 @@ void bind_sersicmix(py::module &m) {
     auto _smi = py::classh<g2f::SersicMixInterpolator, lsst::gauss2d::Object>(m, "SersicMixInterpolator");
 
     auto _smv = py::classh<g2f::SersicMixValues, lsst::gauss2d::Object>(m, "SersicMixValues")
-                        .def(py::init<double, std::vector<g2f::IntegralSize>>(), "sersicindex"_a, "values"_a)
+                        .def(py::init<double, std::vector<g2f::IntegralSize>, std::string>(), "sersicindex"_a, "values"_a, "version"_a = VERSION_DEFAULT)
                         .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
                         .def_readonly("values", &g2f::SersicMixValues::values)
+                        .def_readonly("version", &g2f::SersicMixValues::version)
                         .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true); })
                         .def("__str__", &g2f::SersicMixValues::str);
 
-    m.def("sersic_mix_knots", &g2f::get_sersic_mix_knots_copy, "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
+    m.def("sersic_mix_knots", &g2f::get_sersic_mix_knots_copy, "order"_a = g2f::SERSICMIX_ORDER_DEFAULT, "version"_a = VERSION_DEFAULT,
           py::return_value_policy::copy);
 }

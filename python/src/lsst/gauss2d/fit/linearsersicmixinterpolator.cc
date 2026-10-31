@@ -37,11 +37,13 @@ namespace g2f = lsst::gauss2d::fit;
 void bind_linearsersicmixinterpolator(py::module &m) {
     auto _e = py::classh<g2f::LinearSersicMixInterpolator, g2f::SersicMixInterpolator>(
                       m, "LinearSersicMixInterpolator")
-                      .def(py::init<short>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT)
+                      .def(py::init<short, std::string>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
+                           "version"_a = g2f::SersicMixValues::VERSION_DEFAULT())
                       .def("integralsizes", &g2f::LinearSersicMixInterpolator::get_integralsizes)
                       .def("integralsizes_derivs",
                            &g2f::LinearSersicMixInterpolator::get_integralsizes_derivs)
                       .def_property_readonly("order", &g2f::LinearSersicMixInterpolator::get_order)
+                      .def_property_readonly("version", &g2f::LinearSersicMixInterpolator::get_version)
                       .def("__repr__",
                            [](const g2f::LinearSersicMixInterpolator &self) { return self.repr(true); })
                       .def("__str__", &g2f::LinearSersicMixInterpolator::str);

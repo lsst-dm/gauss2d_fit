@@ -49,6 +49,9 @@ TEST_CASE("GSLSersicMixInterpolator") {
             // (the non-GSL linear interpolator should do this too)
             auto result_derivs = interpolator.get_integralsizes_derivs((sersicindex + sersicindex_new) / 2.);
             for (size_t ord = 0; ord < order; ++ord) {
+                if (result_new[ord].integral < 0) {
+                    std::cerr << ord << "," << (sersicindex == 0.5) << "," << sersicindex_new - sersicindex << std::endl;
+                }
                 CHECK_GE(result_new[ord].integral, 0);
                 CHECK_GE(result_new[ord].sigma, 0);
                 double deriv = result_derivs[ord].integral;

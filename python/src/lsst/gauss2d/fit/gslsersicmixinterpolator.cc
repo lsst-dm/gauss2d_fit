@@ -43,8 +43,10 @@ namespace g2f = lsst::gauss2d::fit;
 void bind_gslsersicmixinterpolator(py::module &m) {
     auto _e = py::classh<g2f::GSLSersicMixInterpolator, g2f::SersicMixInterpolator>(
                       m, "GSLSersicMixInterpolator")
-                      .def(py::init<short, const g2f::InterpType>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
-                           "interp_type"_a = g2f::GSLSersicMixInterpolator::INTERPTYPE_DEFAULT)
+                      .def(py::init<short, const g2f::InterpType, std::string>(), "order"_a = g2f::SERSICMIX_ORDER_DEFAULT,
+                           "interp_type"_a = g2f::GSLSersicMixInterpolator::INTERPTYPE_DEFAULT,
+                           "version"_a = g2f::SersicMixValues::VERSION_DEFAULT()
+                        )
                       .def_readwrite("correct_final_integral",
                                      &g2f::GSLSersicMixInterpolator::correct_final_integral)
                       .def_property_readonly("final_correction",
@@ -55,6 +57,7 @@ void bind_gslsersicmixinterpolator(py::module &m) {
                            "sersicindex"_a)
                       .def_property_readonly("interptype", &g2f::GSLSersicMixInterpolator::get_interptype)
                       .def_property_readonly("order", &g2f::GSLSersicMixInterpolator::get_order)
+                      .def_property_readonly("version", &g2f::GSLSersicMixInterpolator::get_version)
                       .def("__repr__",
                            [](const g2f::GSLSersicMixInterpolator &self) { return self.repr(true); })
                       .def("__str__", &g2f::GSLSersicMixInterpolator::str);

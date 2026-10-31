@@ -44,6 +44,7 @@ public:
 
     virtual InterpType get_interptype() const = 0;
     virtual unsigned short get_order() const = 0;
+    virtual std::string get_version() const = 0;
 };
 
 const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(
@@ -60,10 +61,13 @@ public:
      * @param sersicindex The value of the Sersic index.
      * @param values The vector of IntegralSize values for the Sersic index.
      */
-    explicit SersicMixValues(double sersicindex, std::vector<IntegralSize> values);
+    explicit SersicMixValues(double sersicindex, std::vector<IntegralSize> values, std::string version="");
 
     const double sersicindex;
     const std::vector<IntegralSize> values;
+    const std::string version;
+    static constexpr std::string VERSION_DEFAULT() { return "1.0"; };
+
 
     std::string repr(bool name_keywords = false,
                      std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
@@ -76,12 +80,14 @@ inline bool operator<(const SersicMixValues &lhs, const SersicMixValues &rhs) {
 inline bool operator<(const SersicMixValues &lhs, double x) { return lhs.sersicindex < x; }
 inline bool operator<(double x, const SersicMixValues &rhs) { return x < rhs.sersicindex; }
 
-std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
+std::vector<SersicMixValues> get_sersic_mix_knots_copy(
+    unsigned short order, const std::string& version=SersicMixValues::VERSION_DEFAULT()
+);
 
-const std::vector<SersicMixValues> &get_sersic_mix_knots(unsigned short order);
+const std::vector<SersicMixValues> &get_sersic_mix_knots(unsigned short order, const std::string& version=SersicMixValues::VERSION_DEFAULT());
 
-const std::vector<SersicMixValues> &get_sersic_mix_knots_order4();
-const std::vector<SersicMixValues> &get_sersic_mix_knots_order8();
+const std::vector<SersicMixValues> &get_sersic_mix_knots_order4(const std::string & version);
+const std::vector<SersicMixValues> &get_sersic_mix_knots_order8(const std::string & version);
 
 }  // namespace lsst::gauss2d::fit
 

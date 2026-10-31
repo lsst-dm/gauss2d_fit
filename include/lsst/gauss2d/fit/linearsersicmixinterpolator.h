@@ -10,7 +10,7 @@ namespace lsst::gauss2d::fit {
  */
 class LinearSersicMixInterpolator : public SersicMixInterpolator {
 public:
-    explicit LinearSersicMixInterpolator(unsigned short order = SERSICMIX_ORDER_DEFAULT);
+    explicit LinearSersicMixInterpolator(unsigned short order = SERSICMIX_ORDER_DEFAULT, std::string version = SersicMixValues::VERSION_DEFAULT());
     ~LinearSersicMixInterpolator();
 
     std::vector<IntegralSize> get_integralsizes(double sersicindex) const override;
@@ -23,6 +23,8 @@ public:
     double get_sersicindex_min() const;
     double get_sersicindex_max() const;
 
+    std::string get_version() const override;
+
     std::string repr(bool name_keywords = false,
                      std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
     std::string str() const override;
@@ -32,6 +34,7 @@ private:
     const std::vector<SersicMixValues>& _knots;
     const double _sersicindex_min;
     const double _sersicindex_max;
+    const std::string _version;
 };
 
 }  // namespace lsst::gauss2d::fit
