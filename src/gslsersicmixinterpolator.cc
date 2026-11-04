@@ -13,7 +13,8 @@
 
 namespace lsst::gauss2d::fit {
 
-GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_, std::string version)
+GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_,
+                                                   std::string version)
         : _interp_type(interp_type_),
           _order(order),
           _knots(get_sersic_mix_knots(order, version)),
@@ -49,6 +50,19 @@ GSLSersicMixInterpolator::~GSLSersicMixInterpolator() {}
 
 double GSLSersicMixInterpolator::get_final_correction() const { return _final_correction; }
 
+double round_integral(double integral, double sersicindex, const GSLSersicMixInterpolator& interpolator) {
+    // Round up small negative values as likely floating point errors
+    if (integral < 0) {
+        if (integral > -1e-15) {
+            return 0;
+        }
+        throw std::runtime_error(
+                interpolator.str() + " returned too negative integral*1e16=" + std::to_string(1e16 * integral)
+                + " at 1e16*(sersicindex-0.5)=" + std::to_string(1e16 * (sersicindex - 0.5)));
+    }
+    return integral;
+}
+
 std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double sersicindex) const {
     if (!((sersicindex >= _sersicindex_min) && (sersicindex <= _sersicindex_max))) {
         throw std::invalid_argument("sersicindex=" + to_string_float(sersicindex)
@@ -62,14 +76,18 @@ std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double ser
     size_t max_ord = _order - correct_final_integral;
     for (size_t i = 0; i < max_ord; ++i) {
         const auto& interp = _interps[i];
-        double integral = interp.first->eval(sersicindex);
+        double integral = round_integral(interp.first->eval(sersicindex), sersicindex, *this);
         sum += integral;
         result.push_back(IntegralSize(integral, interp.second->eval(sersicindex)));
     }
     if (correct_final_integral) {
         const auto& interp = _interps[_order - 1];
         double integral = 1.0 - sum;
-        double integral_interp = interp.first->eval(sersicindex);
+        if (sum > 1) {
+            // The negative sign will be a sentinel for debugging
+            integral = round_integral(integral, -sersicindex, *this);
+        }
+        double integral_interp = round_integral(interp.first->eval(sersicindex), sersicindex, *this);
         bool interp_eq_zero = integral_interp == 0;
         _final_correction = integral * (!interp_eq_zero) / (integral_interp + interp_eq_zero);
         if (!(integral >= 0)) {
