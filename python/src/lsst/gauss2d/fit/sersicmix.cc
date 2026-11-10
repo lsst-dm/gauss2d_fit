@@ -39,7 +39,7 @@ void bind_sersicmix(py::module &m) {
                        .def(py::init<const double, const double>(), "integral"_a = 0, "sigma"_a = 0)
                        .def_readonly("integral", &g2f::IntegralSize::integral)
                        .def_readonly("sigma", &g2f::IntegralSize::sigma)
-                       .def("__repr__", [](const g2f::IntegralSize &self) { return self.repr(true); })
+                       .def("__repr__", [](const g2f::IntegralSize &self) { return self.repr(true, "."); })
                        .def("__str__", &g2f::IntegralSize::str);
 
     auto _smi = py::classh<g2f::SersicMixInterpolator, lsst::gauss2d::Object>(m, "SersicMixInterpolator");
@@ -49,8 +49,10 @@ void bind_sersicmix(py::module &m) {
                         .def_readonly("sersicindex", &g2f::SersicMixValues::sersicindex)
                         .def_readonly("values", &g2f::SersicMixValues::values)
                         .def_readonly("version", &g2f::SersicMixValues::version)
-                        .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true); })
+                        .def("__repr__", [](const g2f::SersicMixValues &self) { return self.repr(true, "."); })
                         .def("__str__", &g2f::SersicMixValues::str);
+
+    m.def("sersic_mix_descriptions", &g2f::get_sersic_mix_descriptions);
 
     m.def("sersic_mix_knots", &g2f::get_sersic_mix_knots_copy, "order"_a = g2f::SERSICMIX_ORDER_DEFAULT, "version"_a = VERSION_DEFAULT,
           py::return_value_policy::copy);

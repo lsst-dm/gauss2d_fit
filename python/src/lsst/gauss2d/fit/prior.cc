@@ -44,7 +44,7 @@ void bind_prior(py::module &m) {
                       .def_readonly("loglike", &g2f::PriorEvaluation::loglike)
                       .def_readonly("jacobians", &g2f::PriorEvaluation::jacobians)
                       .def_readonly("residuals", &g2f::PriorEvaluation::residuals)
-                      .def("__repr__", [](const g2f::PriorEvaluation &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::PriorEvaluation &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::PriorEvaluation::str);
     auto _p = py::classh<g2f::Prior, lsst::gauss2d::Object>(m, "Prior");
 }

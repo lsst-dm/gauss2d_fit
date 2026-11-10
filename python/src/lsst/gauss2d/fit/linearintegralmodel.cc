@@ -45,7 +45,7 @@ void bind_linearintegralmodel(py::module &m) {
                       .def("__getitem__", [](const g2f::LinearIntegralModel &self,
                                              const g2f::Channel &c) { return self.at(c); })
                       .def("__len__", &g2f::LinearIntegralModel::size)
-                      .def("__repr__", [](const g2f::LinearIntegralModel &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::LinearIntegralModel &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::LinearIntegralModel::str);
     /*
         typename Data::iterator begin() noexcept;

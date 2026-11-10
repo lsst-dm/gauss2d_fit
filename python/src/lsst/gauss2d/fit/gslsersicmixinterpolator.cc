@@ -59,7 +59,7 @@ void bind_gslsersicmixinterpolator(py::module &m) {
                       .def_property_readonly("order", &g2f::GSLSersicMixInterpolator::get_order)
                       .def_property_readonly("version", &g2f::GSLSersicMixInterpolator::get_version)
                       .def("__repr__",
-                           [](const g2f::GSLSersicMixInterpolator &self) { return self.repr(true); })
+                           [](const g2f::GSLSersicMixInterpolator &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::GSLSersicMixInterpolator::str);
 }
 

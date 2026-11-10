@@ -84,6 +84,6 @@ void bind_sersicmixcomponent(py::module &m) {
                            [](const g2f::SersicMixComponent &g, const g2f::Channel &c) {
                                return std::shared_ptr<const lsst::gauss2d::Gaussians>(g.get_gaussians(c));
                            })
-                      .def("__repr__", [](const g2f::SersicMixComponent &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::SersicMixComponent &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::SersicMixComponent::str);
 }

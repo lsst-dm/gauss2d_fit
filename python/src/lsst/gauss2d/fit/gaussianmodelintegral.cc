@@ -46,7 +46,7 @@ void bind_gaussianmodelintegral(py::module &m) {
                            "channel"_a, "integralmodel"_a)
                       .def_property("value", &g2f::GaussianModelIntegral::get_value,
                                     &g2f::GaussianModelIntegral::set_value)
-                      .def("__repr__", [](const g2f::GaussianModelIntegral &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::GaussianModelIntegral &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::GaussianModelIntegral::str);
     /*
         typename Data::iterator begin() noexcept;

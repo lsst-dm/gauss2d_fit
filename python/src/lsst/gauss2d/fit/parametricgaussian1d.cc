@@ -47,6 +47,6 @@ void bind_parametricgaussian1d(py::module &m) {
                                     &g2f::ParametricGaussian1D::set_stddev)
                       .def_property_readonly("stddev_parameter",
                                              &g2f::ParametricGaussian1D::get_stddev_parameter)
-                      .def("__repr__", [](const g2f::ParametricGaussian1D &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::ParametricGaussian1D &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::ParametricGaussian1D::str);
 }

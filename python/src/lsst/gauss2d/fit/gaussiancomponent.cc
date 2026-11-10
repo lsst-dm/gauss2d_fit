@@ -51,6 +51,6 @@ void bind_gaussiancomponent(py::module &m) {
                            })
                       .def_static("make_uniq_default_gaussians",
                                   &g2f::GaussianComponent::make_uniq_default_gaussians, "sizes"_a, "fixed"_a)
-                      .def("__repr__", [](const g2f::GaussianComponent &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::GaussianComponent &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::GaussianComponent::str);
 }
