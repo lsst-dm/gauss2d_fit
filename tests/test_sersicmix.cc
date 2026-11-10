@@ -12,12 +12,12 @@ namespace g2f = lsst::gauss2d::fit;
 TEST_CASE("SersicMixtures") {
     CHECK_THROWS_AS(g2f::get_sersic_mix_knots_copy(6), std::invalid_argument);
 
-    std::vector<unsigned short> orders = {4, 8};
-    std::vector<std::string> versions = {"2.0", "1.0"};
+    const auto SERSIC_DESCRIPTIONS = g2f::get_sersic_mix_descriptions();
 
-    for (const auto order : orders) {
+    for (const auto & [order, versions]: SERSIC_DESCRIPTIONS) {
         CHECK_THROWS_AS(g2f::get_sersic_mix_knots_copy(order, ""), std::invalid_argument);
-        for (const auto & version : versions) {
+        for (const auto & [version, description] : versions) {
+            CHECK_GT(description.size(), 0);
             const auto knots = g2f::get_sersic_mix_knots_copy(order, version);
             double sersic_index = 0;
             // Can't make n<0.5 out of concentric Gaussians, so 0.5 should be first

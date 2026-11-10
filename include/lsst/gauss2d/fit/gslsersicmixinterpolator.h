@@ -21,7 +21,7 @@ class GSLSersicMixInterpolator : public SersicMixInterpolator {
 public:
     explicit GSLSersicMixInterpolator(unsigned short order = SERSICMIX_ORDER_DEFAULT,
                                       InterpType interp_type = INTERPTYPE_DEFAULT,
-                                      std::string version = SersicMixValues::VERSION_DEFAULT()
+                                      const std::string & version = SersicMixValues::VERSION_DEFAULT()
                                       );
     ~GSLSersicMixInterpolator();
 

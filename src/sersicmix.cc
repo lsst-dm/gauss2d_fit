@@ -4279,6 +4279,18 @@ static const std::map<unsigned short,
                                  IntegralSize(5.491397263899989e-02, 0.06161716510787261)},
                                 "1.0")}}}}}};
 
+std::map<unsigned short, std::map<std::string, std::string>> get_sersic_mix_descriptions() {
+    std::map<unsigned short, std::map<std::string, std::string>> descriptions = {};
+    for (const auto & [order, versions]: KNOT_DEFINITIONS) {
+        std::map<std::string, std::string> desc_versions;
+        for (const auto & [version, info]: versions) {
+            desc_versions[version] = info.first;
+        }
+        descriptions[order] = desc_versions;
+    }
+    return descriptions;
+}
+
 std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order, const std::string& version) {
     const auto version_map = KNOT_DEFINITIONS.find(order);
     if (version_map == KNOT_DEFINITIONS.end()) {

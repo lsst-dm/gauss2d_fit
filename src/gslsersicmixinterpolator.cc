@@ -9,17 +9,20 @@
 #include "lsst/gauss2d/type_name.h"
 
 #include "lsst/gauss2d/fit/gslsersicmixinterpolator.h"
-#include "lsst/gauss2d/fit/util.h"
 
 namespace lsst::gauss2d::fit {
 
 GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_,
-                                                   std::string version)
+                                                   const std::string & version)
         : _interp_type(interp_type_),
           _order(order),
+          _version(version),
           _knots(get_sersic_mix_knots(order, version)),
           _sersicindex_min(_knots[0].sersicindex),
           _sersicindex_max(_knots.back().sersicindex) {
+    if ((interp_type_ != InterpType::linear) && (interp_type_ != InterpType::cspline)) {
+        throw std::invalid_argument("Only linear and spline interpolation are supported with GSL Sersic mixtures");
+    }
     _interps.reserve(order);
     std::vector<double> sersics;
     std::vector<std::vector<double>> integrals;
@@ -142,12 +145,15 @@ double GSLSersicMixInterpolator::get_sersicindex_max() const { return _sersicind
 std::string GSLSersicMixInterpolator::get_version() const { return _version; }
 
 std::string GSLSersicMixInterpolator::repr(bool name_keywords, std::string_view namespace_separator) const {
-    return std::string("GSLSersicMixInterpolator(") + (name_keywords ? "order=" : "") + std::to_string(_order)
+    return type_name_str<GSLSersicMixInterpolator>(false, namespace_separator) + "(" + (name_keywords ? "order=" : "") + std::to_string(_order) + ", "
+    + (name_keywords ? "interp_type=" : "") + type_name_str<InterpType>(false, namespace_separator) + "." + GSLInterpTypeNames.at(_interp_type) + ", " +
+        (name_keywords ? "version=" : "") + '"' + _version + '"'
            + ")";
 }
 
 std::string GSLSersicMixInterpolator::str() const {
-    return "GSLSersicMixInterpolator(order=" + std::to_string(_order) + ")";
+    return type_name_str<GSLSersicMixInterpolator>(true) + "(order="
+    + std::to_string(_order) + ", interp_type=" + type_name_str<InterpType>(true) + "." + GSLInterpTypeNames.at(_interp_type)  + ", version=" + _version + ")";
 }
 }  // namespace lsst::gauss2d::fit
 
