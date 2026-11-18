@@ -9,16 +9,21 @@
 #include "lsst/gauss2d/type_name.h"
 
 #include "lsst/gauss2d/fit/gslsersicmixinterpolator.h"
-#include "lsst/gauss2d/fit/util.h"
 
 namespace lsst::gauss2d::fit {
 
-GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_)
+GSLSersicMixInterpolator::GSLSersicMixInterpolator(unsigned short order, const InterpType interp_type_,
+                                                   const std::string& version)
         : _interp_type(interp_type_),
           _order(order),
-          _knots(get_sersic_mix_knots(order)),
+          _version(version),
+          _knots(get_sersic_mix_knots(order, version)),
           _sersicindex_min(_knots[0].sersicindex),
           _sersicindex_max(_knots.back().sersicindex) {
+    if ((interp_type_ != InterpType::linear) && (interp_type_ != InterpType::cspline)) {
+        throw std::invalid_argument(
+                "Only linear and spline interpolation are supported with GSL Sersic mixtures");
+    }
     _interps.reserve(order);
     std::vector<double> sersics;
     std::vector<std::vector<double>> integrals;
@@ -49,6 +54,19 @@ GSLSersicMixInterpolator::~GSLSersicMixInterpolator() {}
 
 double GSLSersicMixInterpolator::get_final_correction() const { return _final_correction; }
 
+double round_integral(double integral, double sersicindex, const GSLSersicMixInterpolator& interpolator) {
+    // Round up small negative values as likely floating point errors
+    if (integral < 0) {
+        if (integral > -1e-15) {
+            return 0;
+        }
+        throw std::runtime_error(
+                interpolator.str() + " returned too negative integral*1e16=" + std::to_string(1e16 * integral)
+                + " at 1e16*(sersicindex-0.5)=" + std::to_string(1e16 * (sersicindex - 0.5)));
+    }
+    return integral;
+}
+
 std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double sersicindex) const {
     if (!((sersicindex >= _sersicindex_min) && (sersicindex <= _sersicindex_max))) {
         throw std::invalid_argument("sersicindex=" + to_string_float(sersicindex)
@@ -62,14 +80,18 @@ std::vector<IntegralSize> GSLSersicMixInterpolator::get_integralsizes(double ser
     size_t max_ord = _order - correct_final_integral;
     for (size_t i = 0; i < max_ord; ++i) {
         const auto& interp = _interps[i];
-        double integral = interp.first->eval(sersicindex);
+        double integral = round_integral(interp.first->eval(sersicindex), sersicindex, *this);
         sum += integral;
         result.push_back(IntegralSize(integral, interp.second->eval(sersicindex)));
     }
     if (correct_final_integral) {
         const auto& interp = _interps[_order - 1];
         double integral = 1.0 - sum;
-        double integral_interp = interp.first->eval(sersicindex);
+        if (sum > 1) {
+            // The negative sign will be a sentinel for debugging
+            integral = round_integral(integral, -sersicindex, *this);
+        }
+        double integral_interp = round_integral(interp.first->eval(sersicindex), sersicindex, *this);
         bool interp_eq_zero = integral_interp == 0;
         _final_correction = integral * (!interp_eq_zero) / (integral_interp + interp_eq_zero);
         if (!(integral >= 0)) {
@@ -121,13 +143,20 @@ unsigned short GSLSersicMixInterpolator::get_order() const { return _order; }
 double GSLSersicMixInterpolator::get_sersicindex_min() const { return _sersicindex_min; }
 double GSLSersicMixInterpolator::get_sersicindex_max() const { return _sersicindex_max; }
 
+std::string GSLSersicMixInterpolator::get_version() const { return _version; }
+
 std::string GSLSersicMixInterpolator::repr(bool name_keywords, std::string_view namespace_separator) const {
-    return std::string("GSLSersicMixInterpolator(") + (name_keywords ? "order=" : "") + std::to_string(_order)
-           + ")";
+    return type_name_str<GSLSersicMixInterpolator>(false, namespace_separator) + "("
+           + (name_keywords ? "order=" : "") + std::to_string(_order) + ", "
+           + (name_keywords ? "interp_type=" : "") + type_name_str<InterpType>(false, namespace_separator)
+           + "." + GSLInterpTypeNames.at(_interp_type) + ", " + (name_keywords ? "version=" : "") + '"'
+           + _version + '"' + ")";
 }
 
 std::string GSLSersicMixInterpolator::str() const {
-    return "GSLSersicMixInterpolator(order=" + std::to_string(_order) + ")";
+    return type_name_str<GSLSersicMixInterpolator>(true) + "(order=" + std::to_string(_order)
+           + ", interp_type=" + type_name_str<InterpType>(true) + "." + GSLInterpTypeNames.at(_interp_type)
+           + ", version=" + _version + ")";
 }
 }  // namespace lsst::gauss2d::fit
 

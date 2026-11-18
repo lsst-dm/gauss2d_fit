@@ -77,6 +77,6 @@ void bind_gaussianparametricellipse(py::module &m) {
                                              &g2f::GaussianParametricEllipse::get_size_y_param_ptr)
                       .def("set", &g2f::GaussianParametricEllipse::set)
                       .def("__repr__",
-                           [](const g2f::GaussianParametricEllipse &self) { return self.repr(true); })
+                           [](const g2f::GaussianParametricEllipse &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::GaussianParametricEllipse::str);
 }

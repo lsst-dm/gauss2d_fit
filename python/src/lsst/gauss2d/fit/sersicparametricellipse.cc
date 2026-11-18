@@ -61,6 +61,6 @@ void bind_sersicparametricellipse(py::module &m) {
                       .def_property_readonly("size_y_param_ptr",
                                              &g2f::SersicParametricEllipse::get_size_y_param_ptr)
                       .def("__repr__",
-                           [](const g2f::SersicParametricEllipse &self) { return self.repr(true); })
+                           [](const g2f::SersicParametricEllipse &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::SersicParametricEllipse::str);
 }

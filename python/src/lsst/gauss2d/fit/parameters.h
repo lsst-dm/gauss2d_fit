@@ -55,7 +55,7 @@ void declare_limits(py::module &m) {
             .def("clip", &Class::clip)
             .def_property("min", &Class::get_min, &Class::set_min)
             .def_property("max", &Class::get_max, &Class::set_max)
-            .def("__repr__", [](const Class &self) { return self.repr(true); })
+            .def("__repr__", [](const Class &self) { return self.repr(true, "."); })
             .def("__str__", &Class::str);
 }
 

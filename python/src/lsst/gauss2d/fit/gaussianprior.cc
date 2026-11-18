@@ -52,6 +52,6 @@ void bind_gaussianprior(py::module &m) {
                       .def_property("transformed", &g2f::GaussianPrior::get_transformed,
                                     &g2f::GaussianPrior::set_transformed)
                       .def("__len__", &g2f::GaussianPrior::size)
-                      .def("__repr__", [](const g2f::GaussianPrior &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::GaussianPrior &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::GaussianPrior::str);
 }

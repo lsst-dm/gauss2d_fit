@@ -49,6 +49,6 @@ void bind_centroidparameters(py::module &m) {
                       .def_property_readonly("y_param", &g2f::CentroidParameters::get_y_param)
                       .def_property_readonly("x_param_ptr", &g2f::CentroidParameters::get_x_param_ptr)
                       .def_property_readonly("y_param_ptr", &g2f::CentroidParameters::get_y_param_ptr)
-                      .def("__repr__", [](const g2f::CentroidParameters &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::CentroidParameters &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::CentroidParameters::str);
 }

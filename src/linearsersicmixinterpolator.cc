@@ -10,11 +10,12 @@
 
 namespace lsst::gauss2d::fit {
 
-LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order)
+LinearSersicMixInterpolator::LinearSersicMixInterpolator(unsigned short order, std::string version)
         : _order(order),
-          _knots(get_sersic_mix_knots(order)),
+          _knots(get_sersic_mix_knots(order, version)),
           _sersicindex_min(_knots[0].sersicindex),
-          _sersicindex_max(_knots.back().sersicindex) {}
+          _sersicindex_max(_knots.back().sersicindex),
+          _version(version) {}
 
 LinearSersicMixInterpolator::~LinearSersicMixInterpolator() {}
 
@@ -89,6 +90,8 @@ unsigned short LinearSersicMixInterpolator::get_order() const { return _order; }
 double LinearSersicMixInterpolator::get_sersicindex_min() const { return _sersicindex_min; }
 
 double LinearSersicMixInterpolator::get_sersicindex_max() const { return _sersicindex_max; }
+
+std::string LinearSersicMixInterpolator::get_version() const { return _version; }
 
 std::string LinearSersicMixInterpolator::repr(bool name_keywords,
                                               std::string_view namespace_separator) const {

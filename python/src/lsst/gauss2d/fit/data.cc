@@ -53,7 +53,7 @@ void declare_data(py::module &m, std::string str_type) {
             .def_property_readonly("size", &Data::size)
             .def("__getitem__", &Data::at)
             .def("__len__", &Data::size)
-            //                      .def("__repr__", [](const Data &self) { return self.repr(true);
+            //                      .def("__repr__", [](const Data &self) { return self.repr(true, ".");
             //                      })
             .def("__str__", [str_type](const Data &self) {
                 std::string str = self.str();

@@ -45,7 +45,7 @@ void bind_channel(py::module &m) {
                       .def_readonly("name", &g2f::Channel::name)
                       .def_property_readonly_static("NONE",
                                                     [](py::object) { return g2f::Channel::NONE_PTR(); })
-                      .def("__repr__", [](const g2f::Channel &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::Channel &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::Channel::str);
     /*
         const bool operator < ( const Channel &c ) const;

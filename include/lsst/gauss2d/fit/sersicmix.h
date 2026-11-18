@@ -1,7 +1,7 @@
 #ifndef LSST_GAUSS2D_FIT_SERSICMIX_H
 #define LSST_GAUSS2D_FIT_SERSICMIX_H
 
-#include <array>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -44,6 +44,7 @@ public:
 
     virtual InterpType get_interptype() const = 0;
     virtual unsigned short get_order() const = 0;
+    virtual std::string get_version() const = 0;
 };
 
 const std::shared_ptr<const SersicMixInterpolator> get_sersic_mix_interpolator_default(
@@ -60,10 +61,13 @@ public:
      * @param sersicindex The value of the Sersic index.
      * @param values The vector of IntegralSize values for the Sersic index.
      */
-    explicit SersicMixValues(double sersicindex, std::vector<IntegralSize> values);
+    explicit SersicMixValues(double sersicindex, std::vector<IntegralSize> values, std::string version="");
 
     const double sersicindex;
     const std::vector<IntegralSize> values;
+    const std::string version;
+    static constexpr std::string VERSION_DEFAULT() { return "1.0"; };
+
 
     std::string repr(bool name_keywords = false,
                      std::string_view namespace_separator = Object::CC_NAMESPACE_SEPARATOR) const override;
@@ -76,12 +80,48 @@ inline bool operator<(const SersicMixValues &lhs, const SersicMixValues &rhs) {
 inline bool operator<(const SersicMixValues &lhs, double x) { return lhs.sersicindex < x; }
 inline bool operator<(double x, const SersicMixValues &rhs) { return x < rhs.sersicindex; }
 
-std::vector<SersicMixValues> get_sersic_mix_knots_copy(unsigned short order);
+/**
+ * Get a map of all of the available Sersic mixture approximations.
+ *
+ * @return Maps of available mixture description by version, by order of the mixture.
+ */
+std::map<unsigned short, std::map<std::string, std::string>> get_sersic_mix_descriptions();
 
-const std::vector<SersicMixValues> &get_sersic_mix_knots(unsigned short order);
+/**
+ * Get a copy of the values for a given Sersic mixture approximation.
+ *
+ * @param order The order of the mixture.
+ * @param version The version of the mixture.
+ * @return A copy of the mixture knot values.
+ */
+std::vector<SersicMixValues> get_sersic_mix_knots_copy(
+    unsigned short order, const std::string& version=SersicMixValues::VERSION_DEFAULT()
+);
 
-const std::vector<SersicMixValues> &get_sersic_mix_knots_order4();
-const std::vector<SersicMixValues> &get_sersic_mix_knots_order8();
+/**
+ * Get the values for a given Sersic mixture approximation.
+ *
+ * @param order The order of the mixture.
+ * @param version The version of the mixture.
+ * @return A const reference to the mixture knot values.
+ */
+const std::vector<SersicMixValues> &get_sersic_mix_knots(unsigned short order, const std::string& version=SersicMixValues::VERSION_DEFAULT());
+
+/**
+ * Get the values for a 4th order Sersic mixture approximation.
+ *
+ * @param version The version of the mixture.
+ * @return A const reference to the mixture knot values.
+ */
+const std::vector<SersicMixValues> &get_sersic_mix_knots_order4(const std::string & version);
+
+/**
+ * Get the values for an 8th order Sersic mixture approximation.
+ *
+ * @param version The version of the mixture.
+ * @return A const reference to the mixture knot values.
+ */
+const std::vector<SersicMixValues> &get_sersic_mix_knots_order8(const std::string & version);
 
 }  // namespace lsst::gauss2d::fit
 

@@ -52,6 +52,6 @@ void bind_fractionalintegralmodel(py::module &m) {
                                              const g2f::Channel &c) { return self.at(c); })
                       .def("__len__", &g2f::FractionalIntegralModel::size)
                       .def("__repr__",
-                           [](const g2f::FractionalIntegralModel &self) { return self.repr(true); })
+                           [](const g2f::FractionalIntegralModel &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::FractionalIntegralModel::str);
 }

@@ -53,7 +53,7 @@ void bind_shapeprior(py::module &m) {
                                     &g2f::ShapePriorOptions::set_size_maj_floor)
                       .def_property("size_maj_floor", &g2f::ShapePriorOptions::get_size_maj_floor,
                                     &g2f::ShapePriorOptions::set_size_maj_floor)
-                      .def("__repr__", [](const g2f::ShapePriorOptions &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::ShapePriorOptions &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::ShapePriorOptions::str);
 
     auto _s = py::classh<g2f::ShapePrior, g2f::Prior>(m, "ShapePrior")
@@ -71,6 +71,6 @@ void bind_shapeprior(py::module &m) {
                       .def_property("prior_axrat", &g2f::ShapePrior::get_prior_axrat,
                                     &g2f::ShapePrior::set_prior_axrat)
                       .def("__len__", &g2f::ShapePrior::size)
-                      .def("__repr__", [](const g2f::ShapePrior &self) { return self.repr(true); })
+                      .def("__repr__", [](const g2f::ShapePrior &self) { return self.repr(true, "."); })
                       .def("__str__", &g2f::ShapePrior::str);
 }
